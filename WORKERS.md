@@ -14,33 +14,55 @@ Analytic Programming methodology repository (`https://github.com/cisarik/ap.git`
 
 AP v1 ([AP.md](AP.md))
 
-AP v2 ([APv2.md](APv2.md)) is an experimental deliverable in this repository but is **not** the active governance protocol for the initial bootstrap.
+AP v2 ([APv2.md](APv2.md)) is an experimental deliverable in this repository but is **not** the active governance protocol.
 
 ## Topology
 
 | Setting | Value |
 |---|---|
 | Topology | Single Worker |
-| Approved Worker count | one |
+| Approved simultaneous Worker capacity | one |
+| Active Worker count (after closeout) | zero |
 | Parallel execution | disabled |
 
-## Worker roster
+**Approved capacity** is how many Workers the COOPERATOR has approved for simultaneous assignment. **Active count** is how many concrete Worker instances currently hold an open session or assignment. After Worker_1 closeout, capacity remains one but active count is zero.
 
-| Field | Worker_1 |
+## Worker roster — closed instance
+
+### Worker_1 (closed)
+
+| Field | Value |
 |---|---|
 | Label | `Worker_1` |
-| Status | ACTIVE |
-| Current assignment | Initial protocol repository bootstrap (AP-BOOTSTRAP-001) |
-| Assignment profile | Documentation synthesis and protocol design |
-| Authorized workstream | Entire documentation repository per task authorization |
-| Capability profile | Repository read/write, shell commands, Git write when authorized |
-| Active branch | `main` |
-| Last verified baseline | Empty public repository before initial commit |
-| Current session state | Open — session remains active after bootstrap |
+| Persistent role | WORKER |
+| Status | CLOSED |
+| Completed assignments | AP-BOOTSTRAP-001, AP-AUDIT-002, AP-REPAIR-003, AP-CLOSEOUT-004 |
+| Assignment outcome | Initial AP documentation repository created, audited, repaired, and handed off |
+| Assignment profile | Documentation synthesis, protocol design, audit, and bounded repair |
+| Final verified pre-closeout baseline | `dd0276e4ffaf56efccf3e5ca8082eae7d8810451` |
+| Active branch used | `main` |
+| Current session state | Closed after the closeout commit |
 | Handoff path | [NEXT_WORKER.md](NEXT_WORKER.md) |
 | Integration dependencies | none |
 | Worker implementation identity | Intentionally undisclosed |
-| Notes | First concrete Worker instance for this repository |
+| Unresolved blocker | none |
+
+Worker_1 is a closed historical concrete instance. It is not active.
+
+## Next unused label
+
+| Field | Value |
+|---|---|
+| Next unused concrete Worker label | `Worker_2` |
+| Worker_2 initialized | no |
+| Worker_2 assignment | none |
+| Worker_2 status | not applicable — not in roster until explicitly initialized |
+
+`Worker_2` is reserved as the next unused label only. It MUST NOT be treated as active merely because the label is recorded here.
+
+A future authoritative ORCHESTRATOR task prompt and an explicit manifest update are required before `Worker_2` may act.
+
+Do not add Worker_2 as an active roster entry until the ORCHESTRATOR and COOPERATOR authorize a new Worker session.
 
 ## Update authority
 
