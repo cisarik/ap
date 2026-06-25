@@ -44,7 +44,7 @@ Template for a consuming project adopting Analytic Programming. Copy and customi
 | **v1** | Single Worker default; simplest adoption |
 | **v2** | Need sequential relay, specialist chains, or bounded parallel workstreams |
 
-See the AP source [ADOPTION.md](../../ADOPTION.md).
+Before adoption, consult ADOPTION.md in the Analytic Programming source repository.
 
 ## Important rules
 

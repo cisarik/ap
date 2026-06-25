@@ -15,7 +15,7 @@
 | Setting | Value |
 |---|---|
 | Active AP version | <ACTIVE_AP_VERSION> |
-| Active protocol file | [AP.md](../../AP.md) (copy to project root) |
+| Active protocol file | `AP.md` (project root after adoption) |
 
 Record version selection in this file and preferably a project ADR.
 

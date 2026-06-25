@@ -298,9 +298,13 @@ See [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md).
 
 Git write operations MUST NOT be performed without explicit task-specific authorization.
 
-### 17.2 Boundaries
+Git writes include: staging, committing, pushing, pulling, fetching, merging, rebasing, resetting, restoring, checking out, switching branches, cleaning, stashing, tagging, branch creation or deletion, remote modification, and Git configuration writes.
 
-Preserve all v1 safety boundaries:
+A Worker MUST NOT push to a branch or worktree owned by another Worker unless the task explicitly authorizes integration.
+
+### 17.2 Core safety and authority boundaries
+
+Participants MUST preserve:
 
 - explicit authority;
 - exact repository identity;
@@ -311,9 +315,73 @@ Preserve all v1 safety boundaries:
 - no destructive action without approval;
 - no parallel writes to shared state without an integration plan.
 
-See [AP.md](AP.md) sections on dependency, migration, filesystem, network, and destructive action authority for the same rules (this document incorporates them by full restatement above).
+Companion handbooks such as [AP_WORKER.md](AP_WORKER.md) and [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md) MAY provide additional operational detail. This section defines the minimum normative boundaries required to operate safely when AP version 2 is the only active protocol.
 
-Additional v2 rule: a Worker MUST NOT push to a branch owned by another Worker unless the task explicitly authorizes integration.
+### 17.3 Dependency and toolchain authority
+
+A Worker MUST NOT add, remove, upgrade, downgrade, regenerate, replace, or install dependencies, lockfiles, runtimes, toolchains, package managers, plugins, or build tools unless the authoritative task explicitly permits it.
+
+Reading existing dependency metadata and running already-authorized validation commands is not equivalent to dependency modification.
+
+### 17.4 Migration, schema, and durable-data authority
+
+A Worker MUST NOT create, edit, renumber, reorder, apply, roll back, squash, or delete database migrations, schemas, durable data transformations, or persistent-format migrations unless explicitly authorized.
+
+Where several Workers exist, migration numbering or ownership MUST be coordinated before parallel work begins.
+
+### 17.5 Secret and credential authority
+
+A Worker MUST NOT read, reveal, print, copy, commit, transform, or transmit secret values unless the task explicitly authorizes the minimum necessary access.
+
+A task MAY authorize use of a credential without authorizing disclosure of its value.
+
+Reports, logs, diffs, fixtures, and diagnostic artifacts MUST NOT expose secrets.
+
+### 17.6 Filesystem, private-data, and external-resource authority
+
+Repository authority does not imply authority over unrelated filesystem paths, home-directory data, private media, personal documents, browser profiles, credential stores, mounted devices, cloud storage, external databases, or other repositories.
+
+Access and mutation MUST be explicitly authorized and minimized.
+
+Creating, renaming, or deleting paths outside authorized scope is forbidden.
+
+### 17.7 Network, provider, and external-service authority
+
+A Worker MUST NOT call external providers, send private inputs, create billable requests, change remote service state, deploy, publish, upload, download unbounded data, or expose a service publicly unless explicitly authorized.
+
+Network access for read-only public verification is distinct from provider calls or remote mutation and MUST still stay within task scope.
+
+### 17.8 Destructive and irreversible action authority
+
+Destructive or difficult-to-reverse actions require explicit authorization.
+
+Examples include: deleting files or durable data; destructive migrations; rewriting published Git history; force-pushing; changing access controls; rotating or revoking credentials; removing remote resources; overwriting user data.
+
+Force-push, hard reset, irreversible deletion, and privileged system operations require explicit COOPERATOR approval unless the task names them exactly.
+
+A broad goal or acceptance criterion MUST NOT be interpreted as implicit permission for an irreversible action.
+
+### 17.9 Scope and path authority
+
+Authorized paths are an allowlist. Unlisted paths remain forbidden.
+
+Discovering a necessary out-of-scope change requires stopping and reporting.
+
+“Small obvious fixes” are not implicitly authorized.
+
+Another Worker's workstream remains out of scope unless integration authority is explicit.
+
+### 17.10 Unsupported completion claims
+
+A Worker MUST NOT claim:
+
+- tests passed when they were not run;
+- public state was verified when only local state was inspected;
+- a provider succeeded when no authorized call occurred;
+- an artifact exists when it was not inspected;
+- full completion when acceptance criteria remain unmet.
+
+Reports MUST distinguish directly observed evidence, public repository evidence, local-only evidence, inference, and unverified assumptions.
 
 ## 18. Reports
 
