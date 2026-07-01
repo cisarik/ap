@@ -6,6 +6,8 @@ This repository is **documentation-only**. It contains Markdown protocol rules, 
 
 Public repository: [https://github.com/cisarik/ap](https://github.com/cisarik/ap)
 
+> **New to AP, or want the short version?** Read [FAQ.md](FAQ.md) — a plain-language guide and frequently asked questions, written for the **COOPERATOR** (the human owner). It is the easiest way to understand and start using Analytic Programming.
+
 ## What Analytic Programming is
 
 Analytic Programming (AP) is a protocol for work where:
@@ -42,20 +44,21 @@ Several Worker instances may share the one persistent **WORKER** role. Labels su
 
 | File | Status | Model |
 |---|---|---|
-| [AP.md](AP.md) | Stable v1 | Single active Worker default; sequential rotation |
-| [APv2.md](APv2.md) | Experimental complete v2 | Multi-Worker capable; sequential relay preferred |
+| [APv3.md](APv3.md) | **Active v3** | Single-Worker Coordinator Protocol with intentional Worker instance rotation |
+| [AP.md](AP.md) | Redirect | Points to [APv3.md](APv3.md); v1 superseded (in Git history) |
+| [APv2.md](APv2.md) | Superseded reference | Experimental multi-Worker topology; retained for traceability |
 
-**One Worker remains the default** in both versions.
+**AP version 3 is the active protocol.** It supersedes v1 and v2. One Worker remains the default.
 
-AP v2 does **not** imply automatic parallelism. Parallel workstreams are exceptional and explicitly bounded.
+AP v3 is a single-Worker model. The v2 multi-Worker topology was experimental and theoretical only and is **not** active governance.
 
-A consuming project ends with **exactly one active `AP.md`**. See [ADOPTION.md](ADOPTION.md) and [VERSIONING.md](VERSIONING.md).
+A consuming project ends with **exactly one active `AP.md`** — copy [APv3.md](APv3.md) to `AP.md`. See [ADOPTION.md](ADOPTION.md) and [VERSIONING.md](VERSIONING.md).
 
 ## This repository's configuration
 
 | Setting | Value |
 |---|---|
-| Active protocol | AP v1 |
+| Active protocol | AP v3 ([APv3.md](APv3.md)) |
 | Worker topology | single Worker |
 | Concrete instance | `Worker_1` |
 | Parallel execution | disabled |
@@ -66,8 +69,10 @@ Worker topology for this project is recorded in [WORKERS.md](WORKERS.md).
 
 | Path | Purpose |
 |---|---|
-| [AP.md](AP.md) | Active stable protocol (v1) |
-| [APv2.md](APv2.md) | Experimental standalone multi-Worker protocol |
+| [APv3.md](APv3.md) | **Active protocol (v3)** |
+| [AP.md](AP.md) | Redirect to active protocol (v3); v1 superseded |
+| [APv2.md](APv2.md) | Superseded experimental multi-Worker reference |
+| [FAQ.md](FAQ.md) | Plain-language guide and FAQ (start here for the short version) |
 | [AP_ORCHESTRATOR.md](AP_ORCHESTRATOR.md) | Universal Orchestrator handbook |
 | [AP_WORKER.md](AP_WORKER.md) | Universal Worker handbook (no project Worker count) |
 | [WORKERS.md](WORKERS.md) | **Project-specific** Worker manifest |
@@ -97,10 +102,10 @@ A fresh Orchestrator or Worker session begins by reading BOOT files, handoffs, a
 
 ## Adoption workflow
 
-1. Choose AP v1 or v2 ([ADOPTION.md](ADOPTION.md)).
-2. Copy universal protocol files and customize templates.
+1. Choose AP v3 ([ADOPTION.md](ADOPTION.md)) — the active generation.
+2. Copy [APv3.md](APv3.md) to `AP.md` and copy universal handbooks and companion files.
 3. Ensure exactly one active `AP.md` in the target project.
-4. Initialize [WORKERS.md](WORKERS.md) (required for AP v2).
+4. Initialize [WORKERS.md](WORKERS.md) (one `Worker_1` by default).
 5. Start a fresh Orchestrator instance; verify the repository.
 6. Issue one launch-and-task prompt for `Worker_1`.
 7. Continue through NEXT handoffs at session boundaries.
@@ -126,3 +131,4 @@ A fresh Orchestrator or Worker session begins by reading BOOT files, handoffs, a
 
 - [ADR-0001: Protocol version selection](docs/adr/0001-protocol-version-selection.md)
 - [ADR-0002: Worker instance topology](docs/adr/0002-worker-instance-topology.md)
+- [ADR-0003: AP v3 protocol generation](docs/adr/0003-apv3-protocol-generation.md)

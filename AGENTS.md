@@ -12,8 +12,8 @@ Public repository: `https://github.com/cisarik/ap.git`
 
 | Setting | Value |
 |---|---|
-| Active protocol | AP v1 ([AP.md](AP.md)) |
-| Experimental protocol | AP v2 ([APv2.md](APv2.md)) — deliverable, not active governance for initial bootstrap |
+| Active protocol | AP v3 ([APv3.md](APv3.md)); [AP.md](AP.md) redirects to it |
+| Superseded protocol | AP v2 ([APv2.md](APv2.md)) — experimental multi-Worker; retained reference, not active governance |
 | Active Worker count | one |
 | Concrete instance | `Worker_1` |
 | Topology | single Worker |
@@ -90,8 +90,9 @@ BOOT and NEXT files do not grant task authority. A concrete ORCHESTRATOR task pr
 
 ## Protocol documents
 
-- [AP.md](AP.md) — active v1 protocol
-- [APv2.md](APv2.md) — experimental v2 protocol
+- [APv3.md](APv3.md) — active v3 protocol
+- [AP.md](AP.md) — redirect to active protocol (v3)
+- [APv2.md](APv2.md) — superseded experimental v2 protocol (retained reference)
 - [AP_ORCHESTRATOR.md](AP_ORCHESTRATOR.md) — Orchestrator handbook
 - [AP_WORKER.md](AP_WORKER.md) — Worker handbook
 - [WORKERS.md](WORKERS.md) — project Worker manifest

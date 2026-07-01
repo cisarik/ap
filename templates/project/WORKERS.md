@@ -41,9 +41,9 @@ Expand only after ORCHESTRATOR recommendation and COOPERATOR approval.
 | Integration dependencies | none |
 | Notes | Initial Worker placeholder |
 
-## Optional additional Workers (AP v2)
+## Optional additional Workers
 
-When COOPERATOR approves additional Workers, add rows:
+AP v3 is a single-Worker model. Additional simultaneous Workers are not a normative feature. When COOPERATOR approves additional Workers, add rows:
 
 ### Worker_2 (example — remove if unused)
 

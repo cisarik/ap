@@ -1,5 +1,10 @@
 # Analytic Programming Protocol (Version 2)
 
+> **SUPERSEDED.** This is AP version 2, an experimental multi-Worker protocol.
+> It has been superseded by **[APv3.md](APv3.md)** (AP version 3), which is the active protocol.
+> This file is retained as a historical and experimental reference only. It is **not** active governance.
+> See [ADR-0003](docs/adr/0003-apv3-protocol-generation.md) and [VERSIONING.md](VERSIONING.md).
+
 ## 1. Purpose
 
 Analytic Programming is a Coordinator Protocol for software work in which intent clarification, evidence inspection, bounded task shaping, proportional validation, public verification, controlled continuation, and explicit session handoff matter more than conversational momentum.

@@ -4,30 +4,35 @@
 
 | Artifact | Role |
 |---|---|
-| [AP.md](AP.md) | Stable version 1 protocol |
-| [APv2.md](APv2.md) | Experimental complete version 2 protocol |
+| [APv3.md](APv3.md) | **Active version 3 protocol** |
+| [AP.md](AP.md) | Redirect to active protocol (v3); v1 superseded |
+| [APv2.md](APv2.md) | Superseded experimental version 2 protocol (retained reference) |
 
-Both may coexist in this source repository for reference and adoption.
+The active generation is v3. Superseded generations remain for reference and traceability.
 
 ## Semantic meaning
 
 | Label | Meaning |
 |---|---|
+| **Active** | Current authoritative protocol for this source repository and recommended for adoption |
 | **Stable** | Suitable as default active protocol for conservative adoption; breaking changes require explicit version bump or new file |
 | **Experimental** | Complete and usable, but governance and field experience may still evolve before promotion |
+| **Superseded** | Replaced by a later generation; retained for reference and Git traceability, not active governance |
 
-Experimental does not mean incomplete for operation — [APv2.md](APv2.md) is standalone.
+AP version 3 is **Active**. AP v1 is superseded (in Git history via `AP.md` redirect). AP v2 is superseded (retained as `APv2.md` reference).
 
 ## Consuming project rule
 
 Each consuming project MUST have **exactly one active `AP.md`**.
 
-Do not mix v1 and v2 rules implicitly. Do not require reading both.
+The recommended active generation is v3. Copy [APv3.md](APv3.md) to `AP.md`.
+
+Do not mix generations implicitly. Do not require reading both v1 and v2. Superseded generations remain available for reference only.
 
 ## Selecting a version
 
-1. COOPERATOR chooses v1 or v2.
-2. Copy or rename the chosen document to `AP.md`.
+1. COOPERATOR chooses v3 (recommended) or a superseded generation for legacy reference.
+2. Copy the chosen document to `AP.md` (for v3, copy `APv3.md` to `AP.md`).
 3. Record the choice in project `AGENTS.md`.
 4. Prefer recording in a project ADR.
 
@@ -68,3 +73,4 @@ This repository does not use numerical software package versions or release auto
 
 - [ADOPTION.md](ADOPTION.md)
 - [docs/adr/0001-protocol-version-selection.md](docs/adr/0001-protocol-version-selection.md)
+- [docs/adr/0003-apv3-protocol-generation.md](docs/adr/0003-apv3-protocol-generation.md)

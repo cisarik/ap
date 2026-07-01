@@ -8,9 +8,29 @@ This guide explains how to adopt Analytic Programming (AP) in another repository
 - A COOPERATOR who selects protocol version and approves topology
 - Willingness to maintain one active `AP.md` and project-specific overlay files
 
-## Two supported adoption paths
+## Supported adoption paths
 
-### Path A — AP v1 (single Worker default)
+### Path C — AP v3 (recommended, active generation)
+
+AP version 3 is the active and recommended generation. It is a single-Worker Coordinator Protocol with intentional Worker instance rotation.
+
+1. Copy these **universal** files from this repository:
+   - [APv3.md](APv3.md) → rename to `AP.md` in the target project (exactly one active protocol)
+   - [AP_ORCHESTRATOR.md](AP_ORCHESTRATOR.md)
+   - [AP_WORKER.md](AP_WORKER.md)
+   - [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md)
+   - [ARTIFACT_LIFECYCLE.md](ARTIFACT_LIFECYCLE.md)
+2. Optionally copy for reference:
+   - [GLOSSARY.md](GLOSSARY.md)
+   - [VERSIONING.md](VERSIONING.md)
+3. Copy and customize project templates from [templates/project/](templates/project/):
+   - `README.md`, `AGENTS.md`, `WORKERS.md`, `BOOT_ORCHESTRATOR.md`, `BOOT_WORKER.md`, `NEXT_ORCHESTRATOR.md`, `NEXT_WORKER.md`
+4. Set `<ACTIVE_AP_VERSION>` to `v3` in customized templates.
+5. Initialize [WORKERS.md](WORKERS.md) with one `Worker_1` by default.
+
+The target repository ends with **one active `AP.md`** containing v3 content.
+
+### Path A — AP v1 (legacy, superseded)
 
 Copy these **universal** files from this repository:
 
@@ -37,7 +57,9 @@ Then copy and customize project templates from [templates/project/](templates/pr
 
 The target repository ends with **one active `AP.md`** (v1).
 
-### Path B — AP v2 (multi-Worker capable)
+> **Note:** AP v1 is superseded by v3. Path A is retained for legacy projects only.
+
+### Path B — AP v2 (legacy, superseded)
 
 **Simple manual selection workflow:**
 
@@ -57,16 +79,18 @@ Copy only the chosen version directly as `AP.md` (either v1 content or v2 conten
 
 ## Version rules
 
-- [APv2.md](APv2.md) is **complete and standalone**.
-- A target project MUST NOT treat both v1 and v2 as simultaneously active.
+- [APv3.md](APv3.md) is **active and recommended**.
+- [APv2.md](APv2.md) is **superseded** — complete and standalone, but experimental multi-Worker; retained for reference.
+- AP v1 is **superseded** — preserved in Git history; `AP.md` in this source repository redirects to v3.
+- A target project MUST NOT treat multiple generations as simultaneously active.
 - Active version selection is a **COOPERATOR decision**.
 - Record the selection in project `AGENTS.md` and preferably an ADR.
 
 ## Initial project bootstrap sequence
 
 1. Create or open the target repository.
-2. Choose AP v1 or v2.
-3. Copy universal protocol and companion files.
+2. Choose AP v3 (recommended) or a legacy generation.
+3. Copy universal protocol and companion files (for v3, copy `APv3.md` to `AP.md`).
 4. Copy and customize templates; replace all placeholders.
 5. Initialize `WORKERS.md` (one `Worker_1` row by default).
 6. Start a fresh Orchestrator instance assigned to the ORCHESTRATOR role.
@@ -85,7 +109,7 @@ Copy only the chosen version directly as `AP.md` (either v1 content or v2 conten
 
 ## What stays universal
 
-- Active `AP.md` protocol text (either v1 or renamed v2)
+- Active `AP.md` protocol text (v3 content recommended; or legacy v1/v2 renamed)
 - `AP_ORCHESTRATOR.md` and `AP_WORKER.md` handbooks
 - `PROMPT_CONTRACTS.md` and `ARTIFACT_LIFECYCLE.md`
 

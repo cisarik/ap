@@ -10,6 +10,20 @@ Every Worker report MUST begin exactly with:
 
 Reports SHOULD include: Status (PASS / PARTIAL / BLOCKED), evidence sections, validation results, Git state, deviations, risks, and session state.
 
+### Compact communication mode
+
+Repositories MAY use compact communication mode (see [APv3.md](APv3.md) §36). Under compact mode, unless a task requires more detail, a report SHOULD contain:
+
+1. status;
+2. start and end HEAD;
+3. changed files and short purpose;
+4. tests and validation results;
+5. commit and push result;
+6. deviations or risks;
+7. one proposed next step.
+
+Target approximately 800–1,000 words. Summarize command execution instead of listing every command. Include full output only for failures, unexpected state, safety-critical evidence, or explicit Orchestrator request. Safety-relevant evidence MUST NOT be omitted for brevity.
+
 ## Authoritative task prompt fields
 
 A strong Worker prompt SHOULD normally include:
@@ -71,11 +85,13 @@ Mandatory reading:
 4. WORKERS.md (if present)
 5. NEXT_WORKER.md
 
-Precondition gates:
+Precondition gates (integrated read-only bootstrap gate):
 - Verify Git root equals working directory
 - Verify origin URL
 - Verify baseline / empty-state expectations
 - Stop on mismatch unless correction authorized
+
+For low- or medium-risk continuation, the bootstrap gate MAY be integrated into the first implementation prompt. Use a separate bootstrap-only task when repository identity, cleanliness, environment state, or security sensitivity is uncertain.
 
 Goal: {exact-goal}
 
@@ -154,7 +170,7 @@ When showing the prompt to the COOPERATOR, precede it with:
 
 ## Related documents
 
-- [AP.md](AP.md)
-- [APv2.md](APv2.md)
+- [APv3.md](APv3.md) — active protocol (also reachable via [AP.md](AP.md))
+- [APv2.md](APv2.md) — superseded experimental reference
 - [AP_ORCHESTRATOR.md](AP_ORCHESTRATOR.md)
 - [AP_WORKER.md](AP_WORKER.md)

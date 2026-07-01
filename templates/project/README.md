@@ -18,7 +18,7 @@ Template for a consuming project adopting Analytic Programming. Copy and customi
 
 ### Universal (required)
 
-- `AP.md` — copy v1 **or** rename v2 content to `AP.md` (exactly one active protocol)
+- `AP.md` — copy `APv3.md` content to `AP.md` (v3 is the recommended active generation; exactly one active protocol)
 - `AP_ORCHESTRATOR.md`
 - `AP_WORKER.md`
 - `PROMPT_CONTRACTS.md`
@@ -37,14 +37,15 @@ Template for a consuming project adopting Analytic Programming. Copy and customi
 
 - `GLOSSARY.md`, `VERSIONING.md`, `ADOPTION.md`
 
-## Choosing v1 or v2
+## Choosing a version
 
 | Version | When to choose |
 |---|---|
-| **v1** | Single Worker default; simplest adoption |
-| **v2** | Need sequential relay, specialist chains, or bounded parallel workstreams |
+| **v3** | **Recommended.** Single-Worker Coordinator Protocol with intentional Worker instance rotation |
+| **v1** | Legacy; single Worker default; superseded by v3 |
+| **v2** | Legacy; multi-Worker capable; superseded by v3 |
 
-Before adoption, consult ADOPTION.md in the Analytic Programming source repository.
+Before adoption, consult [ADOPTION.md](../../ADOPTION.md) in the Analytic Programming source repository.
 
 ## Important rules
 

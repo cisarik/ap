@@ -12,9 +12,9 @@ Analytic Programming methodology repository (`https://github.com/cisarik/ap.git`
 
 ## Active protocol
 
-AP v1 ([AP.md](AP.md))
+AP v3 ([APv3.md](APv3.md))
 
-AP v2 ([APv2.md](APv2.md)) is an experimental deliverable in this repository but is **not** the active governance protocol.
+[APv2.md](APv2.md) is a superseded experimental multi-Worker protocol retained as reference. It is **not** the active governance protocol.
 
 ## Topology
 
@@ -68,6 +68,6 @@ Do not add Worker_2 as an active roster entry until the ORCHESTRATOR and COOPERA
 
 Only an explicit ORCHESTRATOR task may change this manifest.
 
-## AP v2 note
+## Multi-Worker note
 
-When this project adopts AP v2, this file MUST be updated with COOPERATOR-approved topology before activating multiple Workers.
+AP v3 is a single-Worker model with intentional Worker instance rotation. The v2 multi-Worker topology was experimental and theoretical only. If a future COOPERATOR decision authorizes multiple simultaneous Workers, this file MUST be updated with COOPERATOR-approved topology before activating additional Workers.

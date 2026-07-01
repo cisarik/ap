@@ -26,16 +26,16 @@ Local uncommitted state and public committed state must not be conflated.
 
 ## Active protocol
 
-This repository currently uses **AP v1** ([AP.md](AP.md)).
+This repository currently uses **AP v3** ([APv3.md](APv3.md)). [AP.md](AP.md) is a redirect to the active protocol.
 
-[APv2.md](APv2.md) is an experimental complete multi-Worker protocol deliverable. It is not the active governance protocol unless the COOPERATOR adopts it.
+[APv2.md](APv2.md) is a superseded experimental multi-Worker protocol retained as reference. It is not the active governance protocol.
 
 ## Required Orchestrator reading order
 
 A new Orchestrator instance must read, in order:
 
 1. [AGENTS.md](AGENTS.md)
-2. Active [AP.md](AP.md)
+2. Active [APv3.md](APv3.md) ([AP.md](AP.md) redirects to it)
 3. [AP_ORCHESTRATOR.md](AP_ORCHESTRATOR.md)
 4. [WORKERS.md](WORKERS.md)
 5. [VERSIONING.md](VERSIONING.md)

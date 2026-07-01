@@ -14,10 +14,10 @@
 
 | Setting | Value |
 |---|---|
-| Active AP version | <ACTIVE_AP_VERSION> |
+| Active AP version | <ACTIVE_AP_VERSION> (v3 recommended) |
 | Active protocol file | `AP.md` (project root after adoption) |
 
-Record version selection in this file and preferably a project ADR.
+Record version selection in this file and preferably a project ADR. See [ADOPTION.md](../../ADOPTION.md) in the source repository.
 
 ## Roles
 

@@ -122,6 +122,30 @@ Degradation of session quality from context limits, rate limits, duration, or lo
 
 Classification, retention, consumption, and cleanup rules for repository artifacts. See [ARTIFACT_LIFECYCLE.md](ARTIFACT_LIFECYCLE.md).
 
+## capability profile
+
+Functional description of what a Worker implementation can do in the current session — repository access, shell, Git, network, tests, package management, multimodal inspection, context telemetry, sub-agent delegation — without vendor identity. See [APv3.md](APv3.md) §3.
+
+## compact communication mode
+
+An optional mode that reduces prompt and report verbosity by referencing authoritative repository files instead of copying them, while preserving explicit task-specific authority, boundaries, validation, and report format. Reports target approximately 800–1,000 words. See [APv3.md](APv3.md) §36.
+
+## numbered COOPERATOR acceptance feedback
+
+A numbered checklist of independently observable outcomes prepared by the ORCHESTRATOR after implementation verification. The COOPERATOR responds per item with `PASS`, `FAIL`, `NOT TESTED`, or `+` with commentary. The `+` marker adds evidence without changing item status. See [APv3.md](APv3.md) §37.
+
+## three-layer handoff
+
+The Worker rotation model distinguishing three session inputs with different authority: **stable bootstrap** (read once, no task authority), **repository-local next-session handoff** (operational lifecycle artifact, state evidence only), and **authoritative Worker task** (the only source of current task authority). See [APv3.md](APv3.md) §29.
+
+## context economy
+
+The practice of reading only files relevant to the current slice, preferring targeted search over full-file dumps, summarizing command output, and avoiding broad repository audits without authority. See [APv3.md](APv3.md) §34.
+
+## integrated bootstrap gate
+
+A short read-only verification step embedded in the first implementation prompt for low- or medium-risk continuations. The Worker MUST complete it before modification and MUST stop if it fails. A separate bootstrap-only task is used when identity, cleanliness, environment, or security sensitivity is uncertain. See [APv3.md](APv3.md) §36.
+
 ## Normative terms
 
 | Term | Meaning |

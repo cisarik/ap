@@ -19,17 +19,40 @@ Every meaningful artifact SHOULD have:
 
 ## Classification
 
-| Class | Description | Typical retention |
-|---|---|---|
-| Permanent normative protocol | `AP.md`, ADRs when accepted | Until superseded |
-| Accepted ADR | Recorded decision | Permanent; supersede, do not silently rewrite |
-| Living handbook | `AP_ORCHESTRATOR.md`, `AP_WORKER.md` | Update with protocol evolution |
-| Project-specific overlay | `AGENTS.md`, `WORKERS.md` | Project lifetime |
-| Bootstrap | `BOOT_*.md` | Stable; rare updates |
-| Session handoff | `NEXT_*.md`, label-specific NEXT | Replace at session close |
-| Temporary research | Notes supporting one decision | Delete after conclusions transferred |
-| Generated evidence | Test output logs committed for audit | Per task authorization |
-| Transient diagnostic output | Local command output not committed | Never commit unless authorized |
+AP version 3 (see [APv3.md](APv3.md) §38) defines a 5-class model. The table below maps each class to concrete repository artifacts.
+
+| Class | Description | Repository examples | Typical retention |
+|---|---|---|---|
+| **Transient evidence** | Command output, reports, observations that normally remain uncommitted | Local command output, chat findings, uncommitted diffs | Never commit unless authorized |
+| **Temporary committed evidence** | Research or decision-support material committed only when multi-session review or durable pre-decision evidence is genuinely needed; non-authoritative | Investigation notes, comparison tables, evidence packages | Delete after conclusions transferred to durable consumer |
+| **Retained evidence** | Durable audits, reproducible benchmarks, incident evidence, compatibility records with continuing independent value | Benchmark results, compatibility matrices, incident records | Explicit retention rationale and discoverable index required |
+| **Normative durable artifacts** | Accepted ADRs, specifications, policies, schemas, authoritative project records | `APv3.md`, accepted ADRs, `SPEC.md`-equivalent normative docs | Remain until explicitly superseded or retired |
+| **Operational lifecycle artifacts** | Bootstrap, session handoff, checkpoint, working-state documents | `BOOT_*.md`, `NEXT_*.md`, `WORKERS.md`, `AGENTS.md` | Replace at session close or via governance; MUST NOT become endless logs |
+
+Living handbooks (`AP_ORCHESTRATOR.md`, `AP_WORKER.md`) are normative durable artifacts updated with protocol evolution.
+
+## Required metadata for newly committed documentation or evidence
+
+Every task that authorizes a new committed documentation or evidence artifact MUST define:
+
+- artifact classification;
+- authoritative or non-authoritative status;
+- intended consumer;
+- discoverability or inbound reference;
+- retention or cleanup trigger;
+- cleanup owner or responsible role.
+
+## Normative principles
+
+- Use the lightest sufficient artifact.
+- Prefer an evidence-dense Worker report over a committed research file when the report is sufficient.
+- Do not create an artifact without a concrete consumer.
+- No committed documentation artifact may remain unintentionally orphaned.
+- Git history is the historical archive; the active working tree represents current usable project knowledge.
+- When temporary evidence is consumed by a durable artifact: transfer conclusions, remove the temporary evidence, remove or replace inbound links — in the same bounded task and preferably the same commit.
+- Retaining consumed evidence is an exception requiring an explicit continuing-value rationale.
+- A retention trigger does not itself authorize deletion. Deletion still requires explicit task-specific authority.
+- Do not introduce a mandatory global artifact registry; use existing indexes, ADR indexes, README sections, or handoffs when sufficient.
 
 ## Rules
 
@@ -84,6 +107,6 @@ The Orchestrator MUST:
 
 ## Related documents
 
-- [AP.md](AP.md)
+- [APv3.md](APv3.md) — active protocol (§38 defines the classification model)
 - [AP_ORCHESTRATOR.md](AP_ORCHESTRATOR.md)
 - [AP_WORKER.md](AP_WORKER.md)
