@@ -52,6 +52,7 @@ A strong Worker prompt SHOULD normally include:
 | Git authority | Exact Git operations permitted |
 | Secret authority | Whether secret access is permitted |
 | Network/provider authority | External calls permitted |
+| Browser automation authority | Permitted adapter or browser capability; allowed origins, URL boundaries, interactions, observations, external-network use, profile/session boundaries, private-data limits, interception or synthetic-response authority, screenshot/log authority, temporary artifacts, and cleanup |
 | Private-data authority | Private media, DB, logs access |
 | Filesystem mutation authority | Create/rename/delete outside repo |
 | Test-first expectations | When tests must precede or follow change |
@@ -99,6 +100,7 @@ Authorized paths: {path-list}
 Forbidden paths: {path-list}
 Allowed commands: {command-list}
 Forbidden commands: {command-list}
+Browser automation authority: {none-or-exact-browser-boundaries}
 Git authority: {none-or-exact-operations}
 Validation: {validation-commands}
 Acceptance criteria: {criteria-list}

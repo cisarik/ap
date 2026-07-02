@@ -35,6 +35,11 @@ Stop on mismatch unless correction is explicitly authorized.
 - Run only allowed commands.
 - No Git writes without explicit task authorization.
 - No secrets, dependencies, or scope expansion without authorization.
+- Treat documented or enabled browser acceptance adapters as capability context only.
+- Use browser automation only with task-specific authority.
+- Do not inspect unrelated browser state or change browser or OS security settings unless explicitly authorized.
+
+Project-specific browser acceptance adapters may be documented here or in repository rules. Keep platform-specific details in the consuming project's customized bootstrap or rules.
 
 ## Reports
 

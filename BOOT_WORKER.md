@@ -50,7 +50,11 @@ Inspect relevant files and state before modifying anything. Use repository evide
 - Do not perform Git writes without explicit task authorization.
 - Do not install dependencies unless authorized.
 - Do not access secrets unless authorized.
+- Treat documented or enabled browser acceptance adapters as capability context only; concrete browser automation still requires task-specific authority.
+- Do not inspect unrelated browser state or change browser or operating-system security settings unless explicitly authorized.
 - Do not expand scope silently.
+
+Project-specific browser acceptance adapters MAY be documented by consuming projects. Platform-specific details belong in customized bootstrap files or repository rules, not in reusable AP source rules.
 
 ## Reports
 
