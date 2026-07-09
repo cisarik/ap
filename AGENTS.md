@@ -14,8 +14,8 @@ Public repository: `https://github.com/cisarik/ap.git`
 |---|---|
 | Active protocol | AP v3 ([APv3.md](APv3.md)); [AP.md](AP.md) redirects to it |
 | Superseded protocol | AP v2 ([APv2.md](APv2.md)) — experimental multi-Worker; retained reference, not active governance |
-| Active Worker count | one |
-| Concrete instance | `Worker_1` |
+| Active Worker count | zero after the last verified closeout |
+| Next unused concrete label | `Worker_2` (not initialized) |
 | Topology | single Worker |
 
 ## Roles
@@ -24,7 +24,7 @@ Public repository: `https://github.com/cisarik/ap.git`
 |---|---|
 | COOPERATOR | Michal — strategic authority |
 | ORCHESTRATOR | Coordination layer — task shaping and verification |
-| WORKER | Execution role — currently fulfilled by `Worker_1` |
+| WORKER | Execution role — no active Worker instance until a future task initializes one |
 
 Normative role names are **uppercase**. Concrete instance labels use `Worker_N` form.
 

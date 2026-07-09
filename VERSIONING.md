@@ -74,3 +74,4 @@ This repository does not use numerical software package versions or release auto
 - [ADOPTION.md](ADOPTION.md)
 - [docs/adr/0001-protocol-version-selection.md](docs/adr/0001-protocol-version-selection.md)
 - [docs/adr/0003-apv3-protocol-generation.md](docs/adr/0003-apv3-protocol-generation.md)
+- [docs/adr/0004-fresh-slice-diagnostic-lifecycle.md](docs/adr/0004-fresh-slice-diagnostic-lifecycle.md)

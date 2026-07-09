@@ -12,7 +12,7 @@ Template for a consuming project adopting Analytic Programming. Copy and customi
 | `<PRIMARY_BRANCH>` | `main` |
 | `<COOPERATOR_NAME>` | Alex |
 | `<COMMUNICATION_LANGUAGE>` | English |
-| `<ACTIVE_AP_VERSION>` | v1 or v2 |
+| `<ACTIVE_AP_VERSION>` | v3 |
 
 ## Files to copy from the AP source repository
 
@@ -52,7 +52,8 @@ Before adoption, consult [ADOPTION.md](../../ADOPTION.md) in the Analytic Progra
 - Template files are **not task authority**.
 - Customize placeholders **before** starting implementation work.
 - End with exactly **one active `AP.md`**.
-- Initialize `WORKERS.md` with one `Worker_1` by default; expand only with COOPERATOR approval.
+- Initialize `WORKERS.md` with one `Worker_1` by default; add later Worker labels only through sequential rotation under explicit task authority.
+- Use fresh-slice implementation and diagnostic closeout proportionally; do not make every edit a mandatory two-pass workflow.
 
 ## Quick start after customization
 

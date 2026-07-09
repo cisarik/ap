@@ -200,6 +200,34 @@ A task SHOULD include a task ID, task type, working directory, current verified 
 
 Prioritize the shortest safe route to useful MVP progress over process ceremony.
 
+### Fresh-slice implementation and diagnostic closeout
+
+For a substantial coherent task, the Orchestrator MAY assign a fresh Worker instance to one implementation slice and deliberately allow that session to use most of its available reasoning capacity on that slice.
+
+The goal is coherent focus, enough reasoning capacity, durable repository output, independent verification, and intentional rotation before unrelated work. Context consumption is not itself a quality goal.
+
+A fresh-slice implementation task MAY combine tightly related inspection, research, architecture recording, implementation, tests, documentation, one normal commit and push, and evidence reporting when those parts serve one primary outcome.
+
+It MUST NOT combine unrelated features, speculative refactors, operational mutations, independent product decisions, or broad cleanup merely to fill a context window.
+
+After the implementation report, the Orchestrator MUST compare the original task contract, Worker report, public commit and diff when available, tests and evidence, documentation claims, and unresolved risks.
+
+The Orchestrator then decides whether direct acceptance is sufficient or whether one diagnostic closeout pass is proportionally justified.
+
+A diagnostic closeout is a second authoritative prompt about the same already implemented slice. It is not a new product feature, a general cleanup mission, unlimited polishing, automatic permission to rewrite the implementation, or a substitute for independent Orchestrator review.
+
+Diagnostic closeout SHOULD be adversarial and requirement-driven. It may examine requirement coverage, prohibited behavior, negative guarantees, security and privacy boundaries, races, filesystem semantics, concurrency, transaction behavior, failure cleanup, platform differences, sanitization, false-positive tests, untested branches, documentation versus implementation, and changed-path or Git integrity.
+
+Diagnostic closeout is read-only by default. Correction authority MUST be explicit and limited to confirmed defects inside the original task boundary, an exact path allowlist, the smallest coherent correction, and normally one corrective commit.
+
+The diagnostic pass MAY use the same Worker instance when that is efficient and proportionate. For exceptionally high-risk work, such as authentication, authorization, cryptography, destructive migrations, secret handling, irreversible filesystem operations, or production infrastructure changes, the Orchestrator MAY use a separate fresh Worker instance for independent audit.
+
+AP v3 remains sequential and single-Worker at the protocol boundary. A fresh audit Worker is a sequential assignment, not parallel execution.
+
+The two-pass lifecycle is optional and proportional. A single pass may be enough for small documentation fixes, narrow low-risk corrections, mechanically verifiable edits, or tasks where independent evidence already provides adequate confidence.
+
+See [ADR-0004](docs/adr/0004-fresh-slice-diagnostic-lifecycle.md) for the accepted protocol decision.
+
 ## 10. Worker Task Contract
 
 The Worker MUST treat the authoritative task as the boundary of work.
@@ -229,6 +257,8 @@ A capable Worker MAY receive normal bounded authority to edit authorized paths, 
 A Git-authorized task SHOULD specify the expected starting HEAD, a clean worktree gate, an exact write allowlist, forbidden unrelated paths, the exact commit subject, normal push, and post-push verification.
 
 When Git writes are authorized, the Worker MUST stay within the exact authorization and MUST NOT use `git add .`, `git add -A`, force-push, destructive history rewriting, unrelated cleanup, or reset/clean as silent recovery. Prefer a new explicit fix or revert commit to correct a bad public commit.
+
+When a task requires remote identity verification, the gate SHOULD validate the repository identity: transport, host, owner or organization, repository name, and relevant refs. Cosmetic spelling differences that do not change identity, such as an optional `.git` suffix on an HTTPS GitHub URL, SHOULD NOT fail the gate unless the task explicitly requires byte-for-byte URL equality for a stated reason. The Worker MUST NOT modify Git remotes or Git configuration merely to normalize cosmetic spelling.
 
 ## 13. Testing and Verification
 
@@ -498,6 +528,10 @@ Automatic context compaction or summarization MAY help continuity, but it MUST N
 
 Visible context percentages are heuristics relative to the active Worker instance and its Worker implementation. Different implementations measure and display context differently, so percentage thresholds are guidance rather than universal guarantees or fixed token budgets. Context pressure belongs to the current Worker instance and Worker session, not to the persistent WORKER protocol role.
 
+Compaction after a clean public checkpoint is operationally less risky because state can be reconstructed from committed repository evidence, public refs, reports, and a new authoritative prompt.
+
+Compaction during unresolved local mutation increases risk because uncommitted state may be incomplete, hidden, or misremembered. It may require explicit state preservation, closeout, or stopping before further mutation.
+
 At approximately 80% of the active implementation's reported context usage, a role SHOULD avoid starting a large new task and SHOULD plan a checkpoint instead.
 
 At approximately 85% or more of the active implementation's reported context usage, a role SHOULD normally finish only the current bounded task, create or update the appropriate handoff, and stop.
@@ -533,6 +567,8 @@ The Orchestrator MUST stop or reframe when the next step requires Cooperator app
 ## 32. Anti-Patterns
 
 Anti-patterns include silent scope expansion, implementation before inspection, treating reports as proof, conflating public commits with local changes, inventing decisions, hiding failures, broad filesystem inspection, unnecessary package installation, Git writes without permission, orphaned committed evidence, unnecessary research-file creation, stale evidence references, retaining consumed temporary evidence without explicit continuing-value justification, treating a next-session handoff file as a task, asking the Cooperator to manually copy committed handoff files without need, embedding the complete committed handoff into every report, starting a fresh Worker without repository-state verification, allowing the closing Worker to invent the next task, defining WORKER as one named product, assuming a particular tool exists without declaring it as a task capability, using a large context window as justification to skip handoffs or source-of-truth updates, allowing hidden sub-agent delegation to expand authority, and changing protocol semantics when only the Worker implementation changes.
+
+Additional anti-patterns include treating diagnostic closeout as mandatory ceremony for every edit, using it as a hidden second feature task, treating same-Worker self-review as independent proof, intentionally exhausting context, or requiring a handoff when clean public repository evidence and durable decisions already make the next state reconstructable.
 
 ## 33. Minimal Orchestrator Loop
 

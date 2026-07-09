@@ -21,6 +21,7 @@ Architecture Decision Records (ADRs) capture significant decisions that affect p
 | [0001](0001-protocol-version-selection.md) | Protocol version selection | Accepted |
 | [0002](0002-worker-instance-topology.md) | Worker instance topology | Accepted |
 | [0003](0003-apv3-protocol-generation.md) | AP v3 protocol generation | Accepted |
+| [0004](0004-fresh-slice-diagnostic-lifecycle.md) | Fresh-slice implementation and diagnostic closeout lifecycle | Accepted |
 
 ## Lifecycle rule
 

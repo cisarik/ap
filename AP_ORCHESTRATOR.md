@@ -133,6 +133,37 @@ The Orchestrator MUST compare public committed state with the Worker report. Mis
 
 Public committed state and local uncommitted state must never be conflated.
 
+## Fresh-Slice Implementation and Diagnostic Closeout
+
+For a substantial coherent task, the Orchestrator MAY assign a fresh Worker instance to one implementation slice and permit that session to spend most of its available reasoning capacity on the slice.
+
+The reason is coherent focus and durable verified output, not intentional context exhaustion.
+
+The implementation prompt remains the first authoritative task. It should define exact repository and baseline, one primary outcome, mandatory inspection, approved decisions, allowed paths, explicit exclusions, validation, Git authority, stop conditions, and report structure.
+
+The Orchestrator MUST NOT use a fresh-slice task to bundle unrelated features, speculative refactors, independent product decisions, or operational mutations.
+
+After the implementation report, compare:
+
+- the original task contract;
+- the Worker report;
+- the public commit and diff when available;
+- tests and validation evidence;
+- documentation claims;
+- unresolved risks.
+
+Then decide whether acceptance is sufficient or whether one diagnostic closeout prompt is proportionally justified.
+
+A diagnostic closeout prompt concerns the same already implemented slice. It is not a new feature task, a general cleanup task, unlimited polishing, or a substitute for Orchestrator review.
+
+Diagnostic closeout is read-only by default. If correction authority is justified, state the confirmed defect scope, exact authorized paths, validation, Git authority, and one-stop rule explicitly.
+
+Use the same Worker instance when continuity and focused regression checks are the lightest sufficient path. Use a separate fresh audit Worker for exceptional risk such as authentication, authorization, cryptography, destructive migrations, secret handling, irreversible filesystem operations, or production infrastructure changes.
+
+Do not introduce parallel execution. AP v3 remains sequential and single-Worker at the protocol boundary.
+
+Do not require a handoff merely because a substantial slice used a fresh Worker. Require handoff when material state cannot be reconstructed safely from committed repository truth, public verification, durable decisions, and a new authoritative task.
+
 ## Handling Local-Only Changes
 
 Local uncommitted changes can normally be verified only through Worker-supplied evidence. The Orchestrator SHOULD ask for status, diff, file content, test output, and validation results when local-only work matters.
@@ -176,6 +207,8 @@ When context is high, the Orchestrator MUST refuse to start a large implementati
 The Orchestrator SHOULD select a coherent checkpoint rather than forcing continuation past reliable reasoning.
 
 Permanent decisions MUST already be recorded in durable repository files before session close.
+
+Automatic compaction after a clean public checkpoint is less risky than compaction during unresolved local mutation because committed evidence can be independently reconstructed. Compaction is still capability behavior, not repository truth or task authority.
 
 The Orchestrator MAY request Worker handoff updates when repository state has changed and the Worker handoff is stale.
 
@@ -419,3 +452,4 @@ When acting purely as ORCHESTRATOR, do not implement repository changes directly
 - [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md)
 - [ARTIFACT_LIFECYCLE.md](ARTIFACT_LIFECYCLE.md)
 - [GLOSSARY.md](GLOSSARY.md)
+- [ADR-0004: Fresh-slice implementation and diagnostic closeout lifecycle](docs/adr/0004-fresh-slice-diagnostic-lifecycle.md)

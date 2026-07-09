@@ -174,6 +174,42 @@ Rotate when the current session gets unreliable. Signals:
 
 A checkpoint on purpose is better than waiting until the session is exhausted. At rotation, the closing Worker writes a NEXT handoff, and you start fresh - the repo carries the memory.
 
+#### Why would one Worker get a large task?
+
+Sometimes a useful slice is bigger than a tiny edit but still one coherent job: inspect the current behavior, implement one feature or protocol change, update the right docs, run checks, commit, push, and report.
+
+That is allowed when it is one outcome. The point is focus, not size for its own sake. It is not permission to bundle several unrelated features into one monster task.
+
+The Worker still has exact boundaries: allowed files, forbidden files, validation, Git rules, and stop conditions. When that slice is done, the Worker reports and stops.
+
+#### Why might the Orchestrator send one second diagnostic prompt?
+
+For large or risky work, the Orchestrator may ask the same Worker for one final diagnostic pass on the slice that was just implemented.
+
+That second prompt is still about the same task boundary. It is not a new feature request. It asks, in effect: "Look for what might be wrong with this specific work: missing requirements, unsafe failure behavior, races, security boundaries, documentation mismatches, weak tests."
+
+By default, this diagnostic pass is read-only. The Worker may fix something only if the prompt gives exact correction authority.
+
+#### When should the diagnostic pass use a fresh Worker instead?
+
+Usually the same Worker is efficient because it already has the repo and can run focused checks. But for unusually risky work - authentication, secrets, destructive migrations, cryptography, irreversible filesystem operations, or production infrastructure - the Orchestrator may use a separate fresh Worker for independent audit.
+
+That is still sequential. AP v3 does not run several Workers in parallel.
+
+#### Why is compaction after a public checkpoint less risky?
+
+If the slice is committed, pushed, verified, and the worktree is clean, the important state can be reconstructed from the repository. A fresh session can read the files, check the commit, and receive a new task.
+
+If compaction happens while local uncommitted work is still unresolved, that is riskier. The session may remember the local state imperfectly, and the Orchestrator may need a handoff, a closeout, or a stop before more changes.
+
+Repository evidence matters more than Worker memory.
+
+#### Do we always need two passes?
+
+No. Small documentation fixes, narrow low-risk corrections, and mechanically verifiable edits often need only one pass.
+
+Use a diagnostic closeout when the risk justifies it, not as a ritual.
+
 #### What are the numbered acceptance items, and when do I use them?
 
 For any work you can see, hear, or interact with (a UI, a video, a device, a running service), the Orchestrator prepares a numbered list of things to check. You answer each line:
@@ -213,7 +249,7 @@ The key rule: whatever you pick, it must follow the task boundaries - inspect fi
 
 #### Can I use more than one Worker at the same time?
 
-**No.** The active protocol (AP v3) is a **single-Worker** model. One Worker at a time. A previous experimental version (v2) sketched a multi-Worker topology, but that stayted theoretical - managing multiple Workers by hand is hard, so the active protocol keeps it simple. You rotate to a fresh Worker *sequentially*, never run several in parallel.
+**No.** The active protocol (AP v3) is a **single-Worker** model. One Worker at a time. A previous experimental version (v2) sketched a multi-Worker topology, but that stayed theoretical - managing multiple Workers by hand is hard, so the active protocol keeps it simple. You rotate to a fresh Worker *sequentially*, never run several in parallel.
 
 ### Adopting AP
 

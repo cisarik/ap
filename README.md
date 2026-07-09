@@ -54,13 +54,16 @@ AP v3 is a single-Worker model. The v2 multi-Worker topology was experimental an
 
 A consuming project ends with **exactly one active `AP.md`** — copy [APv3.md](APv3.md) to `AP.md`. See [ADOPTION.md](ADOPTION.md) and [VERSIONING.md](VERSIONING.md).
 
+AP v3 also defines a proportional fresh-slice implementation and diagnostic closeout lifecycle for substantial coherent work. It permits one bounded implementation slice and, when risk justifies it, one read-only-by-default diagnostic closeout pass before Worker rotation. See [ADR-0004](docs/adr/0004-fresh-slice-diagnostic-lifecycle.md).
+
 ## This repository's configuration
 
 | Setting | Value |
 |---|---|
 | Active protocol | AP v3 ([APv3.md](APv3.md)) |
 | Worker topology | single Worker |
-| Concrete instance | `Worker_1` |
+| Active Worker instances | zero after the last verified closeout |
+| Next unused Worker label | `Worker_2` (not initialized) |
 | Parallel execution | disabled |
 
 Worker topology for this project is recorded in [WORKERS.md](WORKERS.md).
@@ -132,3 +135,4 @@ A fresh Orchestrator or Worker session begins by reading BOOT files, handoffs, a
 - [ADR-0001: Protocol version selection](docs/adr/0001-protocol-version-selection.md)
 - [ADR-0002: Worker instance topology](docs/adr/0002-worker-instance-topology.md)
 - [ADR-0003: AP v3 protocol generation](docs/adr/0003-apv3-protocol-generation.md)
+- [ADR-0004: Fresh-slice implementation and diagnostic closeout lifecycle](docs/adr/0004-fresh-slice-diagnostic-lifecycle.md)

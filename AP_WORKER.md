@@ -158,6 +158,24 @@ The Worker SHOULD report final Git status after changes.
 
 If a commit or push was authorized, the Worker SHOULD report local HEAD, remote SHA, tracking state, and whether local and remote state match.
 
+## Fresh-Slice and Diagnostic Closeout Obligations
+
+When assigned a fresh-slice implementation task, the Worker still executes one bounded authoritative task with one primary outcome.
+
+The Worker MAY use the task's authorized context and validation budget to complete tightly related inspection, implementation, tests, documentation, one normal commit and push, and reporting when the task allows those actions.
+
+The Worker MUST NOT add unrelated features, speculative refactors, general cleanup, or independent product decisions because they appear convenient during the same session.
+
+After reporting the implementation result, the Worker stops. It must not begin another product slice unless the Orchestrator issues a new authoritative task.
+
+When assigned a diagnostic closeout prompt, the Worker treats it as a bounded second prompt about the same already implemented slice.
+
+Diagnostic closeout is read-only unless the prompt explicitly grants correction authority. If correction is authorized, the Worker may change only the exact paths named in the prompt, only for confirmed defects inside the original task boundary, and only with the stated validation and Git authority.
+
+The Worker MUST NOT treat same-session familiarity as independent proof. Reports must distinguish directly verified evidence from assumptions, unresolved risks, and Orchestrator or prior Worker claims.
+
+Automatic context compaction does not grant authority and does not replace repository evidence, public refs, task boundaries, or explicit handoff files when a handoff is required.
+
 ## Worker Checklist: Before Change
 
 - Read the complete task.
@@ -224,6 +242,8 @@ The Worker MUST stop after closeout without beginning another task.
 A fresh bootstrap and separate authoritative task are required in the next Worker session.
 
 The Worker MUST NOT silently rely on automatic summarization as a substitute for repository evidence or explicit handoff files.
+
+Context capacity may help complete one coherent slice, but intentional context exhaustion is not a goal.
 
 ## Compact Communication Mode
 
@@ -404,3 +424,4 @@ Material capability limitations SHOULD be reported compactly when they affect ta
 - [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md)
 - [ARTIFACT_LIFECYCLE.md](ARTIFACT_LIFECYCLE.md)
 - [GLOSSARY.md](GLOSSARY.md)
+- [ADR-0004: Fresh-slice implementation and diagnostic closeout lifecycle](docs/adr/0004-fresh-slice-diagnostic-lifecycle.md)

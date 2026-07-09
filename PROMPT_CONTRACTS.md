@@ -109,60 +109,111 @@ Stopping conditions: {condition-list}
 Report MUST begin with: ### Report for ORCHESTRATOR_CHAT
 ```
 
-## Sequential Worker_2 continuation outline
+## Fresh-slice implementation prompt outline
 
-For sequential relay after Worker_1:
-
-```
-You are `Worker_2`, a fresh Worker instance assigned to the WORKER role.
-
-Prior work summary (ORCHESTRATOR-synthesized — verify against commits):
-- {verified-conclusions-from-public-commits}
-- {open-items}
-
-Do NOT assume raw Worker_1 conversation. Verify repository evidence.
-
-Baseline: {commit-sha-after-prior-worker}
-Goal: {bounded-continuation-task}
-
-Authorized paths: {narrow-scope-list}
-...
-```
-
-Include only context Worker_2 needs. Label synthesized claims as synthesized.
-
-## Independent verification Worker outline
+Use this outline when a substantial coherent slice should be handled by one fresh Worker instance. Keep one primary outcome.
 
 ```
-You are `Worker_N`, assigned to bounded verification/review.
+You are {worker-label}, a fresh Worker instance assigned to the persistent WORKER protocol role.
 
-Implementation baseline: {commit-sha}
-Authorizing task: review only unless explicit fix paths listed
+Task ID: {task-id}
+Task type: fresh-slice implementation
+Repository: {repository-url}
+Working directory: {absolute-working-directory}
+Branch: {primary-branch}
+Pinned baseline: {commit-sha}
 
-Goal: Verify {review-scope} against acceptance criteria from task {prior-task-id}.
+Goal: {one-coherent-outcome}
 
-Authorized paths: {review-only-or-explicit-fix-paths}
-Git authority: none (unless explicit fix authorization)
+Mandatory inspection:
+- {files-or-evidence-to-read}
 
-Report discrepancies with evidence. Do not silently modify implementation.
+Allowed path authority:
+- {path-list}
+
+Explicit exclusions:
+- no unrelated features
+- no speculative refactors
+- no operational mutations
+- no independent product decisions
+- {project-specific-exclusions}
+
+Validation:
+- {commands-or-checks}
+
+Git authority:
+- {exact-stage-commit-push-authority-or-none}
+- commit subject: {subject-if-authorized}
+
+Stopping rules:
+- stop on failed precondition
+- stop after reporting this slice
+- do not start a new product slice
+
+Report MUST begin with: ### Report for ORCHESTRATOR_CHAT
 ```
 
-## Parallel workstream prompt checklist
+## Diagnostic closeout prompt outline
 
-When parallel execution is authorized, each Worker prompt MUST include:
+Use this outline after an implementation pass when one adversarial closeout pass is proportionate. It remains inside the same implemented slice.
 
-- [ ] Worker label and distinct workstream ID
-- [ ] Exclusive path ownership list
-- [ ] Exclusive branch or worktree name
-- [ ] Common verified baseline commit
-- [ ] Forbidden overlap with other Workers' paths/migrations/generated files
-- [ ] Integration owner (ORCHESTRATOR)
-- [ ] Merge order and conflict policy
-- [ ] Stop condition if independence fails
-- [ ] No push to shared branch without integration task
-- [ ] Post-integration validation owner and commands
+```
+You are {worker-label}, continuing or freshly assigned to the WORKER role for diagnostic closeout.
 
-Parallel prompts MUST NOT be identical broadcast copies.
+Task ID: {task-id}
+Task type: diagnostic closeout for {prior-task-id}
+Implementation commit: {exact-sha}
+Original acceptance contract or requirement summary:
+- {requirement-summary}
+
+Review scope:
+- {audit-hypotheses-or-risk-areas}
+
+Default authority:
+- read-only unless the correction authority below is explicit
+- no new product feature
+- no general cleanup
+- no broad rewrite
+
+Optional correction authority:
+- authorized only for confirmed defects within the original task boundary
+- exact paths: {path-list-or-none}
+- Git authority: {none-or-one-corrective-commit-details}
+
+Validation:
+- {commands-or-checks}
+
+Report:
+- confirmed defects
+- disproven concerns
+- unresolved risks
+- validation evidence
+- correction commit, if explicitly authorized and used
+
+Stop after this diagnostic closeout report.
+Report MUST begin with: ### Report for ORCHESTRATOR_CHAT
+```
+
+## Independent fresh audit outline
+
+```
+You are {worker-label}, a fresh Worker instance assigned to bounded independent audit.
+
+Implementation commit: {exact-sha}
+Original task or requirement summary: {summary-or-link}
+
+Goal: Verify {review-scope} against the original acceptance criteria.
+
+Authority:
+- read-only by default
+- no implementation changes unless explicit correction paths and Git authority are listed
+- no parallel execution
+- no new feature task
+
+Report discrepancies with evidence. Distinguish independent observations from prior Worker claims.
+```
+
+Independent fresh audit is sequential under AP v3. It is used only when the Orchestrator decides that same-session diagnostic closeout is not sufficient for the risk class.
 
 ## Orchestrator presentation
 
@@ -176,3 +227,4 @@ When showing the prompt to the COOPERATOR, precede it with:
 - [APv2.md](APv2.md) — superseded experimental reference
 - [AP_ORCHESTRATOR.md](AP_ORCHESTRATOR.md)
 - [AP_WORKER.md](AP_WORKER.md)
+- [ADR-0004: Fresh-slice implementation and diagnostic closeout lifecycle](docs/adr/0004-fresh-slice-diagnostic-lifecycle.md)

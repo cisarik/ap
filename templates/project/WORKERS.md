@@ -41,9 +41,9 @@ Expand only after ORCHESTRATOR recommendation and COOPERATOR approval.
 | Integration dependencies | none |
 | Notes | Initial Worker placeholder |
 
-## Optional additional Workers
+## Future rotated Worker labels
 
-AP v3 is a single-Worker model. Additional simultaneous Workers are not a normative feature. When COOPERATOR approves additional Workers, add rows:
+AP v3 is a single-Worker model with sequential rotation. Add a later Worker label only when an Orchestrator task initializes a fresh Worker instance after the prior session is closed or explicitly inactive.
 
 ### Worker_2 (example — remove if unused)
 
@@ -52,8 +52,8 @@ AP v3 is a single-Worker model. Additional simultaneous Workers are not a normat
 | Label | `Worker_2` |
 | Status | PLANNED |
 | Current assignment | None |
-| Handoff path | NEXT_WORKER_2.md |
-| Integration dependencies | Worker_1 baseline TBD |
+| Handoff path | NEXT_WORKER.md |
+| Dependency | Prior public baseline TBD |
 
 ## Update authority
 

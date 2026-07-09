@@ -14,6 +14,8 @@ This guide explains how to adopt Analytic Programming (AP) in another repository
 
 AP version 3 is the active and recommended generation. It is a single-Worker Coordinator Protocol with intentional Worker instance rotation.
 
+AP v3 includes a proportional fresh-slice implementation and diagnostic closeout lifecycle. Consuming projects may use it for substantial coherent slices and risk-sensitive closeout review, but it is not a mandatory two-pass ritual for every edit.
+
 1. Copy these **universal** files from this repository:
    - [APv3.md](APv3.md) → rename to `AP.md` in the target project (exactly one active protocol)
    - [AP_ORCHESTRATOR.md](AP_ORCHESTRATOR.md)
@@ -32,9 +34,12 @@ The target repository ends with **one active `AP.md`** containing v3 content.
 
 ### Path A — AP v1 (legacy, superseded)
 
-Copy these **universal** files from this repository:
+AP v1 is preserved in Git history, not in the current working-tree `AP.md`. The current `AP.md` is a redirect to AP v3.
 
-- [AP.md](AP.md)
+Do not copy the current `AP.md` when trying to adopt AP v1. Legacy v1 adoption requires intentionally retrieving the historical v1 content from Git history and recording that legacy choice in the target project.
+
+For legacy v1 projects, pair the historical v1 protocol content with these current companion files only after reviewing compatibility:
+
 - [AP_ORCHESTRATOR.md](AP_ORCHESTRATOR.md)
 - [AP_WORKER.md](AP_WORKER.md)
 - [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md)
@@ -55,7 +60,7 @@ Then copy and customize project templates from [templates/project/](templates/pr
 - `NEXT_ORCHESTRATOR.md`
 - `NEXT_WORKER.md`
 
-The target repository ends with **one active `AP.md`** (v1).
+The target repository ends with **one active `AP.md`** containing historical v1 content.
 
 > **Note:** AP v1 is superseded by v3. Path A is retained for legacy projects only.
 

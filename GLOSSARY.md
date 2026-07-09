@@ -100,19 +100,27 @@ Bounded set of paths, branches, or tasks assigned to one Worker instance.
 
 ## topology
 
-Arrangement of Worker instances: single Worker, sequential relay, specialist chain, independent verification, or parallel workstreams.
+Arrangement of Worker instances permitted by the active protocol and project manifest. Under AP v3, the protocol boundary is single-Worker and sequential.
 
-## sequential relay
+## sequential Worker rotation
 
-Preferred multi-Worker topology: Worker_1 → ORCHESTRATOR → Worker_2 with one repository writer at a time and ORCHESTRATOR synthesis between steps.
+Intentional replacement of one closed Worker instance with a fresh Worker instance for a later task, with Orchestrator synthesis and repository evidence between sessions.
 
-## parallel workstream
+## independent fresh audit
 
-Exceptional topology where two or more Workers work simultaneously on independent scopes with explicit integration planning.
+Sequential assignment of a separate fresh Worker instance to verify an already implemented slice. Under AP v3 this is not parallel execution and is read-only unless exact correction authority is granted.
+
+## diagnostic closeout
+
+A second authoritative prompt about the same already implemented slice, normally read-only, used to examine requirement coverage, negative guarantees, failure behavior, security boundaries, documentation truth, and test gaps before the Worker session closes. See [APv3.md](APv3.md) §9 and [ADR-0004](docs/adr/0004-fresh-slice-diagnostic-lifecycle.md).
+
+## fresh-slice implementation lifecycle
+
+A proportional AP v3 lifecycle in which a fresh Worker instance receives one substantial coherent implementation slice, produces durable verified repository output, and may receive one diagnostic closeout prompt before rotation. It preserves one primary outcome, explicit authority, and single-Worker sequential execution. See [ADR-0004](docs/adr/0004-fresh-slice-diagnostic-lifecycle.md).
 
 ## integration
 
-Combining outputs from multiple Workers or branches under ORCHESTRATOR authority with verification of baseline, paths, tests, and conflicts.
+Combining outputs from more than one sequential Worker assignment or branch under ORCHESTRATOR authority with verification of baseline, paths, tests, and conflicts. AP v3 does not authorize parallel Worker execution.
 
 ## context pressure
 
@@ -121,10 +129,6 @@ Degradation of session quality from context limits, rate limits, duration, or lo
 ## artifact lifecycle
 
 Classification, retention, consumption, and cleanup rules for repository artifacts. See [ARTIFACT_LIFECYCLE.md](ARTIFACT_LIFECYCLE.md).
-
-## capability profile
-
-Functional description of what a Worker implementation can do in the current session — repository access, shell, Git, network, tests, package management, multimodal inspection, context telemetry, sub-agent delegation — without vendor identity. See [APv3.md](APv3.md) §3.
 
 ## compact communication mode
 
