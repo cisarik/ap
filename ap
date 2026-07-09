@@ -19,16 +19,17 @@ usage() {
     cat <<'EOF'
 Usage:
   ap init
-  ap doctor
+  ap doctor [--candidate]
   ap update --check
   ap update --apply
   ap help
 
 Commands:
-  init            Create or refresh the managed AP block in the superproject AGENTS.md.
-  doctor          Read-only health check for the .ap submodule integration.
-  update --check  Read-only check for the canonical AP main commit.
-  update --apply  Fetch canonical AP main and move only the .ap checkout to that commit.
+  init                Create or refresh the managed AP block in the superproject AGENTS.md.
+  doctor              Strict read-only health check for the committed .ap pin.
+  doctor --candidate  Read-only health check for an intentional .ap update or rollback candidate.
+  update --check      Check whether canonical AP main is a forward update.
+  update --apply      Fetch canonical AP main and move only the .ap checkout to that commit.
 
 The tool must run from an initialized .ap Git submodule, normally as ./.ap/ap.
 It never commits, pushes, modifies Git configuration, or copies AP protocol
@@ -43,6 +44,21 @@ require_git() {
 physical_path() {
     [ -d "$1" ] || return 1
     (cd "$1" && pwd -P)
+}
+
+make_temp_dir_in() {
+    parent=$1
+    template=$parent/.ap-tool.XXXXXX
+    tmp=$(mktemp -d "$template") || fail "cannot create temporary directory in $parent"
+    printf '%s\n' "$tmp"
+}
+
+file_mode() {
+    if stat -f %Lp "$1" >/dev/null 2>&1; then
+        stat -f %Lp "$1"
+    else
+        stat -c %a "$1"
+    fi
 }
 
 script_dir() {
@@ -197,12 +213,19 @@ validate_agents_block() {
     [ -f "$file" ] || fail "AGENTS.md is missing"
     validate_marker_shape "$file" || fail "AGENTS.md managed AP block is missing or malformed"
 
-    grep -F '.ap/AP.md' "$file" >/dev/null || fail "AGENTS.md block does not reference .ap/AP.md"
-    grep -F '.ap/AP_ORCHESTRATOR.md' "$file" >/dev/null || fail "AGENTS.md block does not reference .ap/AP_ORCHESTRATOR.md"
-    grep -F '.ap/AP_WORKER.md' "$file" >/dev/null || fail "AGENTS.md block does not reference .ap/AP_WORKER.md"
-    grep -F '.ap/PROMPT_CONTRACTS.md' "$file" >/dev/null || fail "AGENTS.md block does not reference .ap/PROMPT_CONTRACTS.md"
-    grep -F 'Task authority comes only from the current authoritative' "$file" >/dev/null || fail "AGENTS.md block does not state task authority"
-    grep -F 'Treat `.ap/` as read-only' "$file" >/dev/null || fail "AGENTS.md block does not state .ap read-only rule"
+    tmpdir=$(make_temp_dir_in "${TMPDIR:-/tmp}")
+    block="$tmpdir/block"
+    expected="$tmpdir/expected"
+    trap 'rm -rf "$tmpdir"' EXIT HUP INT TERM
+
+    awk -v begin="$BEGIN_MARKER" -v end="$END_MARKER" '
+        $0 == begin { in_block = 1 }
+        in_block { print }
+        $0 == end { in_block = 0 }
+    ' "$file" > "$block"
+    managed_block > "$expected"
+
+    cmp -s "$expected" "$block" || fail "AGENTS.md managed AP block does not match the canonical block; run ./.ap/ap init"
 }
 
 write_agents_block() {
@@ -212,8 +235,8 @@ write_agents_block() {
     begin_count=$(marker_count "$file" "$BEGIN_MARKER")
     end_count=$(marker_count "$file" "$END_MARKER")
 
-    tmpdir=${TMPDIR:-/tmp}/ap-init-$$
-    mkdir "$tmpdir"
+    target_dir=$(dirname "$file")
+    tmpdir=$(make_temp_dir_in "$target_dir")
     block="$tmpdir/block"
     out="$tmpdir/out"
     managed_block > "$block"
@@ -253,6 +276,15 @@ write_agents_block() {
         fail "AGENTS.md contains duplicate or conflicting managed AP markers"
     fi
 
+    if [ -f "$file" ]; then
+        mode=$(file_mode "$file") || fail "cannot read AGENTS.md mode"
+        chmod "$mode" "$out" || fail "cannot preserve AGENTS.md mode"
+    fi
+
+    if [ "${AP_TEST_FAIL_BEFORE_AGENTS_MV:-}" = "1" ]; then
+        fail "test-requested failure before AGENTS.md publication"
+    fi
+
     if [ -f "$file" ] && cmp -s "$file" "$out"; then
         say "AGENTS.md unchanged"
     else
@@ -262,14 +294,64 @@ write_agents_block() {
 }
 
 legacy_artifacts() {
+    confirmed=
+    review=
     for artifact in \
         AP.md APv2.md APv3.md AP_ORCHESTRATOR.md AP_WORKER.md \
         PROMPT_CONTRACTS.md ARTIFACT_LIFECYCLE.md BOOT_ORCHESTRATOR.md \
         BOOT_WORKER.md NEXT_ORCHESTRATOR.md NEXT_WORKER.md WORKERS.md
     do
-        [ -e "$super_root/$artifact" ] && printf '%s\n' "$artifact"
+        path=$super_root/$artifact
+        [ -f "$path" ] || continue
+        if is_confirmed_ap_copy "$artifact" "$path"; then
+            confirmed="$confirmed $artifact"
+        elif is_ap_session_artifact "$artifact" "$path"; then
+            review="$review $artifact(session-state)"
+        else
+            review="$review $artifact(ambiguous-name)"
+        fi
     done
+    [ -n "$review" ] && printf 'WARN legacy-looking same-name files require review:%s\n' "$review" >&2
+    [ -n "$confirmed" ] && printf '%s\n' "$confirmed"
     return 0
+}
+
+is_confirmed_ap_copy() {
+    artifact=$1
+    path=$2
+    case "$artifact" in
+        AP.md|APv2.md|APv3.md)
+            head -n 5 "$path" | grep -E 'Analytic Programming Protocol' >/dev/null
+            ;;
+        AP_ORCHESTRATOR.md)
+            head -n 5 "$path" | grep -F 'Orchestrator Handbook for Analytic Programming' >/dev/null
+            ;;
+        AP_WORKER.md)
+            head -n 5 "$path" | grep -F 'Worker Handbook for Analytic Programming' >/dev/null
+            ;;
+        PROMPT_CONTRACTS.md)
+            head -n 20 "$path" | grep -F 'Analytic Programming' >/dev/null && head -n 5 "$path" | grep -F 'Prompt Contracts' >/dev/null
+            ;;
+        ARTIFACT_LIFECYCLE.md)
+            head -n 20 "$path" | grep -F 'Analytic Programming' >/dev/null && head -n 5 "$path" | grep -F 'Artifact Lifecycle' >/dev/null
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
+is_ap_session_artifact() {
+    artifact=$1
+    path=$2
+    case "$artifact" in
+        BOOT_ORCHESTRATOR.md|BOOT_WORKER.md|NEXT_ORCHESTRATOR.md|NEXT_WORKER.md|WORKERS.md)
+            head -n 20 "$path" | grep -F 'Analytic Programming' >/dev/null
+            ;;
+        *)
+            return 1
+            ;;
+    esac
 }
 
 cmd_init() {
@@ -283,41 +365,93 @@ cmd_init() {
 
 cmd_doctor() {
     require_context
+    mode=${1:-strict}
     say "OK containing Git repository: $super_root"
     verify_canonical_identity
     say "OK canonical AP identity"
     recorded=$(gitlink_sha)
     current=$(ap_head)
-    say "OK pinned AP commit: $recorded"
-    [ "$recorded" = "$current" ] || fail ".ap HEAD $current does not match gitlink $recorded"
+    say "superproject recorded AP commit: $recorded"
+    say ".ap worktree AP commit: $current"
+    if [ "$mode" = "strict" ]; then
+        [ "$recorded" = "$current" ] || fail ".ap HEAD $current does not match gitlink $recorded"
+        say "OK strict pinned AP commit"
+    elif [ "$mode" = "candidate" ]; then
+        [ "$recorded" != "$current" ] || fail ".ap candidate mode requires a changed AP checkout"
+        verify_candidate_superproject_state
+        say "OK AP candidate checkout differs from the recorded gitlink"
+    else
+        fail "unknown doctor mode"
+    fi
     require_submodule_clean
     say "OK .ap submodule clean"
     validate_agents_block
     say "OK managed AGENTS.md block"
     legacy=$(legacy_artifacts)
-    [ -z "$legacy" ] || fail "legacy copied AP artifacts present: $(printf '%s' "$legacy" | tr '\n' ' ')"
-    say "ap doctor: PASS"
+    [ -z "$legacy" ] || fail "confirmed copied AP artifacts present: $(printf '%s' "$legacy" | tr '\n' ' ')"
+    if [ "$mode" = "strict" ]; then
+        say "ap doctor: PASS"
+    else
+        say "ap doctor --candidate: PASS"
+    fi
 }
 
-remote_main_sha() {
-    line=$(git -C "$ap_root" ls-remote --exit-code origin refs/heads/main 2>/dev/null || true)
-    [ -n "$line" ] || fail "cannot resolve canonical AP origin main"
-    set -- $line
-    printf '%s\n' "$1"
+verify_candidate_superproject_state() {
+    status=$(git -C "$super_root" status --porcelain=v1 --untracked-files=all)
+    filtered=$(printf '%s\n' "$status" | sed '/^$/d; /^[ MARC][ MD] \.ap$/d')
+    [ -z "$filtered" ] || fail "candidate validation allows only the .ap gitlink to differ in the superproject"
+}
+
+fetch_remote_main() {
+    git -C "$ap_root" fetch --quiet origin refs/heads/main || fail "cannot fetch canonical AP origin main"
+    git -C "$ap_root" rev-parse FETCH_HEAD^{commit} || fail "cannot resolve canonical AP origin main"
+}
+
+classify_update() {
+    current=$1
+    available=$2
+    if [ "$current" = "$available" ]; then
+        printf '%s\n' current
+    elif git -C "$ap_root" merge-base --is-ancestor "$current" "$available"; then
+        printf '%s\n' forward
+    elif git -C "$ap_root" merge-base --is-ancestor "$available" "$current"; then
+        printf '%s\n' behind
+    else
+        printf '%s\n' divergent
+    fi
+}
+
+require_target_ap_tool() {
+    target=$1
+    entry=$(git -C "$ap_root" ls-tree "$target" -- ap 2>/dev/null || true)
+    set -- $entry
+    [ "${1:-}" = "100755" ] && [ "${4:-}" = "ap" ] || fail "target AP commit does not contain an executable ap tool"
 }
 
 cmd_update_check() {
     require_context
     verify_canonical_identity
+    require_submodule_clean
+    require_gitlink_consistent
     current=$(ap_head)
-    available=$(remote_main_sha)
+    available=$(fetch_remote_main)
+    classification=$(classify_update "$current" "$available")
     say "current pinned AP commit: $current"
     say "available canonical origin/main commit: $available"
-    if [ "$current" = "$available" ]; then
-        say "update available: no"
-    else
-        say "update available: yes"
-    fi
+    case "$classification" in
+        current)
+            say "update available: no"
+            ;;
+        forward)
+            say "update available: yes"
+            ;;
+        behind)
+            fail "canonical origin/main is behind the current AP commit; normal update refused"
+            ;;
+        divergent)
+            fail "canonical origin/main diverges from the current AP commit; normal update refused"
+            ;;
+    esac
 }
 
 cmd_update_apply() {
@@ -328,21 +462,23 @@ cmd_update_apply() {
     require_superproject_clean
 
     old=$(ap_head)
-    git -C "$ap_root" fetch origin refs/heads/main >/dev/null 2>&1 || fail "fetch from canonical AP origin main failed"
-    new=$(git -C "$ap_root" rev-parse FETCH_HEAD^{commit})
+    new=$(fetch_remote_main)
+    classification=$(classify_update "$old" "$new")
 
     say "old AP commit: $old"
     say "new AP commit: $new"
 
-    if [ "$old" = "$new" ]; then
+    if [ "$classification" = "current" ]; then
         say "ap update --apply: no update available"
         return
     fi
+    [ "$classification" = "forward" ] || fail "normal update requires current AP HEAD to be an ancestor of canonical origin/main"
+    require_target_ap_tool "$new"
 
     git -C "$ap_root" checkout --detach --quiet "$new" || fail "failed to move .ap to $new"
     say "ap update --apply: moved .ap to $new"
     say "Review with: git diff --submodule"
-    say "Validate with: ./.ap/ap doctor"
+    say "Validate candidate with: ./.ap/ap doctor --candidate"
     say "Commit in the superproject only after compatibility review: git add .ap && git commit"
 }
 
@@ -352,8 +488,13 @@ case "${1:-help}" in
         cmd_init
         ;;
     doctor)
-        [ "$#" -eq 1 ] || fail "doctor takes no arguments"
-        cmd_doctor
+        if [ "$#" -eq 1 ]; then
+            cmd_doctor strict
+        elif [ "$#" -eq 2 ] && [ "$2" = "--candidate" ]; then
+            cmd_doctor candidate
+        else
+            fail "doctor takes no argument or --candidate"
+        fi
         ;;
     update)
         [ "$#" -eq 2 ] || fail "update requires --check or --apply"

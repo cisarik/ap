@@ -62,8 +62,10 @@ To apply a reviewed AP update to the submodule checkout:
 
 ```sh
 ./.ap/ap update --apply
+./.ap/ap doctor --candidate
 git diff --submodule
 git add .ap
+./.ap/ap doctor
 git commit -m "docs: update analytic programming"
 ```
 

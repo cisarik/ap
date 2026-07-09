@@ -18,6 +18,9 @@ the authoritative archive for exact content.
 - Kept repository handoff artifacts exceptional, Worker-authored, and
   lifecycle-bound.
 - Added migration guidance for projects that previously copied AP files.
+- Hardened update validation with strict pinned doctor checks, candidate
+  validation for update and rollback review, forward-only update semantics, exact
+  managed-block checks, and safer temporary publication.
 
 ## Historical Generations
 

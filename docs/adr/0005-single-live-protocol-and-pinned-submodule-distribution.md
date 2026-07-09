@@ -63,8 +63,9 @@ AP updates are explicit and auditable:
 1. the project pins an exact AP commit;
 2. an update is checked;
 3. the submodule worktree is moved to an exact new commit;
-4. project compatibility is validated;
-5. the consuming project commits the changed gitlink.
+4. candidate validation checks the intentional `.ap` drift;
+5. project compatibility is validated;
+6. the consuming project stages and commits the changed gitlink.
 
 The AP source repository no longer ships permanent source-session BOOT, NEXT,
 or WORKERS files, nor project templates that create always-present placeholders.
@@ -125,14 +126,18 @@ git submodule update --init --recursive
 ```
 
 Updates require an explicit fetch and checkout in the AP submodule, plus a
-superproject gitlink commit. This is intentional because protocol changes
-should be reviewed and validated.
+candidate validation step and superproject gitlink commit. Normal update is
+only for a proven forward transition where the current AP commit is an ancestor
+of canonical `main`. A behind or divergent canonical ref is refused as an
+actionable anomaly. This is intentional because protocol changes should be
+reviewed and validated.
 
 ## Rollback
 
 Rollback is a normal Git operation: check out an earlier AP commit inside
-`.ap/`, validate the project, and commit the changed gitlink in the consuming
-project.
+`.ap/`, run candidate validation, validate the project, stage `.ap`, run strict
+doctor against the staged gitlink, and commit the changed gitlink in the
+consuming project.
 
 ## Migration Consequences
 

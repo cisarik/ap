@@ -91,10 +91,14 @@ Run:
 
 The doctor checks the containing Git repository, `.ap` submodule shape,
 canonical AP identity, pinned commit, submodule cleanliness, gitlink
-consistency, `.gitmodules` coherence, managed `AGENTS.md` block, and obvious
-legacy copied AP artifacts.
+consistency, `.gitmodules` coherence, exact managed `AGENTS.md` block, and
+confirmed copied AP artifacts.
 
-Doctor is read-only.
+Strict doctor is read-only with respect to the superproject and `.ap`
+worktrees, indexes, refs, remotes, and Git configuration. It may create and
+remove temporary comparison files outside the project. Use
+`./.ap/ap doctor --candidate` only for an intentional update or rollback
+candidate where `.ap` differs from the recorded gitlink.
 
 ## Migrating From Copied AP Files
 

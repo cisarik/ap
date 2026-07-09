@@ -12,11 +12,20 @@ From the consuming project root:
 ./.ap/ap update --check
 ```
 
-The command is read-only. It reports:
+The command does not change the superproject worktree, index, refs,
+`.gitmodules`, submodule worktree, submodule index, remotes, or Git
+configuration. It fetches the canonical AP `main` commit and may update the
+submodule's Git object database and `FETCH_HEAD`.
+
+It reports:
 
 - current pinned AP commit;
 - available canonical `main` commit;
-- whether an update exists.
+- whether a forward update exists.
+
+If canonical `main` is behind the current AP commit or has diverged from it,
+normal update is refused. That protects against accidental downgrade,
+rewritten history, or a supply-chain anomaly.
 
 ## Apply an Update
 
@@ -24,7 +33,7 @@ Use an explicit project task. Start from a clean consuming project worktree.
 
 ```sh
 ./.ap/ap update --apply
-./.ap/ap doctor
+./.ap/ap doctor --candidate
 git diff --submodule
 ```
 
@@ -36,13 +45,19 @@ The apply command:
 - fetches the canonical AP `main` ref;
 - moves the AP submodule worktree to the exact new commit;
 - leaves the consuming superproject with a visible changed gitlink;
+- refuses target commits that do not contain an executable `ap` tool;
 - never commits or pushes.
 
-Then validate the consuming project for compatibility. When authorized, commit
-the changed gitlink:
+`doctor --candidate` validates the intentionally changed `.ap` checkout before
+the consuming project stages or commits the new gitlink. Strict `doctor` still
+rejects gitlink drift.
+
+Then validate the consuming project for compatibility. When authorized, stage
+the changed gitlink and run strict doctor against the staged pin:
 
 ```sh
 git add .ap
+./.ap/ap doctor
 git commit -m "docs: update analytic programming"
 ```
 
@@ -56,9 +71,10 @@ and commit the changed gitlink:
 
 ```sh
 git -C .ap checkout --detach <previous-ap-sha>
-./.ap/ap doctor
+./.ap/ap doctor --candidate
 git diff --submodule
 git add .ap
+./.ap/ap doctor
 git commit -m "docs: roll back analytic programming"
 ```
 
@@ -84,13 +100,14 @@ upgrades.
 Before committing an AP update in a consuming project:
 
 - read the AP diff or changelog between old and new commits;
-- run `./.ap/ap doctor`;
+- run `./.ap/ap doctor --candidate` after moving `.ap`;
 - run project-specific documentation, test, and policy checks;
 - verify `AGENTS.md` still points to `.ap/`;
 - confirm no copied AP files were reintroduced;
 - confirm `.ap/` has no local dirty state;
 - confirm only the intended gitlink changes unless a separate authorized change
-  is included.
+  is included;
+- stage `.ap`, then run strict `./.ap/ap doctor` before committing.
 
 ## Related Documents
 

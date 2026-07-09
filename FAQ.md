@@ -79,8 +79,10 @@ Run:
 
 ```sh
 ./.ap/ap update --apply
-./.ap/ap doctor
+./.ap/ap doctor --candidate
 git diff --submodule
+git add .ap
+./.ap/ap doctor
 ```
 
 Validate the consuming project, then commit the changed `.ap` gitlink under an
@@ -93,9 +95,10 @@ gitlink in the consuming project:
 
 ```sh
 git -C .ap checkout --detach <previous-ap-sha>
-./.ap/ap doctor
+./.ap/ap doctor --candidate
 git diff --submodule
 git add .ap
+./.ap/ap doctor
 git commit -m "docs: roll back analytic programming"
 ```
 
