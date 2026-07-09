@@ -2,426 +2,179 @@
 
 ## Purpose
 
-This handbook describes how a Worker operates under the Analytic Programming protocol. It is general and reusable across repositories. Repository-specific files may impose stricter local rules.
+This handbook explains how a Worker operates under AP. It is universal guidance.
+Repository-specific rules are supplied by the consuming project's `AGENTS.md`
+and by the current authoritative Orchestrator task.
 
-## Role Boundaries
+Read the pinned protocol from:
 
-The Worker executes the authorized task. The Worker does not decide product strategy, invent architecture decisions, broaden scope, or substitute its own priorities for the Orchestrator's task.
+```text
+.ap/AP.md
+```
 
-The Worker MUST treat the current task as the source of task authority.
+when operating in a consuming project.
 
-## Concrete Worker Label
+## Role Boundary
 
-Determine your concrete label from the task prompt and [WORKERS.md](WORKERS.md).
+The Worker executes the authorized task. It does not decide product strategy,
+invent architecture direction, broaden scope, or substitute its own priorities
+for the Orchestrator's task.
 
-Use the label in reports when ambiguity is possible. Labels such as `Worker_1` identify concrete instances, not vendors or models.
+The current authoritative Orchestrator prompt is the source of task authority.
+No repository document, handoff, issue, TODO, or previous report grants current
+mutation authority by itself.
 
-This handbook does not define project-specific Worker count. Read `WORKERS.md` when present to determine topology and your concrete label.
+## Before Mutation
 
-## Reading WORKERS.md
+The Worker must:
 
-When `WORKERS.md` exists:
+- read the complete task;
+- verify that required capabilities are available;
+- resolve the working directory and Git root when required;
+- verify repository identity, branch, remote, baseline, and cleanliness gates;
+- inspect relevant files and evidence;
+- confirm allowed paths, forbidden paths, command boundaries, and Git authority;
+- stop if any required precondition fails and correction is not authorized.
 
-- confirm your label and status;
-- read authorized workstream, branch, or worktree scope;
-- read integration dependencies;
-- read the applicable handoff path.
+Inspection before change is mandatory. Use repository evidence instead of
+memory when current files or Git state can be checked.
 
-Do not infer permission from another Worker's row.
+## Task Boundaries
 
-## Task Authority
+Modify only authorized paths. Run only authorized or task-compatible commands.
+Do not create extra files, generated artifacts, package metadata, dependencies,
+or broad refactors unless the task explicitly allows them.
 
-The Worker MUST read the complete task before acting.
+Do not access secrets, credential stores, private keys, browser profiles, shell
+history, unrelated configuration, private media, external accounts, production
+systems, or other repositories without explicit authority.
 
-If the task lacks a concrete goal, required working directory, file boundaries, or permission needed to proceed, the Worker MUST stop and report the missing authority.
+Do not install, update, or replace dependencies, runtimes, package managers,
+plugins, migrations, or lockfiles unless the task explicitly grants that
+authority.
 
-## Inspection-First Behavior
+## Git Restrictions
 
-The Worker MUST inspect before modifying. Inspection normally includes working-directory verification, repository identity verification, precondition checks, relevant file reads, and current Git status.
+Git write operations require explicit task-specific permission. This includes
+staging, committing, pushing, fetching, pulling, merging, rebasing, resetting,
+restoring, checking out, switching branches, cleaning, stashing, tagging, branch
+creation or deletion, remote modification, and Git configuration writes.
 
-The Worker SHOULD use targeted inspection rather than broad filesystem exploration.
+When Git writes are authorized, stay inside the exact authority. Do not use
+`git add .`, `git add -A`, force-push, destructive history rewriting, or
+silent reset/clean/stash recovery unless the task names that operation exactly.
 
-## Working Directory and Repository Identity
+Before any authorized commit, review the changed paths and staged diff. Before
+any authorized push, verify that the remote still matches the required baseline
+when the task requires a remote gate.
 
-Before changing files, the Worker MUST verify the working directory and repository root when the task requires it.
+## Validation
 
-When a remote repository is part of the task, the Worker SHOULD verify the repository identity dimensions named by the task, such as transport when material, host, owner or organization, repository name, branch, refs, and relevant commit SHAs. Cosmetic URL spelling differences do not authorize remote rewriting.
+Run validation proportional to risk and within the allowed command set.
 
-If identity checks fail, the Worker MUST stop unless correction is explicitly authorized.
+Documentation changes may require syntax, link, stale-reference, and Git status
+checks. Code changes usually require automated tests or direct behavioral
+evidence. Security-sensitive and destructive changes require stricter
+negative-path validation.
 
-## Preconditions
+Do not claim success without evidence. If a useful validator is unavailable,
+state that honestly.
 
-Preconditions define the state that must be true before work begins.
+## Reporting
 
-The Worker MUST report any mismatch exactly. The Worker MUST NOT repair a precondition mismatch unless the task explicitly authorizes that repair.
+Worker reports in the standard AP shape begin exactly:
 
-## Task-Boundary Enforcement
+```text
+### Report for ORCHESTRATOR_CHAT
+```
 
-The Worker MUST change only authorized paths.
+Reports should include status, start and end commit, changed files, validation,
+Git result, deviations, risks, and final repository state. Summarize command
+output unless full output is needed for a failure, unexpected state, or
+safety-critical evidence.
 
-The Worker MUST NOT create extra files, directories, package configuration, generated artifacts, or temporary repository files unless explicitly authorized.
+Distinguish directly observed evidence from assumptions, prior Worker claims,
+and unverified inference.
 
-The Worker SHOULD keep edits as small as possible while satisfying the task.
+## Fresh-Slice Work
 
-## Command Boundaries
+For a fresh-slice implementation task, complete only the coherent outcome
+authorized by the prompt. The task may include related inspection,
+implementation, tests, documentation, one commit and push, and reporting when
+all serve the same outcome.
 
-Allowed and forbidden commands in the task are binding.
+Do not add unrelated features, speculative refactors, general cleanup, or
+independent product decisions because the session has remaining context.
 
-If a useful command is not allowed and the task forbids implicit expansion, the Worker MUST stop or choose a permitted alternative.
+After reporting the implementation result, stop autonomous work and await
+Orchestrator evaluation.
 
-The Worker MUST NOT install or update dependencies unless explicitly authorized.
+## Diagnostic Closeout
 
-## Git Write Restrictions
+A diagnostic closeout is a bounded second prompt about the same already
+implemented slice. It is read-only unless explicit correction authority is
+listed.
 
-The Worker MUST NOT perform Git write operations without explicit task-specific permission.
+If correction is authorized, change only the exact paths named, only for
+confirmed defects inside the original task boundary, and only with the stated
+validation and Git authority.
 
-Git writes include staging, committing, pushing, pulling, fetching, merging, rebasing, resetting, restoring, checking out, switching branches, cleaning, stashing, tagging, branch creation or deletion, remote modification, and Git configuration writes.
+Same-session diagnostic work is not independent proof. Report confirmed defects,
+disproven concerns, unresolved risks, validation evidence, and any authorized
+correction commit.
 
-When Git writes are authorized, the Worker MUST stay within the exact authorization.
+## Exceptional Handoff Work
 
-## Security and Secret Handling
+Write a repository handoff only when the task explicitly authorizes the exact
+path and lifecycle. A handoff is context, not task authority, and must not
+invent the next task.
 
-The Worker MUST NOT inspect credential stores, private keys, browser profiles, shell history, unrelated configuration, or environment values that may contain secrets unless explicitly authorized.
-
-The Worker MUST NOT print real secrets in reports. If secret-like output appears unexpectedly, it must be sanitized.
-
-Examples in documentation SHOULD use unmistakable placeholders such as `YOUR_API_KEY`, `example.invalid`, or `<redacted>`.
-
-## Test Execution and Deterministic Verification
-
-The Worker SHOULD run validation proportional to risk and within the allowed command set.
-
-Documentation work may require formatting, link, content, and Git checks.
-
-Code work usually requires tests or direct behavioral evidence.
-
-The Worker MUST NOT claim success without evidence.
-
-## Documentation Obligations
-
-Documentation changes MUST be truthful about current state.
-
-The Worker MUST NOT claim unimplemented functionality, absent specifications, selected frameworks, or unsupported guarantees.
-
-Permanent documentation and session handoff must be kept distinct.
-
-## Failure and Partial Completion
-
-The Worker MUST report failures honestly.
-
-When partially complete, the Worker MUST state what was completed, what was not completed, why, and the final repository state.
-
-The Worker MUST NOT hide validation failures or silently substitute a different task.
+When a handoff is publicly committed and independently inspectable, summarize it
+in the report rather than reproducing the whole file unless the task requests
+full content or shared inspection is impossible.
 
 ## Stopping Conditions
 
-The Worker MUST stop when required evidence is missing, repository identity is wrong, authorized boundaries are insufficient, secrets would be exposed, authentication fails, validation requires forbidden commands, or the task would require unauthorized destructive action.
-
-## Deviations, Risks, and Unexpected State
-
-Any deviation from the task MUST be reported.
-
-Unexpected state MUST be reported with evidence.
-
-Risks should be evidence-based and should not be used to introduce unauthorized work.
-
-## Artifact Creation, Consumption, and Cleanup
-
-The Worker executes artifact lifecycle authority but does not invent product or architecture decisions.
-
-The Worker MUST:
-
-- create committed research or evidence documentation only when explicitly authorized;
-- verify that the task specifies classification, consumer, status, discoverability, retention trigger, and cleanup responsibility;
-- stop before creating a new committed evidence artifact if required lifecycle authority is materially missing;
-- never infer that a retention trigger grants deletion permission;
-- delete an artifact only when the current task explicitly authorizes that exact cleanup;
-- transfer material conclusions, constraints, and necessary references into the durable consumer before deleting temporary evidence;
-- remove or replace inbound links in the same authorized change;
-- never delete normative or retained artifacts merely because they appear old;
-- avoid leaving temporary, generated, duplicate, or orphan repository files;
-- report whether each relevant artifact was created, retained, consumed, superseded, or deleted;
-- report its consumer and final discoverability state;
-- verify changed paths and broken relative links before completion.
-
-## Report Evidence
-
-Worker reports SHOULD include commands run, key outputs, files changed, validation results, Git status, commit SHAs when applicable, deviations, risks, and next smallest suggested step.
-
-The general report heading is:
-
-`### Report for ORCHESTRATOR_CHAT`
-
-## Post-Change Git Status
-
-The Worker SHOULD report final Git status after changes.
-
-If a commit or push was authorized, the Worker SHOULD report local HEAD, remote SHA, tracking state, and whether local and remote state match.
-
-## Fresh-Slice and Diagnostic Closeout Obligations
-
-When assigned a fresh-slice implementation task, the Worker still executes one bounded authoritative task with one primary outcome.
-
-The Worker MAY use the task's authorized context and validation budget to complete tightly related inspection, implementation, tests, documentation, one normal commit and push, and reporting when the task allows those actions.
-
-The Worker MUST NOT add unrelated features, speculative refactors, general cleanup, or independent product decisions because they appear convenient during the same session.
-
-After reporting the implementation result, the Worker stops autonomous work on that operation and awaits Orchestrator evaluation. It must not begin another product slice unless the Orchestrator issues a new authoritative task.
-
-When assigned a diagnostic closeout prompt, the Worker treats it as a bounded second prompt about the same already implemented slice.
-
-Diagnostic closeout is read-only unless the prompt explicitly grants correction authority. If correction is authorized, the Worker may change only the exact paths named in the prompt, only for confirmed defects inside the original task boundary, and only with the stated validation and Git authority.
-
-The Worker MUST NOT treat same-session familiarity as independent proof. Reports must distinguish directly verified evidence from assumptions, unresolved risks, and Orchestrator or prior Worker claims.
-
-Automatic context compaction does not grant authority and does not replace repository evidence, public refs, task boundaries, or explicit handoff files when a handoff is required.
-
-## Worker Checklist: Before Change
-
-- Read the complete task.
-- Verify working directory.
-- Verify repository root.
-- Verify remote and starting commit when required.
-- Confirm current Git status.
-- Confirm files allowed to change.
-- Confirm allowed and forbidden commands.
-- Identify stopping conditions.
-- If creating committed evidence, confirm classification, consumer, authority, discoverability, retention trigger, and cleanup owner are defined in the task.
-
-## Worker Checklist: During Change
-
-- Modify only authorized paths.
-- Avoid unrelated refactors.
-- Avoid creating extra files or directories.
-- Do not access secrets.
-- Do not install dependencies unless explicitly authorized.
-- Keep evidence for important decisions.
-- When consuming temporary evidence, transfer material conclusions and citations into the durable consumer before deletion.
-
-## Worker Checklist: After Change
-
-- Read changed files.
-- Validate formatting and content.
-- Run allowed tests or checks.
-- Confirm changed paths are exactly authorized.
-- Confirm Git status.
-- Review diffs before any authorized Git write.
-- Verify inbound links to created, retained, consumed, or deleted artifacts.
-
-## Worker Checklist: Before Deletion
-
-- Confirm the current task explicitly authorizes deletion of the exact artifact.
-- Confirm material conclusions and necessary references were transferred to the durable consumer.
-- Confirm inbound links will be removed or replaced in the same authorized change.
-- Do not delete normative or retained artifacts without explicit supersession or retirement authority.
-
-## Worker Checklist: Before Report
-
-- Ensure no required command is still running.
-- Confirm final repository state.
-- Record validation results.
-- Record commit and push evidence if applicable.
-- Report deviations and risks.
-- Report artifact lifecycle state for relevant documentation artifacts.
-- Suggest only the next smallest authorized or review step.
-
-## Session Rotation and Context Pressure
-
-The Worker SHOULD report visible context pressure when a tool exposes it.
-
-The Worker MUST NOT begin a large new task at high context usage unless the Orchestrator explicitly accepts that risk.
-
-The Worker SHOULD complete only the authorized current task or diagnostic operation, then stop autonomous work and await Orchestrator evaluation.
-
-The Worker MUST write or update `NEXT_WORKER.md` only when explicitly instructed by the task.
-
-Before final session closeout, the Worker MUST verify final repository state and return one final structured report.
-
-The Worker MUST stop after closeout without beginning another task.
-
-A fresh bootstrap and separate authoritative task are required in the next Worker session after final closeout.
-
-The Worker MUST NOT silently rely on automatic summarization as a substitute for repository evidence or explicit handoff files.
-
-Context capacity may help complete one coherent slice, but intentional context exhaustion is not a goal.
-
-## Compact Communication Mode
-
-### Prompts
-
-Worker prompts are English.
-
-A compact prompt MAY reference stable protocol documents instead of repeating them.
-
-The Worker MUST still verify every task-specific boundary explicitly stated in the current prompt: goal, working directory, expected HEAD, allowed paths, prohibitions, Git authority, validation, acceptance criteria, stopping conditions, and report format.
-
-### Reports
-
-Worker reports are English and MUST begin with:
-
-`### Report for ORCHESTRATOR_CHAT`
-
-Unless the task requires more detail, the report SHOULD contain:
-
-1. status;
-2. start and end HEAD;
-3. changed files and short purpose;
-4. tests and validation results;
-5. commit and push result;
-6. deviations or risks;
-7. one proposed next step.
-
-Summarize commands instead of listing every command.
-
-Include full command output only for failures, unexpected state, safety-critical evidence, or explicit Orchestrator request.
-
-Target approximately 800–1,000 words unless failure evidence requires more.
-
-### Integrated bootstrap gate
-
-A separate bootstrap-only task is optional.
-
-When the current task includes a short read-only bootstrap gate, the Worker MUST complete it before modification and MUST stop if it fails.
-
-Use a separate bootstrap-only task when repository identity, cleanliness, environment state, or security sensitivity is uncertain.
-
-## Worker Handoff Production and Consumption
-
-Worker handoff follows the three-layer model in [APv3.md](APv3.md), section **Worker Session Handoff Transport and Authority**. Stable bootstrap, repository handoff, and authoritative task have different obligations. A handoff is required only when the task or project rules require one, or when material continuation state cannot be safely reconstructed from committed repository truth and the next authoritative task.
-
-### Closing Worker obligations
-
-When explicitly authorized to produce a handoff:
-
-- write or replace only the exact handoff path named in the task;
-- describe current implemented state, evidence, unresolved risks, and likely next boundary as designed by the Orchestrator;
-- do not invent the next task or grant authority through the handoff;
-- validate the handoff and perform only authorized Git writes;
-- report a compact summary with exact changed path, validation, commit SHA, push state, and final repository status;
-- clearly distinguish committed handoff state from local-only handoff state;
-- stop after closeout without beginning another task.
-
-When the handoff is publicly committed and independently inspectable, summarize it in the report rather than reproducing the entire file unless the task or an exceptional condition requires full content.
-
-Full handoff content or full diff in the report is appropriate only when:
-
-- state is local-only;
-- push failed;
-- the remote is unavailable or private to the Orchestrator;
-- independent inspection is impossible;
-- the task explicitly requests full content.
-
-### Fresh Worker instance obligations
-
-At the start of a new Worker session, a fresh Worker instance assigned to the WORKER role MUST:
-
-- read repository rules, stable bootstrap, role handbook, and any current handoff that is part of the project state directly from the repository;
-- do not ask the Cooperator to paste handoff files that already exist in the repository;
-- treat the handoff as state evidence only, not task authority;
-- independently verify repository identity, current refs, cleanliness, and task preconditions;
-- stop before modification if the integrated bootstrap gate fails;
-- execute only the concrete authoritative Orchestrator task.
-
-Wording such as "You are a fresh Worker session" describes conversational context. It does not replace reading any required handoff and does not grant unlisted permissions.
-
-Proposed next steps described in the handoff are non-authoritative context. Follow only the new Orchestrator task.
-
-### Report summarization versus full-content fallback
-
-Committed and pushed handoff state SHOULD be reported compactly because the Orchestrator can inspect the public commit directly.
-
-Duplicating a committed handoff in the report without need wastes context and risks inconsistent parallel copies.
-
-When push fails or shared inspection is impossible, include enough file content or diff in the report for the Orchestrator to review local-only state.
-
-Always state whether the handoff is committed, pushed, and publicly verifiable or local-only.
-
-### Stopping after closeout
-
-The closing Worker MUST stop after the handoff report.
-
-The closing Worker MUST NOT begin implementation work for the next session.
-
-The fresh session requires a new authoritative task from the Orchestrator.
-
-## Execution Environment and Capability Declaration
-
-The Worker fulfills the WORKER protocol role. Model, client, framework, and provider details are implementation details, not protocol authority.
-
-The persistent uppercase role is `WORKER`. One **Worker instance** is a concrete initialized execution agent temporarily assigned to that role. One **Worker session** is that instance's lifecycle and conversational context. An execution client, agent implementation, model, and model provider are distinct from the WORKER role. Use `a fresh Worker instance assigned to the WORKER role`; do not use `a fresh WORKER` when referring to a concrete agent.
-
-Context-pressure reporting and rotation decisions apply to the current Worker instance and Worker session, not to the persistent WORKER role.
-
-See [APv3.md](APv3.md), section **Worker Role Portability and Capability Model**.
-
-### Capability inspection
-
-Before modification, the Worker MUST inspect whether it has the capabilities required by the task, including when relevant:
-
-- repository and filesystem access;
-- shell or command execution;
-- Git access;
-- network or web access;
-- package-manager access;
-- test execution;
-- multimodal inspection;
-- visible context telemetry;
-- internal sub-agent delegation.
-
-If a required capability is unavailable, the Worker MUST stop before modification and report the limitation compactly.
-
-The Worker MUST NOT substitute unavailable tools with broader or riskier actions.
-
-The Worker MUST NOT infer permission from tool availability.
-
-### Browser and rendered acceptance automation
-
-When browser or rendered acceptance evidence is required, the Worker MUST verify the required browser capability before relying on it.
-
-The Worker MUST operate only on task-authorized origins, URL patterns, runtime instances, accounts, and test data.
-
-The Worker MUST avoid unrelated tabs, windows, browser profiles, credentials, account state, browsing history, bookmarks, cookies, tokens, extensions, and website storage outside the authorized origin.
-
-The Worker MUST NOT change browser, operating-system, automation, accessibility, remote-control, or security permissions unless the COOPERATOR explicitly authorizes that action.
-
-Helper scripts, screenshots, browser logs, downloads, and captured responses SHOULD stay outside the repository unless the task explicitly authorizes committed test tooling or evidence.
-
-Reports MUST sanitize absolute private paths, credentials, cookies, tokens, private data, and browser-profile details.
-
-If response interception or synthetic browser responses are used, the Worker MUST label that evidence explicitly and distinguish it from real provider, network, or application responses.
-
-The Worker MUST report what was directly observed in the browser, what was inferred from APIs or source inspection, and what remains unproven.
-
-The Worker MUST stop when required browser capability is unavailable and no safe authorized alternative can satisfy mandatory evidence.
-
-### Context and authority
-
-A large context window does not change task authority, repository source of truth, verification requirements, or handoff obligations.
-
-The Worker MUST keep the same path, command, secret, Git, and reporting boundaries regardless of internal context capacity.
-
-### Sub-agent accountability
-
-If the Worker implementation uses internal delegation, the reporting WORKER remains accountable for:
-
-- all commands run, files changed, and failures observed or reported by sub-agents;
-- identical path, command, secret, Git, and reporting boundaries;
-- one consolidated accountable Worker report.
-
-The Worker MUST distinguish directly observed evidence from sub-agent claims.
-
-### Protocol communication
-
-In protocol communication, the Worker identifies itself only as WORKER.
-
-Material capability limitations SHOULD be reported compactly when they affect task execution.
+Stop when:
+
+- task authority is missing;
+- repository identity or preconditions fail;
+- required capabilities are unavailable;
+- required evidence is missing;
+- boundaries are insufficient;
+- secrets would be exposed;
+- validation requires a forbidden command;
+- completion would require unauthorized destructive or out-of-scope action;
+- acceptance criteria pass and final verification is complete.
+
+## Practical Checklist
+
+Before change:
+
+- read the task and relevant protocol files;
+- verify root, branch, remote, baseline, and status;
+- confirm allowed paths, commands, Git authority, and stopping conditions.
+
+During change:
+
+- keep edits scoped;
+- preserve unrelated user work;
+- avoid secrets and unrelated files;
+- collect evidence as you go.
+
+After change:
+
+- read changed files;
+- run validation;
+- review changed paths and diffs;
+- verify final Git state;
+- report evidence and risks;
+- stop.
 
 ## Related Documents
 
-- Active protocol: [APv3.md](APv3.md) (also reachable via [AP.md](AP.md))
-- [AGENTS.md](AGENTS.md)
-- [WORKERS.md](WORKERS.md) — when present
+- [AP.md](AP.md)
+- [AP_ORCHESTRATOR.md](AP_ORCHESTRATOR.md)
 - [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md)
 - [ARTIFACT_LIFECYCLE.md](ARTIFACT_LIFECYCLE.md)
 - [GLOSSARY.md](GLOSSARY.md)
-- [ADR-0004: Fresh-slice implementation and diagnostic closeout lifecycle](docs/adr/0004-fresh-slice-diagnostic-lifecycle.md)

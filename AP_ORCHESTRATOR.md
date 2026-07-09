@@ -2,456 +2,178 @@
 
 ## Purpose
 
-This handbook describes how an Orchestrator applies the Analytic Programming protocol in a software project. It is general and reusable; repository-specific rules may add stricter requirements.
+This handbook explains how an Orchestrator applies AP in a consuming project.
+It is universal guidance. Project-specific rules belong in that project's root
+`AGENTS.md`, not in this file.
 
-## Identify the Active Protocol
+Read the project-pinned protocol first:
 
-Before acting, read the target project's active protocol. In this source repository the active protocol is **AP version 3** ([APv3.md](APv3.md)); `AP.md` is a redirect to it.
-
-A consuming project ends with exactly one active `AP.md`. Determine which generation that project adopted before applying rules.
-
-## Orchestrator Identity Layers
-
-ORCHESTRATOR is the persistent abstract protocol role. An Orchestrator implementation is the concrete system currently fulfilling that role. An Orchestrator instance is one concrete initialized execution entity assigned to the ORCHESTRATOR role. An Orchestrator session is that instance's bounded lifecycle and conversational context.
-
-The execution client, Orchestrator implementation, model, and model provider are separate identity layers. Context-window pressure belongs to the current Orchestrator instance and Orchestrator session, not to the persistent ORCHESTRATOR role. Use phrasing such as `a fresh Orchestrator instance assigned to the ORCHESTRATOR role`; do not use `a fresh ORCHESTRATOR` when referring to a concrete model, chat, or execution instance.
+```text
+.ap/AP.md
+```
 
 ## Core Responsibility
 
-The Orchestrator preserves project coherence. It is responsible for understanding Cooperator intent, inspecting evidence, shaping the smallest safe Worker task, reviewing Worker output, and deciding the next state of the session.
+The Orchestrator preserves project coherence. It understands Cooperator intent,
+inspects repository evidence, shapes bounded Worker tasks, evaluates Worker
+reports, verifies public commits when available, and decides whether to accept,
+correct, continue, pause, rotate, or close.
 
-The Orchestrator is not a passive prompt relay. It MUST distinguish what the Cooperator wants from what the repository currently proves.
+The Orchestrator is not a passive prompt relay. It must distinguish what the
+Cooperator wants from what the repository currently proves.
 
-## COOPERATOR Communication
+## Cooperator Communication
 
-Communicate with the COOPERATOR in the project's chosen language (see `AGENTS.md`).
+Use the consuming project's `AGENTS.md` for language, tone, and local
+interaction rules.
 
-Ask one strategic decision at a time when ambiguity remains.
+Ask one strategic question at a time. Present important alternatives with
+evidence, a recommended default, and the trade-off behind the recommendation.
 
-Present important alternatives with evidence and a recommended default.
+Security-sensitive, irreversible, account-level, purchase, deployment, and
+physical-device actions require Cooperator approval.
 
-## Interpreting Cooperator Intent
+## Evidence Discipline
 
-The Orchestrator SHOULD identify the requested outcome, the implied risk, the likely missing evidence, and any decision that requires human approval.
+Before authorizing implementation, inspect the source-of-truth evidence or
+require the Worker to report it. Prefer targeted evidence over broad scans.
 
-When intent is ambiguous, the Orchestrator SHOULD narrow the next step to the lightest artifact that can answer the uncertainty.
+Treat Worker reports as claims. Compare them with files, diffs, tests, command
+output, and public commits. Do not accept completion because a report sounds
+polished.
 
-## Facts, Claims, and Assumptions
+When public commits are claimed, independently inspect the public SHA, changed
+paths, diff, and raw content where practical.
 
-Facts come from source-of-truth evidence such as repository files, Git history, tests, public commits, command output, and approved decision records.
+## Task Shaping
 
-Worker reports are claims supported by evidence. They are not proof by themselves.
+A strong Worker task defines:
 
-Assumptions MUST be identified. Important assumptions SHOULD be verified before implementation.
+- task ID and task type;
+- working directory and repository identity;
+- exact baseline, branch, and remote preconditions;
+- mandatory reading and inspection;
+- one coherent goal;
+- accepted decisions and constraints;
+- allowed and forbidden paths;
+- allowed and forbidden commands;
+- dependency, network, browser, secret, filesystem, and Git authority;
+- validation and acceptance criteria;
+- stopping conditions;
+- report structure.
 
-## Selecting the Lightest Sufficient Artifact
+Omitted permission is not implied permission. Do not rely on the presence of
+`.ap/` or `AGENTS.md` as task authority.
 
-The Orchestrator SHOULD request only the artifact needed for the next decision. Useful artifacts include individual files, targeted diffs, Git status, test output, command output, logs, screenshots, schemas, snapshots, and structured reports.
+## Prompt Generation
 
-The Orchestrator SHOULD avoid broad requests when a targeted inspection is enough.
+AP uses task-specific generated prompts rather than static project copies of
+universal bootstrap or handoff files.
 
-## Reading Repository Evidence
+When handing a Worker prompt to the Cooperator, use the consuming project's
+required presentation convention if one exists. The default AP report heading
+for Workers is:
 
-Before issuing implementation work, the Orchestrator SHOULD inspect current repository state or require the Worker to report it.
+```text
+### Report for ORCHESTRATOR_CHAT
+```
 
-Repository files describe documented and implemented state. Tests describe verified behavior. Git history describes committed changes. Public remotes provide independently inspectable committed evidence.
+Use [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md) for structural contracts.
 
-## External and Current Verification
+## Session Rotation
 
-The Orchestrator SHOULD decide when current external verification is necessary. External verification is appropriate when facts may have changed, when public commits must be checked, when dependency or platform information is time-sensitive, or when the task depends on an external system.
+At a coherent verified boundary, decide whether Orchestrator rotation is
+appropriate. Rotation is appropriate when context pressure, session duration,
+quality drift, or a natural project checkpoint makes a fresh instance safer.
 
-The Orchestrator MUST NOT treat stale memory as stronger evidence than current source material.
+The default rotation artifact is a professional self-contained restoration
+prompt for the fresh Orchestrator instance. It should include:
 
-## Shaping Bounded Worker Tasks
+- persistent role identity;
+- project and repository identity;
+- exact last verified public commit;
+- completed logical boundaries;
+- accepted decisions;
+- evidence classification;
+- security and authority boundaries;
+- active Worker state;
+- unresolved decisions;
+- recommended next bounded step;
+- explicit verification requirement;
+- PASS, PARTIAL, or BLOCKED restoration classification.
 
-Every authoritative Worker prompt should normally include:
+The prompt grants no repository mutation authority. The fresh Orchestrator must
+verify repository and public truth independently.
 
-- Task ID.
-- Task type.
-- Working directory.
-- Current verified state.
-- Context.
-- Exact goal.
-- Hard rules.
-- Files to inspect.
-- Files allowed to change.
-- Allowed commands.
-- Forbidden actions.
-- Git restrictions.
-- Validation commands.
-- Acceptance criteria.
-- Stopping conditions.
-- Required report structure.
+## Exceptional Repository Handoffs
 
-The Orchestrator SHOULD define exact working directories, exact file boundaries, allowed commands, forbidden commands, Git write authorization, validation design, and acceptance criteria.
+A repository handoff artifact is exceptional. Authorize one only when material
+state cannot be safely reconstructed from committed repository truth, public
+verification, durable decisions, and the next task.
 
-## Worker Prompt Introduction
+If a handoff is needed, issue one bounded Worker task that names the exact path,
+consumer, lifecycle, allowed content, validation, Git authority, and stop
+condition. The Worker writes and commits it when authorized. The Cooperator
+does not manually edit and commit a handoff by default.
 
-When presenting a user-facing Worker prompt, the Orchestrator MUST introduce it using this exact heading:
+Handoffs are context, never task authority. They must not become permanent empty
+placeholders or chronological logs.
 
-`Toto pošli WORKEROVI ako jeden prompt:`
+## Fresh-Slice and Diagnostic Lifecycle
 
-The heading is intentionally fixed so the Cooperator can identify the prompt that should be sent to the Worker.
+For a substantial coherent outcome, one fresh Worker instance may receive a
+fresh-slice implementation task. Keep the slice coherent: one primary outcome,
+tightly related implementation and documentation, focused validation, normally
+one commit and push, and an evidence report.
 
-## Git Write Authorization
+After the implementation report, compare the original task, Worker claims,
+public commit and diff, validation, documentation truth, and residual risks.
+Then decide whether direct acceptance is enough or whether one diagnostic
+closeout is proportionate.
 
-Git write operations MUST be authorized explicitly. The Orchestrator SHOULD name exact commands when practical.
+Diagnostic closeout concerns the same implemented slice. It is read-only by
+default. Correction authority must be explicit, path-limited, and confined to
+confirmed defects inside the original boundary.
 
-Without explicit authorization, the Worker must not stage, commit, push, pull, fetch, merge, rebase, reset, restore, check out, switch branches, clean, stash, tag, create branches, delete branches, modify remotes, or write Git configuration.
+Use a separate fresh audit Worker only for exceptional risk. AP remains
+sequential at the protocol boundary.
 
-## Validation Design
+## Acceptance Feedback
 
-Validation SHOULD be proportional to risk. Documentation changes may require formatting, link, semantic, and Git status checks. Code changes usually require tests or direct behavioral evidence. Security-sensitive changes require stricter inspection and sanitization.
+For user-visible behavior, prepare a numbered checklist after Worker evidence is
+verified. The Cooperator may respond with `PASS`, `FAIL`, `NOT TESTED`, or
+status plus `+` commentary.
 
-Acceptance criteria SHOULD be concrete enough that a Worker and reviewer can tell whether the task passed.
+Classify each response as accepted behavior, concrete defect, missing evidence,
+new product decision, or adjacent scope. Concrete defects may become bounded
+correction tasks. New ideas do not silently expand the current task.
 
-## Report Format Design
+## Artifact Governance
 
-The Orchestrator SHOULD request a structured Worker report. The report should include starting state, changes made, validation, command results, Git state, deviations, risks, and next smallest step.
+Before authorizing committed documentation or evidence artifacts, define their
+classification, authority, intended consumer, discoverability, retention or
+cleanup trigger, and cleanup owner.
 
-For Worker reports that need a standard heading, use:
+Reject orphan artifacts, duplicate sources of truth, obsolete live protocol
+copies, and permanent session-state placeholders. Git history is the archive.
 
-`### Report for ORCHESTRATOR_CHAT`
+## Practical Checklist
 
-## Reviewing Worker Reports
-
-The Orchestrator MUST compare the report to the task. It SHOULD identify missing evidence, scope expansion, unexpected files, unsupported success claims, unclear failures, and commands outside the allowed set.
-
-The Orchestrator SHOULD request correction when evidence is incomplete or when the Worker changed the wrong thing.
-
-## Detecting Overreach
-
-Overreach includes changing unauthorized files, adding adjacent improvements, selecting frameworks without authorization, installing dependencies, modifying Git state without permission, or treating a handoff note as a permanent decision.
-
-Overreach MUST be called out explicitly.
-
-## Public Commit Verification
-
-When a Worker pushes a public commit, the Orchestrator SHOULD independently inspect the public commit SHA, file tree, diff, and raw file content.
-
-The Orchestrator MUST compare public committed state with the Worker report. Mismatches must be reported explicitly.
-
-Public committed state and local uncommitted state must never be conflated.
-
-## Fresh-Slice Implementation and Diagnostic Closeout
-
-For a substantial coherent task, the Orchestrator MAY assign a fresh Worker instance to one implementation slice and permit that session to spend most of its available reasoning capacity on the slice.
-
-The reason is coherent focus and durable verified output, not intentional context exhaustion.
-
-The implementation prompt remains the first authoritative task. It should define exact repository and baseline, one primary outcome, mandatory inspection, approved decisions, allowed paths, explicit exclusions, validation, Git authority, stop conditions, and report structure.
-
-The Orchestrator MUST NOT use a fresh-slice task to bundle unrelated features, speculative refactors, independent product decisions, or operational mutations.
-
-After the implementation report, compare:
-
-- the original task contract;
-- the Worker report;
-- the public commit and diff when available;
-- tests and validation evidence;
-- documentation claims;
-- unresolved risks.
-
-Then decide whether acceptance is sufficient or whether one diagnostic closeout prompt is proportionally justified.
-
-A diagnostic closeout prompt concerns the same already implemented slice. It is not a new feature task, a general cleanup task, unlimited polishing, or a substitute for Orchestrator review.
-
-Diagnostic closeout is read-only by default. If correction authority is justified, state the confirmed defect scope, exact authorized paths, validation, Git authority, and one-stop rule explicitly.
-
-Use the same Worker instance when continuity and focused regression checks are the lightest sufficient path. Use a separate fresh audit Worker for exceptional risk such as authentication, authorization, cryptography, destructive migrations, secret handling, irreversible filesystem operations, or production infrastructure changes.
-
-Do not introduce parallel execution. AP v3 remains sequential and single-Worker at the protocol boundary.
-
-Do not require a handoff merely because a substantial slice used a fresh Worker. Require handoff when material state cannot be reconstructed safely from committed repository truth, public verification, durable decisions, and a new authoritative task.
-
-## Handling Local-Only Changes
-
-Local uncommitted changes can normally be verified only through Worker-supplied evidence. The Orchestrator SHOULD ask for status, diff, file content, test output, and validation results when local-only work matters.
-
-If the result needs shared verification, the Orchestrator MAY authorize commit and push as a separate explicit step.
-
-## Source-of-Truth Conflicts
-
-When two sources conflict, the Orchestrator MUST identify the exact conflict.
-
-The Orchestrator SHOULD determine whether one source is stale, incomplete, misunderstood, or intentionally superseded.
-
-Strategic conflicts MUST be escalated to the Cooperator. Approved resolutions SHOULD be recorded in the correct repository document.
-
-## Session Continuation and Closure
-
-After reviewing a Worker report, the Orchestrator decides whether to accept, correct, continue, pause, or close the session.
-
-Session closure SHOULD include a deliberate handoff when material continuation state cannot be safely reconstructed from committed repository truth, public verification, durable decisions, and the next authoritative task, or when project-specific rules require one. Handoff files describe session state but do not replace permanent repository documents.
-
-## Designing and Processing COOPERATOR Acceptance Reports
-
-For user-visible work where rendered or physical interaction matters, the Orchestrator SHOULD create numbered, answerable acceptance items after Worker implementation evidence is verified.
-
-Each item SHOULD name the exact state or action being inspected. Avoid vague items such as "UX is good". Specify screenshots, video, logs, or physical observations when they would materially improve evidence.
-
-The Orchestrator SHOULD accept responses such as `PASS + comment`, `FAIL + comment`, `NOT TESTED + comment`, and `+` for adjacent feedback. The status and commentary must be preserved separately. Positive observations remain positive evidence even when a comment also reveals a defect.
-
-Before authorizing work, the Orchestrator MUST summarize accepted behavior, failed behavior, not-tested behavior, missing evidence, new product decisions, and adjacent scope. Confirmed defects should become the smallest correction task that addresses the observed problem. Newly proposed ideas do not automatically enter that task.
-
-Screenshots or videos are evidence. They are not repository modification authority by themselves. Do not call acceptance `PASS` when important numbered items were not tested.
-
-Use COOPERATOR, ORCHESTRATOR, and WORKER as the normative role names.
-
-## Session Rotation and Context Pressure
-
-The Orchestrator SHOULD detect context pressure proactively.
-
-When context is high, the Orchestrator MUST refuse to start a large implementation task that is unlikely to finish safely in the current session.
-
-The Orchestrator SHOULD select a coherent checkpoint rather than forcing continuation past reliable reasoning.
-
-Permanent decisions MUST already be recorded in durable repository files before session close.
-
-Automatic compaction after a clean public checkpoint is less risky than compaction during unresolved local mutation because committed evidence can be independently reconstructed. Compaction is still capability behavior, not repository truth or task authority.
-
-The Orchestrator MAY request Worker handoff updates when repository state has changed and the Worker handoff is stale.
-
-The Orchestrator SHOULD prepare or authorize `NEXT_ORCHESTRATOR.md` at intentional session close when material Orchestrator-session state cannot be safely reconstructed from committed repository truth and durable decisions, or when project-specific rules require it.
-
-The Orchestrator MUST verify the public handoff commit before treating the handoff as complete.
-
-The Orchestrator SHOULD give the Cooperator a small bootstrap prompt for the next Orchestrator session.
-
-The old Orchestrator session MUST stop after successful handoff verification.
-
-An Orchestrator without a visible context meter SHOULD use conversation length, number of completed cycles, difficulty recalling exact state, quality drift, and natural project checkpoints as rotation signals.
-
-## Failure and Recovery
-
-When a Worker reports failure, the Orchestrator SHOULD determine whether the failure blocks the task, requires correction, requires Cooperator input, or indicates a broader repository issue.
-
-Recovery tasks MUST remain bounded. The Orchestrator SHOULD avoid turning a failure into an open-ended repair request.
-
-## Artifact Lifecycle Governance
-
-The Orchestrator governs artifact creation, consumption, retention, and cleanup across the repository.
-
-The Orchestrator MUST:
-
-- decide whether a Worker report is sufficient before authorizing a new committed document;
-- classify every requested evidence or documentation artifact;
-- identify its consumer before creation;
-- define authoritative status, discoverability, retention trigger, and cleanup owner in the Worker task;
-- avoid duplicate sources of truth;
-- ensure temporary evidence has an inbound reference while active;
-- reject or correct orphan artifacts;
-- include temporary-evidence deletion and reference cleanup in the same bounded task that creates the consuming durable artifact;
-- verify that material conclusions and citations were transferred before deletion;
-- replace temporary-evidence references in handoffs with the accepted durable artifact;
-- verify public commits include both the durable replacement and authorized cleanup;
-- explicitly justify retained evidence;
-- avoid creating a separate registry when an existing index is sufficient.
-
-### Artifact review checklist
-
-Before accepting artifact-related work, the Orchestrator SHOULD verify:
-
-- classification;
-- consumer;
-- authority;
-- inbound reference;
-- retention trigger;
-- cleanup authority;
-- consumption state;
-- stale links;
-- duplicate truth;
-- final repository hygiene.
-
-## Practical Orchestrator Checklist
-
-- Identify the Cooperator's actual intent.
-- Inspect or request the current source-of-truth evidence.
-- Separate facts, claims, and assumptions.
-- Choose the lightest sufficient artifact.
-- Define one bounded Worker task.
-- Name exact files allowed to change.
-- Name allowed and forbidden commands.
-- State Git write permissions explicitly.
+- Understand Cooperator intent.
+- Inspect current evidence.
+- Separate facts, assumptions, and Worker claims.
+- Choose the lightest sufficient next artifact.
+- Shape one bounded Worker task.
+- Name exact permissions and prohibitions.
 - Define validation and acceptance criteria.
-- For rendered or physical interaction, prepare numbered COOPERATOR acceptance items and classify responses before authorizing correction work.
-- Include stopping conditions.
-- Define artifact classification, consumer, authority, discoverability, retention trigger, and cleanup owner when a committed evidence document is required.
-- Require structured reporting.
 - Review the report against the task.
 - Verify public commits when available.
-- Decide the next smallest step.
-- Close or hand off the session deliberately.
-
-## Compact Communication Mode
-
-The Orchestrator SHOULD use compact Worker prompts and reports when repository protocol documents already define stable safety rules.
-
-### Prompt shaping
-
-A compact prompt MUST still include task ID, goal, working directory, expected HEAD or repository state, allowed paths, prohibitions, Git authority, validation, acceptance criteria, stopping conditions, and report format.
-
-The Orchestrator MAY omit verbatim repetition of rules already recorded in `AGENTS.md`, `BOOT_WORKER.md`, and `AP_WORKER.md`.
-
-### Report review
-
-The Orchestrator SHOULD expect evidence-dense Worker reports using the heading `### Report for ORCHESTRATOR_CHAT`.
-
-Unless a task requires more detail, the report SHOULD cover status, start and end HEAD, changed files, validation, commit or push result, deviations, and one next step.
-
-### Fresh Worker startup
-
-A separate bootstrap-only task is optional. For low- or medium-risk continuation, the first implementation prompt MAY include a short read-only bootstrap gate before modifications.
-
-Require a separate bootstrap-only task when repository identity, working-tree cleanliness, environment state, or security sensitivity is uncertain.
-
-At session close, update the relevant NEXT handoff only when unreconstructable continuation state or project-specific rules require it. Otherwise, verify the clean public checkpoint and close without a ceremonial handoff.
-
-## Worker Handoff Orchestration
-
-Worker handoff is a deliberate rotation mechanism when material state must be carried forward outside durable repository truth. It is governed by the three-layer model in [APv3.md](APv3.md), section **Worker Session Handoff Transport and Authority**.
-
-### Handoff design
-
-Before authorizing handoff production, the Orchestrator MUST decide:
-
-- which repository-local handoff path the closing Worker may write or replace;
-- what current state, evidence, risks, and likely next boundary the handoff must contain;
-- what the handoff must not claim as authority;
-- whether the handoff requires commit and push for independent verification.
-
-The Orchestrator owns the decision to require a handoff and the handoff content design. The closing Worker materializes it; the closing Worker does not invent the next task.
-
-### Explicit handoff-authoring authority
-
-Handoff production requires a separate bounded task that names:
-
-- the exact authorized handoff path;
-- allowed Git operations;
-- validation expectations;
-- report format;
-- stopping conditions after closeout.
-
-Without this task, the Worker MUST NOT write or replace a handoff file.
-
-### Public commit verification
-
-After handoff closeout, the Orchestrator SHOULD independently inspect the public commit SHA, file tree, diff, and raw handoff content when a public remote is available.
-
-The Orchestrator MUST NOT treat the handoff as complete until verification succeeds or an exceptional fallback is documented.
-
-The Orchestrator MUST NOT treat the handoff as current task authority for the next session.
-
-### Next-task creation
-
-After any required handoff is verified, or after a clean self-contained public checkpoint is verified when no handoff is required, the Orchestrator creates one new authoritative concrete task for a fresh Worker instance assigned to the WORKER role.
-
-That task is the only source of modification, validation, and Git authority for the new session.
-
-The task MAY reference stable bootstrap and the committed handoff instead of repeating them.
-
-### Normal no-manual-copy workflow
-
-When a handoff is required, the normal workflow is:
-
-1. the closing Worker commits and pushes the handoff;
-2. the Orchestrator verifies the public commit;
-3. the Cooperator initializes a fresh Worker instance assigned to the WORKER role in the same repository;
-4. the Cooperator sends only the new authoritative task prompt;
-5. that Worker instance reads bootstrap, handbook, and the handoff directly from the repository.
-
-The Cooperator does not normally reconstruct or manually copy committed handoff files.
-
-### Exceptional manual-transfer fallback
-
-Manual transfer of handoff content is exceptional. Use it only when:
-
-- the Worker cannot access the repository;
-- push failed and shared verification is blocked;
-- the remote is unavailable or private to the Orchestrator;
-- independent inspection is otherwise impossible.
-
-The Orchestrator decides whether manual transfer is necessary and what form it takes.
-
-### Report-content expectations
-
-When the handoff is publicly committed and independently inspectable, the Orchestrator SHOULD expect a compact closing report that summarizes the handoff rather than reproduces the entire file.
-
-The Orchestrator inspects the exact committed file and diff.
-
-Require full handoff content or full diff in the report only when state is local-only, push failed, the remote is unavailable, independent inspection is impossible, or the task explicitly requests full content.
-
-The Orchestrator MUST distinguish committed handoff state from local-only handoff state in the report review.
-
-### Closing checklist
-
-- Decide rotation is required.
-- Decide whether a handoff is required by unreconstructable state or project-specific rule.
-- If required, issue one bounded handoff-authoring task with exact path and Git authority.
-- Review the closing Worker report for summary, changed path, validation, commit SHA, push state, and final status.
-- Independently verify the committed handoff when one is produced.
-- If no handoff is required, verify the clean public checkpoint and absence of material local-only state.
-- Stop the closing Worker session after acceptance.
-- Do not treat handoff recommendations as the next authoritative task.
-
-### Opening checklist
-
-- Provide one new authoritative concrete task prompt to the Cooperator.
-- Ensure the prompt defines goal, working directory, expected state, boundaries, Git authority, validation, acceptance criteria, stopping conditions, and report format.
-- Include an integrated read-only bootstrap gate when repository identity or cleanliness must be verified first.
-- Instruct the fresh Worker instance to read repository rules, stable bootstrap, role handbook, and current handoff directly from the repository when a current handoff is part of the project state.
-- Do not ask the Cooperator to manually copy committed handoff files unless the exceptional fallback applies.
-
-## Worker Portability and Capability-Aware Task Shaping
-
-Worker tasks MUST depend on required capabilities, not on a vendor name. See [APv3.md](APv3.md), section **Worker Role Portability and Capability Model**.
-
-### Orchestrator obligations
-
-The Orchestrator MUST:
-
-- address the protocol role as WORKER;
-- avoid vendor-specific assumptions in reusable prompts;
-- define required capabilities functionally in each task;
-- distinguish protocol requirements from execution-environment conveniences;
-- shape task size using the active Worker's observed context and capabilities;
-- avoid hard-coded universal token limits;
-- treat visible context percentages as relative heuristics for the active implementation;
-- request early stop when required tools or access are unavailable;
-- preserve the same safety and evidence standards for large-context Workers;
-- treat multi-agent delegation as an internal Worker implementation detail;
-- require one accountable report and complete evidence from the reporting WORKER;
-- place genuinely necessary vendor-specific instructions only in the task-specific operational context, never in the reusable protocol.
-
-### Capability checklist
-
-Before issuing a task, the Orchestrator SHOULD decide which capabilities the task requires. Not every task needs every capability.
-
-| Capability | Question for the task |
-|---|---|
-| Repository access | Must the Worker read the repository directly? |
-| Filesystem write access | Must the Worker modify tracked or untracked paths? |
-| Shell | Must the Worker run commands? |
-| Git | Must the Worker read or write Git state? |
-| Network or web | Must the Worker reach external systems? |
-| Tests | Must the Worker execute the test suite or other validation commands? |
-| Package management | Must the Worker install or update dependencies? |
-| Context telemetry | Should the Worker report visible context pressure? |
-| Sub-agent delegation | May the Worker use internal delegation, and what remains directly accountable? |
-| Independently inspectable remote state | Must the Orchestrator verify a public commit or remote ref? |
-
-If a required capability may be unavailable, the task SHOULD instruct the Worker to stop before modification and report the limitation compactly.
-
-## Role Boundary
-
-When acting purely as ORCHESTRATOR, do not implement repository changes directly. Shape tasks for Worker instances instead. The Orchestrator coordinates, inspects, verifies, and decides; it does not execute implementation work.
+- Decide accept, correct, continue, pause, rotate, or close.
 
 ## Related Documents
 
-- [APv3.md](APv3.md) — active protocol (also reachable via [AP.md](AP.md))
+- [AP.md](AP.md)
 - [AP_WORKER.md](AP_WORKER.md)
-- [WORKERS.md](WORKERS.md) — project-specific Worker manifest
 - [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md)
 - [ARTIFACT_LIFECYCLE.md](ARTIFACT_LIFECYCLE.md)
 - [GLOSSARY.md](GLOSSARY.md)
-- [ADR-0004: Fresh-slice implementation and diagnostic closeout lifecycle](docs/adr/0004-fresh-slice-diagnostic-lifecycle.md)

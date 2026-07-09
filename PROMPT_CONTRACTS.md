@@ -1,231 +1,248 @@
 # Prompt Contracts
 
-Reusable structure for authoritative ORCHESTRATOR task prompts and Worker reports.
+This document defines compact structures for AP prompts and reports. It is not a
+collection of fixed giant prompts. The Orchestrator generates a task-specific
+prompt that matches the repository, risk, and authority of the current work.
 
-## Report format (required)
+## Worker Report Header
 
-Every Worker report MUST begin exactly with:
+Every standard Worker report begins exactly:
 
-`### Report for ORCHESTRATOR_CHAT`
+```text
+### Report for ORCHESTRATOR_CHAT
+```
 
-Reports SHOULD include: Status (PASS / PARTIAL / BLOCKED), evidence sections, validation results, Git state, deviations, risks, and session state.
+Unless a task requires more detail, the report should include:
 
-### Compact communication mode
+1. status: PASS, PARTIAL, or BLOCKED;
+2. start and end commit;
+3. changed files and purpose;
+4. tests and validation;
+5. commit and push result when authorized;
+6. deviations, risks, or missing evidence;
+7. one smallest next step or review request.
 
-Repositories MAY use compact communication mode (see [APv3.md](APv3.md) §36). Under compact mode, unless a task requires more detail, a report SHOULD contain:
+Summarize command execution. Include full output only for failures, unexpected
+state, safety-critical evidence, or explicit Orchestrator request.
 
-1. status;
-2. start and end HEAD;
-3. changed files and short purpose;
-4. tests and validation results;
-5. commit and push result;
-6. deviations or risks;
-7. one proposed next step.
-
-Target approximately 800–1,000 words. Summarize command execution instead of listing every command. Include full output only for failures, unexpected state, safety-critical evidence, or explicit Orchestrator request. Safety-relevant evidence MUST NOT be omitted for brevity.
-
-## Authoritative task prompt fields
-
-A strong Worker prompt SHOULD normally include:
+## Common Worker Task Fields
 
 | Field | Purpose |
 |---|---|
-| Concrete Worker label | When AP v2 or ambiguity exists (e.g. `Worker_1`) |
-| Persistent role identity | WORKER |
-| Task ID | Stable identifier |
-| Task type | Bootstrap, implementation, verification, documentation, etc. |
-| Repository URL | Remote identity, with accepted equivalent spellings when applicable |
-| Working directory | Absolute path |
-| Branch | Target branch |
-| Exact baseline | Commit SHA or empty-state description |
-| Repository identity rule | Identity dimensions to verify, including transport when material, host, owner or organization, repository name, branch, refs, and whether cosmetic URL variants such as an optional `.git` suffix are accepted |
-| Expected commit metadata | When verifying existing state |
-| Mandatory reading order | Files to read before acting |
-| Precondition gates | Checks that must pass before modification |
-| Context | Background the Worker needs |
-| Exact goal | What done looks like |
-| Authorized paths | Files or directories MAY be changed |
-| Forbidden paths | Explicit exclusions |
-| Allowed commands | Command allow list or classes |
-| Forbidden commands | Explicit exclusions |
-| Dependency authority | Whether install/update is permitted |
-| Migration authority | Whether schema migrations are permitted |
-| Git authority | Exact Git operations permitted |
-| Secret authority | Whether secret access is permitted |
-| Network/provider authority | External calls permitted |
-| Browser automation authority | Permitted adapter or browser capability; allowed origins, URL boundaries, interactions, observations, external-network use, profile/session boundaries, private-data limits, interception or synthetic-response authority, screenshot/log authority, temporary artifacts, and cleanup |
-| Private-data authority | Private media, DB, logs access |
-| Filesystem mutation authority | Create/rename/delete outside repo |
-| Test-first expectations | When tests must precede or follow change |
-| Validation commands | Commands Worker MUST run |
+| Persistent role identity | State that the recipient is a Worker instance assigned to WORKER |
+| Task ID and type | Stable reference and task class |
+| Repository identity | URL, branch, accepted URL spellings, expected refs |
+| Working directory | Exact path or discovery rule |
+| Baseline | Expected commit, parent, subject, changed paths, or empty-state rule |
+| Mandatory reading | Project `AGENTS.md`, `.ap/AP.md`, `.ap/AP_WORKER.md`, and task-relevant files |
+| Repository gate | Root, remote, branch, status, public ref, and untracked-state checks |
+| Goal | One coherent outcome |
+| Accepted decisions | Decisions already made by the Cooperator or durable project records |
+| Allowed paths | Exact write scope |
+| Exclusions | Scope that must not change |
+| Commands | Allowed and forbidden command classes |
+| Dependency authority | Install, update, lockfile, and runtime authority |
+| Git authority | Exact fetch, stage, commit, push, or read-only rule |
+| Network authority | Public verification, provider calls, or no network |
+| Secret authority | Whether secret access is allowed; normally none |
+| Browser authority | Allowed origins, interactions, storage, screenshots, and cleanup |
+| Validation | Required checks and expected evidence |
 | Acceptance criteria | Concrete pass conditions |
-| Stopping conditions | When to stop without finishing |
-| Pre-commit remote gate | Remote state checks before commit |
-| Exact commit subject | When commit is authorized |
-| Push verification | How to verify push success |
-| Report format | Reference this document |
-| Required session state | Open, diagnostic closeout, final closeout, or handoff update when required |
+| Stopping conditions | Conditions that require stopping without improvisation |
+| Report format | Required sections and header |
+| Context-pressure rule | Whether visible usage must be reported |
 
-Omitted permission is not implied permission.
+Omitted permission is not implied.
 
-## Single-Worker launch prompt outline
+## Fresh Implementation Worker
 
-```
-You are {worker-label}, a concrete Worker instance assigned to the persistent WORKER protocol role.
+Use this contract for one substantial coherent implementation slice.
 
-Task ID: {task-id}
-Task type: {task-type}
-Repository: {repository-url}
-Working directory: {absolute-working-directory}
-Branch: {primary-branch}
-Baseline: {commit-sha-or-empty-state}
+Required structure:
+
+```text
+You are a fresh Worker instance assigned to the persistent WORKER protocol role.
+
+Task ID:
+Task type: fresh implementation slice
+Repository:
+Working directory:
+Branch:
+Expected baseline:
+
+Repository gate:
+- verify root, remote identity, branch, local/tracking/public refs, status, and untracked files
+- stop before mutation if any material gate fails
 
 Mandatory reading:
-1. AGENTS.md
-2. AP.md
-3. AP_WORKER.md
-4. WORKERS.md (if present)
-5. NEXT_WORKER.md
+- project AGENTS.md
+- .ap/AP.md
+- .ap/AP_WORKER.md
+- task-relevant files
 
-Precondition gates (integrated read-only bootstrap gate):
-- Verify Git root equals working directory
-- Verify repository identity by the task's stated dimensions; do not rewrite remotes for cosmetic URL spelling
-- Verify baseline / empty-state expectations
-- Stop on mismatch unless correction authorized
+Goal:
+- one coherent outcome
 
-For low- or medium-risk continuation, the bootstrap gate MAY be integrated into the first implementation prompt. Use a separate bootstrap-only task when repository identity, cleanliness, environment state, or security sensitivity is uncertain.
+Accepted decisions:
+- ...
 
-Goal: {exact-goal}
-
-Authorized paths: {path-list}
-Forbidden paths: {path-list}
-Allowed commands: {command-list}
-Forbidden commands: {command-list}
-Browser automation authority: {none-or-exact-browser-boundaries}
-Git authority: {none-or-exact-operations}
-Validation: {validation-commands}
-Acceptance criteria: {criteria-list}
-Stopping conditions: {condition-list}
-
-Report MUST begin with: ### Report for ORCHESTRATOR_CHAT
-```
-
-## Fresh-slice implementation prompt outline
-
-Use this outline when a substantial coherent slice should be handled by one fresh Worker instance. Keep one primary outcome.
-
-```
-You are {worker-label}, a fresh Worker instance assigned to the persistent WORKER protocol role.
-
-Task ID: {task-id}
-Task type: fresh-slice implementation
-Repository: {repository-url}
-Working directory: {absolute-working-directory}
-Branch: {primary-branch}
-Pinned baseline: {commit-sha}
-
-Goal: {one-coherent-outcome}
-
-Mandatory inspection:
-- {files-or-evidence-to-read}
-
-Allowed path authority:
-- {path-list}
+Allowed paths:
+- ...
 
 Explicit exclusions:
 - no unrelated features
 - no speculative refactors
-- no operational mutations
-- no independent product decisions
-- {project-specific-exclusions}
+- no project-specific AP protocol edits
+- ...
 
 Validation:
-- {commands-or-checks}
+- ...
 
 Git authority:
-- {exact-stage-commit-push-authority-or-none}
-- commit subject: {subject-if-authorized}
+- read-only, or exact stage/commit/push authority
 
-Stopping rules:
-- stop on failed precondition
-- stop autonomous work after reporting this slice and await Orchestrator evaluation
-- do not start a new product slice
+Stopping conditions:
+- ...
 
-Report MUST begin with: ### Report for ORCHESTRATOR_CHAT
+Report:
+- begin with ### Report for ORCHESTRATOR_CHAT
 ```
 
-## Diagnostic closeout prompt outline
+The prompt may authorize related inspection, implementation, tests,
+documentation, one normal commit and push, and evidence reporting when all serve
+the same primary outcome.
 
-Use this outline after an implementation pass when one adversarial closeout pass is proportionate. It remains inside the same implemented slice.
+## Diagnostic Closeout
 
-```
-You are {worker-label}, continuing or freshly assigned to the WORKER role for diagnostic closeout.
+Use this contract after an implementation pass when one adversarial closeout is
+proportionate.
 
-Task ID: {task-id}
-Task type: diagnostic closeout for {prior-task-id}
-Implementation commit: {exact-sha}
-Original acceptance contract or requirement summary:
-- {requirement-summary}
+```text
+You are a Worker instance assigned to diagnostic closeout for the same completed slice.
 
-Review scope:
-- {audit-hypotheses-or-risk-areas}
+Implementation commit:
+Original acceptance contract:
+Review hypotheses:
+- requirement coverage
+- prohibited behavior
+- negative guarantees
+- security and privacy boundaries
+- failure cleanup
+- documentation truth
+- changed-path and Git integrity
 
 Default authority:
-- read-only unless the correction authority below is explicit
-- no new product feature
+- read-only
+- no new feature
 - no general cleanup
 - no broad rewrite
 
 Optional correction authority:
-- authorized only for confirmed defects within the original task boundary
-- exact paths: {path-list-or-none}
-- Git authority: {none-or-one-corrective-commit-details}
+- only if explicitly listed
+- exact paths:
+- one corrective commit:
 
 Validation:
-- {commands-or-checks}
+- ...
 
 Report:
 - confirmed defects
 - disproven concerns
 - unresolved risks
 - validation evidence
-- correction commit, if explicitly authorized and used
-
-Stop after this diagnostic closeout report and await the Orchestrator's final session-close decision.
-Report MUST begin with: ### Report for ORCHESTRATOR_CHAT
+- correction commit if used
+- begin with ### Report for ORCHESTRATOR_CHAT
 ```
 
-## Independent fresh audit outline
+Diagnostic closeout remains inside the original task boundary.
 
-```
-You are {worker-label}, a fresh Worker instance assigned to bounded independent audit.
+## Fresh Independent Audit
 
-Implementation commit: {exact-sha}
-Original task or requirement summary: {summary-or-link}
+Use this contract when risk justifies a separate fresh Worker instance for
+sequential audit.
 
-Goal: Verify {review-scope} against the original acceptance criteria.
+```text
+You are a fresh Worker instance assigned to bounded independent audit.
+
+Implementation commit:
+Original task contract:
+Evidence hierarchy:
+- current repository files
+- tests and command output
+- public commit and raw content
+- durable decisions
+- Worker report as claim only
 
 Authority:
 - read-only by default
-- no implementation changes unless explicit correction paths and Git authority are listed
-- no parallel execution
+- no implementation changes unless exact correction authority is listed
 - no new feature task
+- no parallel execution
 
-Report discrepancies with evidence. Distinguish independent observations from prior Worker claims.
+Report discrepancies with evidence and begin with ### Report for ORCHESTRATOR_CHAT
 ```
 
-Independent fresh audit is sequential under AP v3. It is used only when the Orchestrator decides that same-session diagnostic closeout is not sufficient for the risk class.
+## Fresh Orchestrator Restoration
 
-## Orchestrator presentation
+At a coherent verified boundary, the Orchestrator may produce a restoration
+prompt for a fresh Orchestrator instance instead of requiring a repository
+handoff file.
 
-When showing the prompt to the COOPERATOR, precede it with:
+The prompt should contain:
 
-`Toto pošli WORKEROVI ako jeden prompt:`
+- persistent ORCHESTRATOR role identity;
+- project and repository identity;
+- exact last verified public commit;
+- completed logical boundaries;
+- accepted decisions and durable source files;
+- evidence classification;
+- security, secret, network, filesystem, and Git authority boundaries;
+- active Worker state;
+- unresolved decisions or risks;
+- exact recommended next bounded step;
+- instruction to verify public truth independently before acting;
+- PASS, PARTIAL, or BLOCKED restoration classification;
+- explicit statement that restoration text grants no mutation authority.
 
-## Related documents
+## Exceptional Repository Handoff
 
-- [APv3.md](APv3.md) — active protocol (also reachable via [AP.md](AP.md))
-- [APv2.md](APv2.md) — superseded experimental reference
+Use this contract only when unreconstructable state exists.
+
+The Orchestrator task must define:
+
+- why durable repository truth and a restoration prompt are insufficient;
+- exact handoff path;
+- intended consumer;
+- classification and authority level;
+- required content and exclusions;
+- retention or retirement trigger;
+- cleanup owner;
+- validation;
+- exact Git authority;
+- public verification requirement.
+
+The Worker-authored handoff is context only. It must not grant task authority or
+invent the next task.
+
+## AP Integration Task
+
+For adopting AP in a consuming project, the task should require:
+
+- clean repository baseline;
+- `git submodule add https://github.com/cisarik/ap.git .ap`;
+- `./.ap/ap init`;
+- `./.ap/ap doctor`;
+- review of `.gitmodules`, `.ap` gitlink, and `AGENTS.md`;
+- no copied universal AP files;
+- one reviewable project commit when authorized.
+
+For updating AP, use [UPDATING.md](UPDATING.md) and require an explicit update
+task.
+
+## Related Documents
+
+- [AP.md](AP.md)
 - [AP_ORCHESTRATOR.md](AP_ORCHESTRATOR.md)
 - [AP_WORKER.md](AP_WORKER.md)
-- [ADR-0004: Fresh-slice implementation and diagnostic closeout lifecycle](docs/adr/0004-fresh-slice-diagnostic-lifecycle.md)
+- [INTEGRATION.md](INTEGRATION.md)
+- [UPDATING.md](UPDATING.md)

@@ -1,0 +1,373 @@
+#!/bin/sh
+set -eu
+
+CANONICAL_URL="https://github.com/cisarik/ap.git"
+SUBMODULE_PATH=".ap"
+BEGIN_MARKER="<!-- BEGIN MANAGED AP INTEGRATION -->"
+END_MARKER="<!-- END MANAGED AP INTEGRATION -->"
+
+say() {
+    printf '%s\n' "$*"
+}
+
+fail() {
+    printf 'ap: ERROR: %s\n' "$*" >&2
+    exit 1
+}
+
+usage() {
+    cat <<'EOF'
+Usage:
+  ap init
+  ap doctor
+  ap update --check
+  ap update --apply
+  ap help
+
+Commands:
+  init            Create or refresh the managed AP block in the superproject AGENTS.md.
+  doctor          Read-only health check for the .ap submodule integration.
+  update --check  Read-only check for the canonical AP main commit.
+  update --apply  Fetch canonical AP main and move only the .ap checkout to that commit.
+
+The tool must run from an initialized .ap Git submodule, normally as ./.ap/ap.
+It never commits, pushes, modifies Git configuration, or copies AP protocol
+files into the consuming project.
+EOF
+}
+
+require_git() {
+    command -v git >/dev/null 2>&1 || fail "git is required"
+}
+
+physical_path() {
+    [ -d "$1" ] || return 1
+    (cd "$1" && pwd -P)
+}
+
+script_dir() {
+    case "$0" in
+        */*) path=$0 ;;
+        *) path=$(command -v "$0" 2>/dev/null || true) ;;
+    esac
+    [ -n "${path:-}" ] || fail "cannot resolve executable path"
+    dir=$(dirname "$path")
+    physical_path "$dir" || fail "cannot resolve executable directory"
+}
+
+normalize_ap_url() {
+    case "$1" in
+        https://github.com/cisarik/ap|\
+        https://github.com/cisarik/ap.git|\
+        https://github.com/cisarik/ap/|\
+        https://github.com/cisarik/ap.git/)
+            printf '%s\n' "github.com/cisarik/ap"
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
+require_context() {
+    require_git
+
+    tool_dir=$(script_dir)
+    ap_root=$(git -C "$tool_dir" rev-parse --show-toplevel 2>/dev/null || true)
+    [ -n "$ap_root" ] || fail "the ap tool must live inside a Git worktree"
+    ap_root=$(physical_path "$ap_root") || fail "cannot resolve AP root"
+    [ "$tool_dir" = "$ap_root" ] || fail "the ap executable must be at the AP repository root"
+
+    super_root=$(git -C "$ap_root" rev-parse --show-superproject-working-tree 2>/dev/null || true)
+    [ -n "$super_root" ] || fail "this command must run from an initialized .ap submodule"
+    super_root=$(physical_path "$super_root") || fail "cannot resolve superproject root"
+
+    expected_ap="$super_root/$SUBMODULE_PATH"
+    [ -d "$expected_ap" ] || fail "superproject does not contain .ap"
+    expected_ap=$(physical_path "$expected_ap") || fail "cannot resolve .ap path"
+    [ "$ap_root" = "$expected_ap" ] || fail "AP submodule path must be .ap"
+
+    export ap_root super_root
+}
+
+submodule_key_for_ap() {
+    [ -f "$super_root/.gitmodules" ] || fail ".gitmodules is missing"
+
+    matches=$(git -C "$super_root" config -f .gitmodules --get-regexp '^submodule\..*\.path$' 2>/dev/null | awk '$2 == ".ap" { print $1 }' || true)
+    count=$(printf '%s\n' "$matches" | sed '/^$/d' | wc -l | tr -d ' ')
+    [ "$count" = "1" ] || fail ".gitmodules must contain exactly one submodule path .ap"
+
+    key=$(printf '%s\n' "$matches" | sed -n '1p')
+    section=${key#submodule.}
+    section=${section%.path}
+    [ -n "$section" ] || fail "cannot resolve .gitmodules section for .ap"
+    printf '%s\n' "$section"
+}
+
+verify_canonical_identity() {
+    section=$(submodule_key_for_ap)
+    modules_url=$(git -C "$super_root" config -f .gitmodules --get "submodule.$section.url" 2>/dev/null || true)
+    [ -n "$modules_url" ] || fail ".gitmodules is missing URL for .ap"
+    normalize_ap_url "$modules_url" >/dev/null || fail ".gitmodules URL for .ap is not canonical AP"
+
+    origin_url=$(git -C "$ap_root" config --get remote.origin.url 2>/dev/null || true)
+    [ -n "$origin_url" ] || fail ".ap origin remote is missing"
+    normalize_ap_url "$origin_url" >/dev/null || fail ".ap origin remote is not canonical AP"
+}
+
+gitlink_sha() {
+    entry=$(git -C "$super_root" ls-files -s -- "$SUBMODULE_PATH" 2>/dev/null || true)
+    [ -n "$entry" ] || fail ".ap is not recorded in the superproject index"
+    set -- $entry
+    mode=$1
+    sha=$2
+    [ "$mode" = "160000" ] || fail ".ap is not recorded as a submodule gitlink"
+    printf '%s\n' "$sha"
+}
+
+ap_head() {
+    git -C "$ap_root" rev-parse HEAD
+}
+
+require_gitlink_consistent() {
+    recorded=$(gitlink_sha)
+    current=$(ap_head)
+    [ "$recorded" = "$current" ] || fail ".ap worktree HEAD does not match the superproject gitlink"
+}
+
+require_submodule_clean() {
+    status=$(git -C "$ap_root" status --porcelain=v1 --untracked-files=all)
+    [ -z "$status" ] || fail ".ap submodule worktree is dirty"
+}
+
+require_superproject_clean() {
+    status=$(git -C "$super_root" status --porcelain=v1 --untracked-files=all)
+    [ -z "$status" ] || fail "superproject worktree or index is not clean"
+}
+
+managed_block() {
+    cat <<'EOF'
+<!-- BEGIN MANAGED AP INTEGRATION -->
+## Analytic Programming
+
+This project uses Analytic Programming through the pinned Git submodule at `.ap/`.
+The exact AP version is the commit recorded by this repository's `.ap` gitlink.
+
+Required reading:
+- All participants read `.ap/AP.md`.
+- Orchestrators also read `.ap/AP_ORCHESTRATOR.md`.
+- Workers also read `.ap/AP_WORKER.md`.
+- Prompt structures are in `.ap/PROMPT_CONTRACTS.md`.
+
+Project-specific rules outside this managed block remain authoritative within
+their scope. Task authority comes only from the current authoritative
+Orchestrator prompt.
+
+Treat `.ap/` as read-only during ordinary project work. Protocol updates require
+a separate explicit AP update task.
+<!-- END MANAGED AP INTEGRATION -->
+EOF
+}
+
+marker_count() {
+    file=$1
+    marker=$2
+    if [ ! -f "$file" ]; then
+        printf '%s\n' 0
+        return
+    fi
+    grep -cF "$marker" "$file" || true
+}
+
+validate_marker_shape() {
+    file=$1
+    begin_count=$(marker_count "$file" "$BEGIN_MARKER")
+    end_count=$(marker_count "$file" "$END_MARKER")
+    [ "$begin_count" = "1" ] || return 1
+    [ "$end_count" = "1" ] || return 1
+    awk -v begin="$BEGIN_MARKER" -v end="$END_MARKER" '
+        $0 == begin { if (seen_begin || seen_end) exit 1; seen_begin = 1; next }
+        $0 == end { if (!seen_begin || seen_end) exit 1; seen_end = 1; next }
+        END { if (!seen_begin || !seen_end) exit 1 }
+    ' "$file"
+}
+
+validate_agents_block() {
+    file="$super_root/AGENTS.md"
+    [ -f "$file" ] || fail "AGENTS.md is missing"
+    validate_marker_shape "$file" || fail "AGENTS.md managed AP block is missing or malformed"
+
+    grep -F '.ap/AP.md' "$file" >/dev/null || fail "AGENTS.md block does not reference .ap/AP.md"
+    grep -F '.ap/AP_ORCHESTRATOR.md' "$file" >/dev/null || fail "AGENTS.md block does not reference .ap/AP_ORCHESTRATOR.md"
+    grep -F '.ap/AP_WORKER.md' "$file" >/dev/null || fail "AGENTS.md block does not reference .ap/AP_WORKER.md"
+    grep -F '.ap/PROMPT_CONTRACTS.md' "$file" >/dev/null || fail "AGENTS.md block does not reference .ap/PROMPT_CONTRACTS.md"
+    grep -F 'Task authority comes only from the current authoritative' "$file" >/dev/null || fail "AGENTS.md block does not state task authority"
+    grep -F 'Treat `.ap/` as read-only' "$file" >/dev/null || fail "AGENTS.md block does not state .ap read-only rule"
+}
+
+write_agents_block() {
+    file="$super_root/AGENTS.md"
+    [ ! -L "$file" ] || fail "refusing to modify symlink AGENTS.md"
+
+    begin_count=$(marker_count "$file" "$BEGIN_MARKER")
+    end_count=$(marker_count "$file" "$END_MARKER")
+
+    tmpdir=${TMPDIR:-/tmp}/ap-init-$$
+    mkdir "$tmpdir"
+    block="$tmpdir/block"
+    out="$tmpdir/out"
+    managed_block > "$block"
+
+    cleanup_tmp() {
+        rm -rf "$tmpdir"
+    }
+    trap cleanup_tmp EXIT HUP INT TERM
+
+    if [ "$begin_count" = "0" ] && [ "$end_count" = "0" ]; then
+        if [ -f "$file" ]; then
+            cat "$file" > "$out"
+            printf '\n\n' >> "$out"
+            cat "$block" >> "$out"
+        else
+            {
+                printf '%s\n\n' "# Agent Instructions"
+                cat "$block"
+            } > "$out"
+        fi
+    elif [ "$begin_count" = "1" ] && [ "$end_count" = "1" ]; then
+        validate_marker_shape "$file" || fail "AGENTS.md managed AP markers are malformed"
+        awk -v begin="$BEGIN_MARKER" -v end="$END_MARKER" -v block="$block" '
+            $0 == begin {
+                while ((getline line < block) > 0) print line
+                in_block = 1
+                next
+            }
+            $0 == end {
+                in_block = 0
+                next
+            }
+            in_block { next }
+            { print }
+        ' "$file" > "$out"
+    else
+        fail "AGENTS.md contains duplicate or conflicting managed AP markers"
+    fi
+
+    if [ -f "$file" ] && cmp -s "$file" "$out"; then
+        say "AGENTS.md unchanged"
+    else
+        mv "$out" "$file"
+        say "AGENTS.md changed"
+    fi
+}
+
+legacy_artifacts() {
+    for artifact in \
+        AP.md APv2.md APv3.md AP_ORCHESTRATOR.md AP_WORKER.md \
+        PROMPT_CONTRACTS.md ARTIFACT_LIFECYCLE.md BOOT_ORCHESTRATOR.md \
+        BOOT_WORKER.md NEXT_ORCHESTRATOR.md NEXT_WORKER.md WORKERS.md
+    do
+        [ -e "$super_root/$artifact" ] && printf '%s\n' "$artifact"
+    done
+    return 0
+}
+
+cmd_init() {
+    require_context
+    verify_canonical_identity
+    require_gitlink_consistent
+    require_submodule_clean
+    write_agents_block
+    say "ap init: PASS"
+}
+
+cmd_doctor() {
+    require_context
+    say "OK containing Git repository: $super_root"
+    verify_canonical_identity
+    say "OK canonical AP identity"
+    recorded=$(gitlink_sha)
+    current=$(ap_head)
+    say "OK pinned AP commit: $recorded"
+    [ "$recorded" = "$current" ] || fail ".ap HEAD $current does not match gitlink $recorded"
+    require_submodule_clean
+    say "OK .ap submodule clean"
+    validate_agents_block
+    say "OK managed AGENTS.md block"
+    legacy=$(legacy_artifacts)
+    [ -z "$legacy" ] || fail "legacy copied AP artifacts present: $(printf '%s' "$legacy" | tr '\n' ' ')"
+    say "ap doctor: PASS"
+}
+
+remote_main_sha() {
+    line=$(git -C "$ap_root" ls-remote --exit-code origin refs/heads/main 2>/dev/null || true)
+    [ -n "$line" ] || fail "cannot resolve canonical AP origin main"
+    set -- $line
+    printf '%s\n' "$1"
+}
+
+cmd_update_check() {
+    require_context
+    verify_canonical_identity
+    current=$(ap_head)
+    available=$(remote_main_sha)
+    say "current pinned AP commit: $current"
+    say "available canonical origin/main commit: $available"
+    if [ "$current" = "$available" ]; then
+        say "update available: no"
+    else
+        say "update available: yes"
+    fi
+}
+
+cmd_update_apply() {
+    require_context
+    verify_canonical_identity
+    require_gitlink_consistent
+    require_submodule_clean
+    require_superproject_clean
+
+    old=$(ap_head)
+    git -C "$ap_root" fetch origin refs/heads/main >/dev/null 2>&1 || fail "fetch from canonical AP origin main failed"
+    new=$(git -C "$ap_root" rev-parse FETCH_HEAD^{commit})
+
+    say "old AP commit: $old"
+    say "new AP commit: $new"
+
+    if [ "$old" = "$new" ]; then
+        say "ap update --apply: no update available"
+        return
+    fi
+
+    git -C "$ap_root" checkout --detach --quiet "$new" || fail "failed to move .ap to $new"
+    say "ap update --apply: moved .ap to $new"
+    say "Review with: git diff --submodule"
+    say "Validate with: ./.ap/ap doctor"
+    say "Commit in the superproject only after compatibility review: git add .ap && git commit"
+}
+
+case "${1:-help}" in
+    init)
+        [ "$#" -eq 1 ] || fail "init takes no arguments"
+        cmd_init
+        ;;
+    doctor)
+        [ "$#" -eq 1 ] || fail "doctor takes no arguments"
+        cmd_doctor
+        ;;
+    update)
+        [ "$#" -eq 2 ] || fail "update requires --check or --apply"
+        case "$2" in
+            --check) cmd_update_check ;;
+            --apply) cmd_update_apply ;;
+            *) fail "unknown update option: $2" ;;
+        esac
+        ;;
+    help|--help|-h)
+        usage
+        ;;
+    *)
+        usage >&2
+        exit 1
+        ;;
+esac

@@ -1,112 +1,90 @@
 # Artifact Lifecycle
 
-Rules for creating, retaining, consuming, and cleaning repository artifacts under Analytic Programming.
+Artifact lifecycle rules keep AP projects from accumulating stale evidence,
+duplicate sources of truth, and session-state leftovers.
 
-## Required metadata
+## Required Metadata
 
-Every meaningful artifact SHOULD have:
+Every committed documentation or evidence artifact should have:
 
-| Attribute | Question answered |
+| Attribute | Question |
 |---|---|
 | Classification | What kind of artifact is this? |
+| Authority | Is it normative, handbook, evidence, context, or non-authoritative? |
 | Intended consumer | Who reads or uses it next? |
-| Authority level | Normative, handbook, overlay, handoff, temporary? |
-| Inbound discoverability | How does the next participant find it? |
-| Retention trigger | When does it become eligible for archive or deletion? |
-| Cleanup trigger | What event authorizes removal? |
-| Update owner | Who may change it? |
-| Cleanup owner | Who may delete or archive it? |
+| Discoverability | How does that consumer find it? |
+| Retention trigger | When does it remain useful? |
+| Cleanup trigger | When can removal be considered? |
+| Cleanup owner | Who may authorize removal? |
 
-## Classification
+## Classification Model
 
-AP version 3 (see [APv3.md](APv3.md) §38) defines a 5-class model. The table below maps each class to concrete repository artifacts.
+| Class | Meaning | Examples |
+|---|---|---|
+| Transient evidence | One-use evidence that normally remains uncommitted | Command output, local logs, report excerpts |
+| Temporary committed evidence | Decision-support material committed only when multi-session review needs it | Investigation notes, comparison tables |
+| Retained evidence | Durable evidence with continuing independent value | Compatibility record, incident record, benchmark |
+| Normative durable artifact | Authoritative project record | Protocol, ADR, specification, policy |
+| Operational lifecycle artifact | Working-state document with replacement or retirement rules | Exceptional handoff, checkpoint |
 
-| Class | Description | Repository examples | Typical retention |
-|---|---|---|---|
-| **Transient evidence** | Command output, reports, observations that normally remain uncommitted | Local command output, chat findings, uncommitted diffs | Never commit unless authorized |
-| **Temporary committed evidence** | Research or decision-support material committed only when multi-session review or durable pre-decision evidence is genuinely needed; non-authoritative | Investigation notes, comparison tables, evidence packages | Delete after conclusions transferred to durable consumer |
-| **Retained evidence** | Durable audits, reproducible benchmarks, incident evidence, compatibility records with continuing independent value | Benchmark results, compatibility matrices, incident records | Explicit retention rationale and discoverable index required |
-| **Normative durable artifacts** | Accepted ADRs, specifications, policies, schemas, authoritative project records | `APv3.md`, accepted ADRs, `SPEC.md`-equivalent normative docs | Remain until explicitly superseded or retired |
-| **Operational lifecycle artifacts** | Bootstrap, session handoff, checkpoint, working-state documents | `BOOT_*.md`, `NEXT_*.md`, `WORKERS.md`, `AGENTS.md` | Replace at session close or via governance; MUST NOT become endless logs |
-
-Living handbooks (`AP_ORCHESTRATOR.md`, `AP_WORKER.md`) are normative durable artifacts updated with protocol evolution.
-
-## Required metadata for newly committed documentation or evidence
-
-Every task that authorizes a new committed documentation or evidence artifact MUST define:
-
-- artifact classification;
-- authoritative or non-authoritative status;
-- intended consumer;
-- discoverability or inbound reference;
-- retention or cleanup trigger;
-- cleanup owner or responsible role.
-
-## Normative principles
+## Principles
 
 - Use the lightest sufficient artifact.
-- Prefer an evidence-dense Worker report over a committed research file when the report is sufficient.
+- Prefer an evidence-dense report over a committed research file when the report
+  is enough.
 - Do not create an artifact without a concrete consumer.
-- No committed documentation artifact may remain unintentionally orphaned.
-- Git history is the historical archive; the active working tree represents current usable project knowledge.
-- When temporary evidence is consumed by a durable artifact: transfer conclusions, remove the temporary evidence, remove or replace inbound links — in the same bounded task and preferably the same commit.
-- Retaining consumed evidence is an exception requiring an explicit continuing-value rationale.
-- A retention trigger does not itself authorize deletion. Deletion still requires explicit task-specific authority.
-- Do not introduce a mandatory global artifact registry; use existing indexes, ADR indexes, README sections, or handoffs when sufficient.
+- Do not leave committed artifacts orphaned.
+- Git history is the archive for superseded protocol text and deleted session
+  artifacts.
+- The live tree should contain current usable project knowledge.
+- Transfer material conclusions into the durable consumer before deleting
+  temporary evidence.
+- Remove or replace inbound links in the same bounded change that retires an
+  artifact.
+- A retention trigger does not authorize deletion by itself; deletion still
+  requires task-specific authority.
+- Do not create a mandatory global artifact registry when an existing README,
+  ADR index, or specification is sufficient.
 
-## Rules
+## Protocol Distribution Artifacts
 
-### Temporary research
+In the AP source repository:
 
-Temporary research artifacts MUST be removed after conclusions are transferred to durable consumers (ADRs, normative docs, or issue records).
+- `AP.md`, universal handbooks, prompt contracts, artifact lifecycle rules, ADRs,
+  and integration documentation are normative durable artifacts.
+- Earlier protocol generations are historical information recoverable from Git
+  history, not retained live documents.
+- Static project BOOT, NEXT, and WORKERS templates are obsolete distribution
+  artifacts because integration is managed through `.ap/` and `AGENTS.md`.
+- A repository handoff is exceptional and belongs only in a consuming project
+  when unreconstructable state exists and an Orchestrator authorizes exact
+  lifecycle handling.
 
-Material conclusions and citations MUST be transferred before deletion.
+## Worker Duties
 
-### Git history as archive
+When creating, replacing, or deleting documentation artifacts, the Worker must:
 
-Git history preserves superseded handoffs and documents. Replacement does not require deleting history.
+- verify that the current task grants the necessary lifecycle authority;
+- identify classification, consumer, discoverability, retention, and cleanup;
+- transfer material conclusions before removing temporary evidence;
+- update inbound links;
+- validate local links and changed paths;
+- report whether each affected artifact was retained, consolidated, replaced,
+  or deleted.
 
-### No orphaned artifacts
+## Orchestrator Duties
 
-Artifacts without a consumer, inbound reference, or retention rule SHOULD be corrected or removed in the same bounded task that retires them.
+The Orchestrator must:
 
-### Worker deletion authority
+- decide whether a report is sufficient before authorizing a committed artifact;
+- reject duplicate sources of truth;
+- define artifact lifecycle metadata in the Worker task;
+- verify that committed cleanup was authorized;
+- verify public committed state when available.
 
-Deleting normative or retained artifacts requires explicit task authority. Workers MUST NOT delete protocol files without supersession authorization.
+## Related Documents
 
-### NEXT files
-
-NEXT files are replaceable lifecycle artifacts. They are overwritten at session close, not appended as logs.
-
-### BOOT files
-
-BOOT files are stable. Change only through explicit governance tasks.
-
-### ADRs
-
-Accepted ADRs are superseded by new ADRs, not silently rewritten. Update the ADR index when status changes.
-
-## Worker responsibilities
-
-When creating or deleting artifacts, the Worker MUST:
-
-- verify lifecycle metadata in the task;
-- stop if cleanup authority is missing;
-- transfer conclusions before deleting temporary evidence;
-- update inbound links when replacing artifacts;
-- report artifact state in the Worker report.
-
-## Orchestrator responsibilities
-
-The Orchestrator MUST:
-
-- classify requested artifacts before authorizing creation;
-- reject orphan artifacts;
-- include cleanup in the same task that consumes temporary evidence when possible;
-- verify public commits include authorized cleanup.
-
-## Related documents
-
-- [APv3.md](APv3.md) — active protocol (§38 defines the classification model)
+- [AP.md](AP.md)
 - [AP_ORCHESTRATOR.md](AP_ORCHESTRATOR.md)
 - [AP_WORKER.md](AP_WORKER.md)
+- [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md)
