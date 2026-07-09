@@ -70,7 +70,7 @@ The implementation prompt remains the authoritative first task. It should normal
 - stop conditions;
 - evidence report.
 
-The Worker stops after reporting the implementation result. It must not start another product slice.
+After reporting the implementation result, the Worker stops autonomous work on that operation and awaits Orchestrator evaluation. It must not start another product slice. The same Worker session remains eligible for one explicit diagnostic closeout prompt about the same implemented slice until the Orchestrator accepts, corrects, pauses, or closes the session.
 
 ## Diagnostic-closeout semantics
 

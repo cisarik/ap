@@ -34,10 +34,11 @@ A strong Worker prompt SHOULD normally include:
 | Persistent role identity | WORKER |
 | Task ID | Stable identifier |
 | Task type | Bootstrap, implementation, verification, documentation, etc. |
-| Repository URL | Canonical remote |
+| Repository URL | Remote identity, with accepted equivalent spellings when applicable |
 | Working directory | Absolute path |
 | Branch | Target branch |
 | Exact baseline | Commit SHA or empty-state description |
+| Repository identity rule | Identity dimensions to verify, including transport when material, host, owner or organization, repository name, branch, refs, and whether cosmetic URL variants such as an optional `.git` suffix are accepted |
 | Expected commit metadata | When verifying existing state |
 | Mandatory reading order | Files to read before acting |
 | Precondition gates | Checks that must pass before modification |
@@ -63,7 +64,7 @@ A strong Worker prompt SHOULD normally include:
 | Exact commit subject | When commit is authorized |
 | Push verification | How to verify push success |
 | Report format | Reference this document |
-| Required session state | Open, closeout, handoff update |
+| Required session state | Open, diagnostic closeout, final closeout, or handoff update when required |
 
 Omitted permission is not implied permission.
 
@@ -88,7 +89,7 @@ Mandatory reading:
 
 Precondition gates (integrated read-only bootstrap gate):
 - Verify Git root equals working directory
-- Verify origin URL
+- Verify repository identity by the task's stated dimensions; do not rewrite remotes for cosmetic URL spelling
 - Verify baseline / empty-state expectations
 - Stop on mismatch unless correction authorized
 
@@ -147,7 +148,7 @@ Git authority:
 
 Stopping rules:
 - stop on failed precondition
-- stop after reporting this slice
+- stop autonomous work after reporting this slice and await Orchestrator evaluation
 - do not start a new product slice
 
 Report MUST begin with: ### Report for ORCHESTRATOR_CHAT
@@ -190,7 +191,7 @@ Report:
 - validation evidence
 - correction commit, if explicitly authorized and used
 
-Stop after this diagnostic closeout report.
+Stop after this diagnostic closeout report and await the Orchestrator's final session-close decision.
 Report MUST begin with: ### Report for ORCHESTRATOR_CHAT
 ```
 

@@ -182,7 +182,7 @@ Strategic conflicts MUST be escalated to the Cooperator. Approved resolutions SH
 
 After reviewing a Worker report, the Orchestrator decides whether to accept, correct, continue, pause, or close the session.
 
-Session closure SHOULD include a deliberate handoff when the project uses handoff files. Handoff files describe session state but do not replace permanent repository documents.
+Session closure SHOULD include a deliberate handoff when material continuation state cannot be safely reconstructed from committed repository truth, public verification, durable decisions, and the next authoritative task, or when project-specific rules require one. Handoff files describe session state but do not replace permanent repository documents.
 
 ## Designing and Processing COOPERATOR Acceptance Reports
 
@@ -212,7 +212,7 @@ Automatic compaction after a clean public checkpoint is less risky than compacti
 
 The Orchestrator MAY request Worker handoff updates when repository state has changed and the Worker handoff is stale.
 
-The Orchestrator SHOULD prepare or authorize `NEXT_ORCHESTRATOR.md` at intentional session close.
+The Orchestrator SHOULD prepare or authorize `NEXT_ORCHESTRATOR.md` at intentional session close when material Orchestrator-session state cannot be safely reconstructed from committed repository truth and durable decisions, or when project-specific rules require it.
 
 The Orchestrator MUST verify the public handoff commit before treating the handoff as complete.
 
@@ -305,11 +305,11 @@ A separate bootstrap-only task is optional. For low- or medium-risk continuation
 
 Require a separate bootstrap-only task when repository identity, working-tree cleanliness, environment state, or security sensitivity is uncertain.
 
-At session close, update the relevant NEXT handoff and stop.
+At session close, update the relevant NEXT handoff only when unreconstructable continuation state or project-specific rules require it. Otherwise, verify the clean public checkpoint and close without a ceremonial handoff.
 
 ## Worker Handoff Orchestration
 
-Worker handoff is a deliberate rotation mechanism. It is governed by the three-layer model in [APv3.md](APv3.md), section **Worker Session Handoff Transport and Authority**.
+Worker handoff is a deliberate rotation mechanism when material state must be carried forward outside durable repository truth. It is governed by the three-layer model in [APv3.md](APv3.md), section **Worker Session Handoff Transport and Authority**.
 
 ### Handoff design
 
@@ -320,7 +320,7 @@ Before authorizing handoff production, the Orchestrator MUST decide:
 - what the handoff must not claim as authority;
 - whether the handoff requires commit and push for independent verification.
 
-The Orchestrator owns handoff content design. The closing Worker materializes it; the closing Worker does not invent the next task.
+The Orchestrator owns the decision to require a handoff and the handoff content design. The closing Worker materializes it; the closing Worker does not invent the next task.
 
 ### Explicit handoff-authoring authority
 
@@ -344,7 +344,7 @@ The Orchestrator MUST NOT treat the handoff as current task authority for the ne
 
 ### Next-task creation
 
-After handoff verification, the Orchestrator creates one new authoritative concrete task for a fresh Worker instance assigned to the WORKER role.
+After any required handoff is verified, or after a clean self-contained public checkpoint is verified when no handoff is required, the Orchestrator creates one new authoritative concrete task for a fresh Worker instance assigned to the WORKER role.
 
 That task is the only source of modification, validation, and Git authority for the new session.
 
@@ -352,13 +352,13 @@ The task MAY reference stable bootstrap and the committed handoff instead of rep
 
 ### Normal no-manual-copy workflow
 
-In the normal workflow:
+When a handoff is required, the normal workflow is:
 
 1. the closing Worker commits and pushes the handoff;
 2. the Orchestrator verifies the public commit;
 3. the Cooperator initializes a fresh Worker instance assigned to the WORKER role in the same repository;
 4. the Cooperator sends only the new authoritative task prompt;
-5. that Worker instance reads bootstrap, handbook, and handoff directly from the repository.
+5. that Worker instance reads bootstrap, handbook, and the handoff directly from the repository.
 
 The Cooperator does not normally reconstruct or manually copy committed handoff files.
 
@@ -386,9 +386,11 @@ The Orchestrator MUST distinguish committed handoff state from local-only handof
 ### Closing checklist
 
 - Decide rotation is required.
-- Issue one bounded handoff-authoring task with exact path and Git authority.
+- Decide whether a handoff is required by unreconstructable state or project-specific rule.
+- If required, issue one bounded handoff-authoring task with exact path and Git authority.
 - Review the closing Worker report for summary, changed path, validation, commit SHA, push state, and final status.
-- Independently verify the committed handoff when possible.
+- Independently verify the committed handoff when one is produced.
+- If no handoff is required, verify the clean public checkpoint and absence of material local-only state.
 - Stop the closing Worker session after acceptance.
 - Do not treat handoff recommendations as the next authoritative task.
 
@@ -397,7 +399,7 @@ The Orchestrator MUST distinguish committed handoff state from local-only handof
 - Provide one new authoritative concrete task prompt to the Cooperator.
 - Ensure the prompt defines goal, working directory, expected state, boundaries, Git authority, validation, acceptance criteria, stopping conditions, and report format.
 - Include an integrated read-only bootstrap gate when repository identity or cleanliness must be verified first.
-- Instruct the fresh Worker instance to read repository rules, stable bootstrap, role handbook, and current handoff directly from the repository.
+- Instruct the fresh Worker instance to read repository rules, stable bootstrap, role handbook, and current handoff directly from the repository when a current handoff is part of the project state.
 - Do not ask the Cooperator to manually copy committed handoff files unless the exceptional fallback applies.
 
 ## Worker Portability and Capability-Aware Task Shaping

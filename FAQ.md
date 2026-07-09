@@ -69,17 +69,17 @@ When a session gets long and tired, you start a fresh one. Three things travel b
 +--------------------------------------+
 |  Authoritative task (the prompt)     |  <-- the ONLY real task authority
 +--------------------------------------+
-|  Repository handoff  (NEXT_*.md)     |  <-- current state, NOT authority
+|  Repository handoff  (NEXT_*.md)     |  <-- current state when needed, NOT authority
 +--------------------------------------+
 |  Stable bootstrap    (BOOT_*.md)     |  <-- read once, NOT authority
 +--------------------------------------+
 ```
 
 - **BOOT** files = stable rules, read once at the start. Never a task.
-- **NEXT** files = a snapshot of where things stand, replaced each session. Never a task.
+- **NEXT** files = a snapshot of where things stand when unreconstructable state or project rules require one. Never a task.
 - **The task prompt** = the only thing that actually tells the Worker what to do right now.
 
-This is why a fresh session never needs you to paste an old chat: it reads BOOT + NEXT from the repo, then gets one new task.
+This is why a fresh session never needs you to paste an old chat: it reads BOOT, any current NEXT handoff, and repository evidence from the repo, then gets one new task.
 
 ---
 
@@ -139,7 +139,7 @@ That is it. You do not need to read the full protocol to start. As you get comfo
 6. Worker reports with evidence
 7. Orchestrator verifies the public commit
 8. You accept  -->  repeat from 1 with the next goal
-   OR rotate  -->  Worker writes NEXT handoff, you start a fresh session
+   OR rotate  -->  Worker writes NEXT handoff when needed, you start a fresh session
 ```
 
 #### How do I know the Worker actually did the work?
@@ -172,7 +172,7 @@ Rotate when the current session gets unreliable. Signals:
 - a natural checkpoint is reached (a feature done, a phase finished);
 - the tool shows roughly 80-85% context used (if it shows a meter).
 
-A checkpoint on purpose is better than waiting until the session is exhausted. At rotation, the closing Worker writes a NEXT handoff, and you start fresh - the repo carries the memory.
+A checkpoint on purpose is better than waiting until the session is exhausted. At rotation, the closing Worker writes a NEXT handoff when material state cannot be reconstructed from the verified repository, or when the project explicitly requires one. For a clean, pushed, self-contained slice, the repo itself may carry the memory.
 
 #### Why would one Worker get a large task?
 
@@ -286,7 +286,7 @@ This repository *is* the documentation. You do not run it. You read it, and you 
 | File | Stability | What it holds | Is it a task? |
 |---|---|---|---|
 | `BOOT_*.md` | Stable, rarely changes | Roles, repo identity, safety rules, reading order | No |
-| `NEXT_*.md` | Replaced every session close | Where the work stands right now, open risks, next likely step | No |
+| `NEXT_*.md` | Replaced when session state must be carried forward | Where the work stands right now, open risks, next likely step | No |
 
 Neither gives the Worker permission to do anything. Only the **task prompt** does. BOOT = the rulebook you read once. NEXT = the sticky note from the last session.
 
@@ -348,7 +348,7 @@ accept/rotate  <----  Orchestrator verifies  <----  Worker reports
 | `AP_ORCHESTRATOR.md` | How the Orchestrator behaves. |
 | `AP_WORKER.md` | How the Worker behaves. |
 | `BOOT_*.md` | Stable session-start rules (read once). |
-| `NEXT_*.md` | Current session state (replaced each close). |
+| `NEXT_*.md` | Current session state when a handoff is needed. |
 | `PROMPT_CONTRACTS.md` | The shape of a task prompt and a report. |
 | `ARTIFACT_LIFECYCLE.md` | What to keep, delete, and for how long. |
 | `ADOPTION.md` | How to set AP up in a new project. |
@@ -370,7 +370,7 @@ accept/rotate  <----  Orchestrator verifies  <----  Worker reports
 2. **Inspect before changing.**
 3. **Evidence, not words.** Look at the real result.
 4. **Explicit permission only.** No Git writes, installs, or scope creep without it.
-5. **Rotate on purpose**, with a handoff - do not ride a session to exhaustion.
+5. **Rotate on purpose**, with a handoff when needed - do not ride a session to exhaustion.
 
 
 ## Related reading

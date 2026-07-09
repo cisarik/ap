@@ -45,7 +45,7 @@ The Worker SHOULD use targeted inspection rather than broad filesystem explorati
 
 Before changing files, the Worker MUST verify the working directory and repository root when the task requires it.
 
-When a remote repository is part of the task, the Worker SHOULD verify the configured remote URL and relevant commit SHAs.
+When a remote repository is part of the task, the Worker SHOULD verify the repository identity dimensions named by the task, such as transport when material, host, owner or organization, repository name, branch, refs, and relevant commit SHAs. Cosmetic URL spelling differences do not authorize remote rewriting.
 
 If identity checks fail, the Worker MUST stop unless correction is explicitly authorized.
 
@@ -166,7 +166,7 @@ The Worker MAY use the task's authorized context and validation budget to comple
 
 The Worker MUST NOT add unrelated features, speculative refactors, general cleanup, or independent product decisions because they appear convenient during the same session.
 
-After reporting the implementation result, the Worker stops. It must not begin another product slice unless the Orchestrator issues a new authoritative task.
+After reporting the implementation result, the Worker stops autonomous work on that operation and awaits Orchestrator evaluation. It must not begin another product slice unless the Orchestrator issues a new authoritative task.
 
 When assigned a diagnostic closeout prompt, the Worker treats it as a bounded second prompt about the same already implemented slice.
 
@@ -231,15 +231,15 @@ The Worker SHOULD report visible context pressure when a tool exposes it.
 
 The Worker MUST NOT begin a large new task at high context usage unless the Orchestrator explicitly accepts that risk.
 
-The Worker SHOULD complete only the authorized current task, then stop.
+The Worker SHOULD complete only the authorized current task or diagnostic operation, then stop autonomous work and await Orchestrator evaluation.
 
 The Worker MUST write or update `NEXT_WORKER.md` only when explicitly instructed by the task.
 
-Before closeout, the Worker MUST verify final repository state and return one final structured report.
+Before final session closeout, the Worker MUST verify final repository state and return one final structured report.
 
 The Worker MUST stop after closeout without beginning another task.
 
-A fresh bootstrap and separate authoritative task are required in the next Worker session.
+A fresh bootstrap and separate authoritative task are required in the next Worker session after final closeout.
 
 The Worker MUST NOT silently rely on automatic summarization as a substitute for repository evidence or explicit handoff files.
 
@@ -287,7 +287,7 @@ Use a separate bootstrap-only task when repository identity, cleanliness, enviro
 
 ## Worker Handoff Production and Consumption
 
-Worker handoff follows the three-layer model in [APv3.md](APv3.md), section **Worker Session Handoff Transport and Authority**. Stable bootstrap, repository handoff, and authoritative task have different obligations.
+Worker handoff follows the three-layer model in [APv3.md](APv3.md), section **Worker Session Handoff Transport and Authority**. Stable bootstrap, repository handoff, and authoritative task have different obligations. A handoff is required only when the task or project rules require one, or when material continuation state cannot be safely reconstructed from committed repository truth and the next authoritative task.
 
 ### Closing Worker obligations
 
@@ -315,14 +315,14 @@ Full handoff content or full diff in the report is appropriate only when:
 
 At the start of a new Worker session, a fresh Worker instance assigned to the WORKER role MUST:
 
-- read repository rules, stable bootstrap, role handbook, and current handoff directly from the repository;
+- read repository rules, stable bootstrap, role handbook, and any current handoff that is part of the project state directly from the repository;
 - do not ask the Cooperator to paste handoff files that already exist in the repository;
 - treat the handoff as state evidence only, not task authority;
 - independently verify repository identity, current refs, cleanliness, and task preconditions;
 - stop before modification if the integrated bootstrap gate fails;
 - execute only the concrete authoritative Orchestrator task.
 
-Wording such as "You are a fresh Worker session" describes conversational context. It does not replace reading the handoff and does not grant unlisted permissions.
+Wording such as "You are a fresh Worker session" describes conversational context. It does not replace reading any required handoff and does not grant unlisted permissions.
 
 Proposed next steps described in the handoff are non-authoritative context. Follow only the new Orchestrator task.
 

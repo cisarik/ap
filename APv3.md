@@ -402,7 +402,7 @@ The set of handoff files is project-specific and SHOULD be documented in reposit
 
 ## 29. Worker Session Handoff Transport and Authority
 
-Worker rotation relies on three distinct session inputs. Each has a different authority, lifecycle, and transport rule. They MUST NOT be conflated.
+Worker rotation may use three distinct session inputs. Each has a different authority, lifecycle, and transport rule. They MUST NOT be conflated.
 
 ### Three distinct Worker-session inputs
 
@@ -431,6 +431,10 @@ A Worker handoff document:
 - MUST be independently verified by the fresh Worker against the current repository and refs;
 - is replaced at the next intentional Worker close rather than growing as a chronological log.
 
+A Worker handoff is required when material continuation state cannot be safely reconstructed from committed repository truth, public verification, durable decisions, and the next authoritative task, or when project-specific rules explicitly require one. It is normally required for unresolved local-only mutation, environment or operational state, multi-session investigation state, pending evidence, or a deliberately continuing Worker session.
+
+A Worker handoff is not required merely as ceremony after a fully committed, pushed, publicly verified, clean, self-contained slice when no material local-only state remains.
+
 **Authoritative Worker task**
 
 A concrete Orchestrator task:
@@ -441,25 +445,28 @@ A concrete Orchestrator task:
 - may include an integrated read-only bootstrap gate;
 - is the prompt the Cooperator sends to the fresh Worker session.
 
-Wording such as "You are a fresh Worker session" describes the conversational context and restoration requirement. It does not replace the handoff and does not itself grant unlisted permissions.
+Wording such as "You are a fresh Worker session" describes the conversational context and restoration requirement. It does not replace any required handoff and does not itself grant unlisted permissions.
 
 ### End-to-end Worker rotation flow
 
-**Closing sequence**
+**Closing sequence when a handoff is required**
 
 1. The Orchestrator decides that rotation is required.
-2. The Orchestrator issues one bounded handoff-authoring task.
-3. The closing Worker writes or replaces the repository handoff.
-4. The closing Worker validates it and performs only authorized Git writes.
-5. The closing Worker reports a compact summary, exact changed path, validation, commit SHA, push state, and final repository status.
-6. The Orchestrator independently verifies the committed handoff when possible.
-7. The closing Worker session stops.
+2. The Orchestrator decides whether a handoff is required by unreconstructable state or project-specific rule.
+3. The Orchestrator issues one bounded handoff-authoring task.
+4. The closing Worker writes or replaces the repository handoff.
+5. The closing Worker validates it and performs only authorized Git writes.
+6. The closing Worker reports a compact summary, exact changed path, validation, commit SHA, push state, and final repository status.
+7. The Orchestrator independently verifies the committed handoff when possible.
+8. The closing Worker session stops.
+
+When no handoff is required, the Orchestrator may close the Worker session after verifying the public commit, final clean state, durable decisions, and absence of material local-only continuation state.
 
 **Opening sequence**
 
 1. The Cooperator opens a new Worker conversation in the same repository or workspace.
 2. The Orchestrator provides one new authoritative concrete task prompt.
-3. The fresh Worker reads repository rules, stable bootstrap, role handbook, and current handoff directly from the repository.
+3. The fresh Worker reads repository rules, stable bootstrap, role handbook, and any current handoff that is part of the project state directly from the repository.
 4. The fresh Worker independently resolves repository identity, current refs, cleanliness, and task preconditions.
 5. The fresh Worker stops if the integrated bootstrap gate fails.
 6. The fresh Worker executes only the concrete authoritative task.
@@ -511,9 +518,9 @@ Duplicating a committed handoff in the report without need is context waste and 
 **Fresh Worker instance**
 
 - is a new concrete execution agent assigned to the WORKER role;
-- reads the handoff itself;
-- treats it as state evidence only;
-- verifies it against current repository truth;
+- reads any required handoff itself;
+- treats any handoff as state evidence only;
+- verifies any handoff against current repository truth;
 - follows only the new Orchestrator task.
 
 This section integrates with the source-of-truth model in section 5, handoff lifecycle in section 28, session rotation in section 30, compact communication in section 36, operational lifecycle artifacts in section 37, and the minimal loops in sections 33 and 34.
@@ -524,7 +531,7 @@ Conversational context is temporary. It MUST NOT be treated as the sole project 
 
 Repository files, tests, commits, ADRs, and handoff documents are the durable source of truth.
 
-Automatic context compaction or summarization MAY help continuity, but it MUST NOT replace an explicit handoff when a session is ending or when durable state has changed.
+Automatic context compaction or summarization MAY help continuity, but it MUST NOT replace repository evidence, task authority, or an explicit handoff when unreconstructable session state must be preserved.
 
 Visible context percentages are heuristics relative to the active Worker instance and its Worker implementation. Different implementations measure and display context differently, so percentage thresholds are guidance rather than universal guarantees or fixed token budgets. Context pressure belongs to the current Worker instance and Worker session, not to the persistent WORKER protocol role.
 
@@ -534,7 +541,7 @@ Compaction during unresolved local mutation increases risk because uncommitted s
 
 At approximately 80% of the active implementation's reported context usage, a role SHOULD avoid starting a large new task and SHOULD plan a checkpoint instead.
 
-At approximately 85% or more of the active implementation's reported context usage, a role SHOULD normally finish only the current bounded task, create or update the appropriate handoff, and stop.
+At approximately 85% or more of the active implementation's reported context usage, a role SHOULD normally finish only the current bounded operation, reach a durable checkpoint, avoid starting a new substantial slice, create or update any required handoff, and stop or await Orchestrator evaluation.
 
 When no context meter exists, use behavioral indicators such as repeated questions, forgotten constraints, confused commits, scope expansion, inconsistent reasoning, or a natural project checkpoint.
 
@@ -552,7 +559,7 @@ Handoff files SHOULD be replaced with current state rather than grow into endles
 
 Handoffs MAY reference temporary committed evidence while a decision remains open. After that evidence is consumed by a durable artifact, handoffs MUST reference the accepted durable artifact instead.
 
-The closing session MUST stop after the handoff report.
+The closing session MUST stop after the handoff report when a handoff closeout is performed. If no handoff is required, the session still closes only when the Orchestrator explicitly accepts, pauses, or closes it after verifying durable state.
 
 A new session MUST independently verify the current repository HEAD and public committed state.
 
