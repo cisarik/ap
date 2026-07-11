@@ -21,6 +21,9 @@ the authoritative archive for exact content.
 - Hardened update validation with strict pinned doctor checks, candidate
   validation for update and rollback review, forward-only update semantics, exact
   managed-block checks, and safer temporary publication.
+- Formalized adaptive orchestration phases, separate preflight criteria,
+  reasoning-effort recommendations, public-verification evidence tiers,
+  browser and Cooperator acceptance boundaries, and optional Discovery Records.
 
 ## Historical Generations
 

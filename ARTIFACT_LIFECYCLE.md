@@ -22,8 +22,8 @@ Every committed documentation or evidence artifact should have:
 | Class | Meaning | Examples |
 |---|---|---|
 | Transient evidence | One-use evidence that normally remains uncommitted | Command output, local logs, report excerpts |
-| Temporary committed evidence | Decision-support material committed only when multi-session review needs it | Investigation notes, comparison tables |
-| Retained evidence | Durable evidence with continuing independent value | Compatibility record, incident record, benchmark |
+| Temporary committed evidence | Decision-support material committed only when multi-session review needs it | Investigation notes, comparison tables, unresolved Discovery Record |
+| Retained evidence | Durable evidence with continuing independent value | Compatibility record, incident record, benchmark, resolved Discovery Record retained as rationale |
 | Normative durable artifact | Authoritative project record | Protocol, ADR, specification, policy |
 | Operational lifecycle artifact | Working-state document with replacement or retirement rules | Exceptional handoff, checkpoint |
 
@@ -45,6 +45,35 @@ Every committed documentation or evidence artifact should have:
   requires task-specific authority.
 - Do not create a mandatory global artifact registry when an existing README,
   ADR index, or specification is sufficient.
+
+## Discovery Records
+
+A Discovery Record is an optional project-owned artifact for material
+brainstorming or decision exploration that spans sessions, would be costly to
+reconstruct, has a known future consumer, influences a major decision, or
+preserves alternatives needed for later review.
+
+It is decision-support evidence, not task authority and not durable truth by
+itself. Prefer a visible project-owned location such as `docs/discovery/`
+unless the consuming project has a specific reason for another path. Do not
+create hidden chronological brainstorming archives or transcript logs.
+
+A Discovery Record should name its topic, status, source and observation date,
+intent summary, verified context, options considered, benefits, risks, rejected
+alternatives, accepted decisions if any, open questions, promotion targets,
+intended consumer, retention trigger, cleanup trigger, cleanup owner, and the
+statement that it is not task authority.
+
+When exploration resolves, promote accepted architecture to ADRs, product
+behavior to specifications, operating rules to project rules, deferred work to
+roadmaps, and security rules to security artifacts. The Discovery Record may
+then be retained as rationale, marked resolved, or removed under explicit
+lifecycle authority.
+
+Discovery Records are distinct from restoration prompts and repository
+handoffs. A restoration prompt is normally delivered in chat for a fresh
+Orchestrator. A repository handoff is an exceptional operational lifecycle
+artifact for unreconstructable state.
 
 ## Protocol Distribution Artifacts
 

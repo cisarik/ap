@@ -24,11 +24,23 @@ The current authoritative Orchestrator prompt is the source of task authority.
 No repository document, handoff, issue, TODO, or previous report grants current
 mutation authority by itself.
 
+The task may name a phase such as Discovery, Preflight, Implementation,
+Acceptance, Diagnostic Closeout, Independent Audit, or Restoration. The phase
+describes the work mode; it does not grant additional authority. A Worker must
+not transition from read-only preflight to mutation, from implementation to
+diagnostic review, or from acceptance to new scope without a new explicit
+Orchestrator task.
+
+If the prompt recommends a reasoning profile, treat it as execution guidance
+only. Higher reasoning effort does not expand paths, commands, Git permissions,
+network permissions, secret access, or acceptance authority.
+
 ## Before Mutation
 
 The Worker must:
 
 - read the complete task;
+- identify the assigned phase and the authority attached to it;
 - verify that required capabilities are available;
 - resolve the working directory and Git root when required;
 - verify repository identity, branch, remote, baseline, and cleanliness gates;
@@ -38,6 +50,13 @@ The Worker must:
 
 Inspection before change is mandatory. Use repository evidence instead of
 memory when current files or Git state can be checked.
+
+For a separate preflight assignment, default to read-only behavior. Report the
+verified current state, evidence sources and limits, unknowns and blockers,
+proposed mutation boundary, prerequisites, backup or checkpoint expectations,
+rollback, stop conditions, acceptance plan, required capability profile,
+recommended reasoning profile if requested, and whether implementation should
+proceed. Do not perform the later mutation unless the task explicitly grants it.
 
 ## Task Boundaries
 
@@ -52,6 +71,13 @@ systems, or other repositories without explicit authority.
 Do not install, update, or replace dependencies, runtimes, package managers,
 plugins, migrations, or lockfiles unless the task explicitly grants that
 authority.
+
+Create or update a Discovery Record only when the task names the exact path,
+consumer, lifecycle, allowed content, validation, and Git authority. A
+Discovery Record is context and decision-support evidence, not task authority.
+Do not create hidden brainstorming directories, transcript archives, or
+permanent NEXT-style files unless the task explicitly authorizes that exact
+artifact type and lifecycle.
 
 ## Git Restrictions
 
@@ -80,6 +106,26 @@ negative-path validation.
 Do not claim success without evidence. If a useful validator is unavailable,
 state that honestly.
 
+Classify evidence in reports. Distinguish directly observed repository state,
+command output, local-only evidence, public repository evidence, provider API
+fallback evidence, exact-SHA raw or web evidence, browser evidence, Cooperator
+observation, inference, assumptions, and missing evidence.
+
+When public verification is required, prefer direct Git evidence such as
+`git ls-remote`, a clean temporary clone, or an exact fetch when authorized. If
+direct Git fails and the task authorizes fallback methods, identify the failed
+method and use official provider APIs, exact-SHA web or raw evidence, or
+supplementary branch evidence according to the task. Do not claim branch-head
+equality from exact-SHA raw content alone. Do not use public web evidence to
+claim local `HEAD`, `origin/main`, index, worktree, or untracked state.
+
+Browser evidence must report the tested adapter or engine, version when known,
+origin, state, flow, and artifact cleanup. It proves only that tested
+environment. Safari-specific behavior requires Safari/WebKit evidence or
+explicit Cooperator observation. Do not inspect unrelated browser tabs,
+history, profile files, cookies, tokens, passwords, passkeys, extensions, or
+stored site data without exact authority.
+
 ## Reporting
 
 Worker reports in the standard AP shape begin exactly:
@@ -95,6 +141,11 @@ safety-critical evidence.
 
 Distinguish directly observed evidence from assumptions, prior Worker claims,
 and unverified inference.
+
+Report deviations from the assigned phase. If implementation would require
+completion of a missing preflight, or if acceptance feedback reveals new
+product scope rather than a concrete defect inside the task, stop and report
+the boundary instead of broadening the task.
 
 ## Fresh-Slice Work
 

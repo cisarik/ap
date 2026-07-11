@@ -54,175 +54,166 @@ state, safety-critical evidence, or explicit Orchestrator request.
 
 Omitted permission is not implied.
 
-## Fresh Implementation Worker
+## Adaptive Phase Contracts
 
-Use this contract for one substantial coherent implementation slice.
+Each substantial AP prompt or response should name its phase, reasoning
+recommendation where useful, authority, evidence, output, transition owner, and
+stopping rule. Keep contracts compact; increase detail only when risk,
+cross-cutting scope, or safety requires it.
 
-Required structure:
+### Discovery Or Intent Synthesis
 
-```text
-You are a fresh Worker instance assigned to the persistent WORKER protocol role.
+- **Phase**: Discovery.
+- **Reasoning recommendation**: lowest sufficient profile for ambiguity and
+  stakes; High or Extra High only for substantial architecture uncertainty.
+- **Authority**: read, analyze, synthesize, and ask bounded questions; no
+  repository mutation unless separately authorized.
+- **Evidence**: latest Cooperator intent, repository truth when relevant,
+  accepted decisions, tentative ideas, rejected options, and evidence limits.
+- **Output**: intent synthesis with accepted direction, explored ideas, open
+  questions, risks, recommended default, approvals needed, and proposed next
+  phase.
+- **Transition owner**: Orchestrator recommends; Cooperator decides strategic
+  or safety-sensitive questions.
+- **Stopping rule**: stop when a decision-ready synthesis or exact next Worker
+  task boundary is available.
 
-Task ID:
-Task type: fresh implementation slice
-Repository:
-Working directory:
-Branch:
-Expected baseline:
+### Separate Read-Only Preflight
 
-Repository gate:
-- verify root, remote identity, branch, local/tracking/public refs, status, and untracked files
-- stop before mutation if any material gate fails
+- **Phase**: Preflight.
+- **Reasoning recommendation**: usually High for operational, durable-state, or
+  security-adjacent preparation; lower for simple state checks.
+- **Authority**: read-only unless a minimal probe is explicitly approved; no
+  implementation mutation.
+- **Evidence**: current verified state, source limitations, unknowns,
+  prerequisites, rollback, backups or checkpoints, environment constraints, and
+  acceptance plan.
+- **Output**: PASS, PARTIAL, or BLOCKED preflight report with exact proposed
+  mutation boundary and whether implementation should proceed.
+- **Transition owner**: Orchestrator, with Cooperator approval when authority,
+  safety, or strategy changes.
+- **Stopping rule**: stop if required state cannot be verified or mutation
+  authority would be premature.
 
-Mandatory reading:
-- project AGENTS.md
-- .ap/AP.md
-- .ap/AP_WORKER.md
-- task-relevant files
+### Fresh Implementation Worker
 
-Goal:
-- one coherent outcome
+- **Phase**: Implementation.
+- **Reasoning recommendation**: lowest sufficient profile for the slice;
+  choose separately from any later diagnostic.
+- **Authority**: one fresh Worker, one coherent primary outcome, exact paths,
+  commands, dependency, network, browser, secret, filesystem, and Git authority.
+- **Evidence**: repository gate, mandatory reading, accepted decisions, tests,
+  direct behavior, diff, and public verification when authorized.
+- **Output**: implementation, validation, one commit and push when authorized,
+  and a report beginning `### Report for ORCHESTRATOR_CHAT`.
+- **Transition owner**: Orchestrator accepts, corrects, requests diagnostic, or
+  starts another phase.
+- **Stopping rule**: stop on failed gates, missing authority, unsafe secrets,
+  out-of-scope needs, validation failure that cannot be corrected inside
+  authority, or completed acceptance criteria and verification.
 
-Accepted decisions:
-- ...
+The implementation prompt may combine related inspection, research,
+architecture recording, tests, documentation, one normal commit and push, and
+evidence reporting only when all serve the same primary outcome.
 
-Allowed paths:
-- ...
+### Automated And Cooperator Acceptance Plan
 
-Explicit exclusions:
-- no unrelated features
-- no speculative refactors
-- no project-specific AP protocol edits
-- ...
+- **Phase**: Acceptance.
+- **Reasoning recommendation**: normally Standard; High when evidence classes,
+  media behavior, device state, or accessibility risk are complex.
+- **Authority**: define automated checks, browser scope, screenshots,
+  environment observations, Cooperator checklist, and cleanup rules; no new
+  feature authority.
+- **Evidence**: test output, browser engine and version, origin and state,
+  screenshots or logs, accessibility or media evidence, physical observation,
+  and Cooperator responses.
+- **Output**: acceptance matrix or numbered checklist with PASS, FAIL, NOT
+  TESTED, defects, missing evidence, and adjacent ideas separated.
+- **Transition owner**: Orchestrator classifies evidence and feedback.
+- **Stopping rule**: stop when acceptance status and any bounded correction
+  need are clear.
 
-Validation:
-- ...
+### Diagnostic Closeout
 
-Git authority:
-- read-only, or exact stage/commit/push authority
+- **Phase**: Diagnostic Closeout.
+- **Reasoning recommendation**: choose independently; often High for a
+  substantial slice.
+- **Authority**: read-only by default; any correction must name exact paths,
+  defect class, validation, Git authority, and normally one corrective commit.
+- **Evidence**: original task, implementation commit, Worker report as claim,
+  repository files, tests, public commit and raw content, security boundaries,
+  documentation truth, changed paths, and Git integrity.
+- **Output**: confirmed defects, disproven concerns, unresolved risks,
+  validation evidence, and correction commit if authorized.
+- **Transition owner**: Orchestrator decides acceptance, correction, audit,
+  continuation, or closure.
+- **Stopping rule**: stop outside the original task boundary or when no
+  authorized correction remains.
 
-Stopping conditions:
-- ...
+### Fresh Independent Audit
 
-Report:
-- begin with ### Report for ORCHESTRATOR_CHAT
-```
+- **Phase**: Independent Audit.
+- **Reasoning recommendation**: High or Extra High only when impact justifies a
+  separate fresh review.
+- **Authority**: separate fresh Worker, sequential execution, normally
+  read-only; no parallel Worker topology and no new feature task.
+- **Evidence**: current repository files, tests and command output, public
+  commit and raw content, durable decisions, and Worker report as claim only.
+- **Output**: discrepancies, confirmations, residual risks, and evidence
+  classification.
+- **Transition owner**: Orchestrator.
+- **Stopping rule**: stop when audit evidence is complete or correction would
+  require authority not granted.
 
-The prompt may authorize related inspection, implementation, tests,
-documentation, one normal commit and push, and evidence reporting when all serve
-the same primary outcome.
+### Fresh Orchestrator Restoration
 
-## Diagnostic Closeout
+- **Phase**: Restoration.
+- **Reasoning recommendation**: recommend the likely profile for the next
+  substantial Worker task, not for every future action.
+- **Authority**: synthesis only; restoration text grants no repository, host,
+  account, browser, credential, or Git mutation authority.
+- **Evidence**: verified public commit, current AP pin when present, completed
+  boundaries, accepted decisions, evidence classification, active Worker state,
+  unresolved questions, risks, and latest Cooperator intent separated from
+  brainstorming.
+- **Output**: self-contained restoration prompt with current phase, exact next
+  bounded step, public-verification requirement, and PASS, PARTIAL, or BLOCKED
+  classification.
+- **Transition owner**: fresh Orchestrator verifies truth before acting.
+- **Stopping rule**: stop if public state or active mutation cannot be
+  classified honestly.
 
-Use this contract after an implementation pass when one adversarial closeout is
-proportionate.
+### Optional Discovery Record Creation
 
-```text
-You are a Worker instance assigned to diagnostic closeout for the same completed slice.
+- **Phase**: Discovery.
+- **Reasoning recommendation**: match the decision complexity; Standard for
+  routine records, High for architecture exploration.
+- **Authority**: exact path, consumer, lifecycle, allowed content, validation,
+  and Git authority; no hidden transcript archive.
+- **Evidence**: topic, status, observation date, Cooperator intent summary,
+  verified context, options, benefits, risks, rejected alternatives, accepted
+  decisions if any, open questions, promotion targets, and retention triggers.
+- **Output**: visible project-owned Discovery Record that states it is not task
+  authority.
+- **Transition owner**: Orchestrator promotes accepted conclusions to ADR,
+  product, specification, roadmap, security, or project-rule artifacts.
+- **Stopping rule**: stop if the record lacks a concrete consumer or lifecycle.
 
-Implementation commit:
-Original acceptance contract:
-Review hypotheses:
-- requirement coverage
-- prohibited behavior
-- negative guarantees
-- security and privacy boundaries
-- failure cleanup
-- documentation truth
-- changed-path and Git integrity
+### Exceptional Repository Handoff
 
-Default authority:
-- read-only
-- no new feature
-- no general cleanup
-- no broad rewrite
-
-Optional correction authority:
-- only if explicitly listed
-- exact paths:
-- one corrective commit:
-
-Validation:
-- ...
-
-Report:
-- confirmed defects
-- disproven concerns
-- unresolved risks
-- validation evidence
-- correction commit if used
-- begin with ### Report for ORCHESTRATOR_CHAT
-```
-
-Diagnostic closeout remains inside the original task boundary.
-
-## Fresh Independent Audit
-
-Use this contract when risk justifies a separate fresh Worker instance for
-sequential audit.
-
-```text
-You are a fresh Worker instance assigned to bounded independent audit.
-
-Implementation commit:
-Original task contract:
-Evidence hierarchy:
-- current repository files
-- tests and command output
-- public commit and raw content
-- durable decisions
-- Worker report as claim only
-
-Authority:
-- read-only by default
-- no implementation changes unless exact correction authority is listed
-- no new feature task
-- no parallel execution
-
-Report discrepancies with evidence and begin with ### Report for ORCHESTRATOR_CHAT
-```
-
-## Fresh Orchestrator Restoration
-
-At a coherent verified boundary, the Orchestrator may produce a restoration
-prompt for a fresh Orchestrator instance instead of requiring a repository
-handoff file.
-
-The prompt should contain:
-
-- persistent ORCHESTRATOR role identity;
-- project and repository identity;
-- exact last verified public commit;
-- completed logical boundaries;
-- accepted decisions and durable source files;
-- evidence classification;
-- security, secret, network, filesystem, and Git authority boundaries;
-- active Worker state;
-- unresolved decisions or risks;
-- exact recommended next bounded step;
-- instruction to verify public truth independently before acting;
-- PASS, PARTIAL, or BLOCKED restoration classification;
-- explicit statement that restoration text grants no mutation authority.
-
-## Exceptional Repository Handoff
-
-Use this contract only when unreconstructable state exists.
-
-The Orchestrator task must define:
-
-- why durable repository truth and a restoration prompt are insufficient;
-- exact handoff path;
-- intended consumer;
-- classification and authority level;
-- required content and exclusions;
-- retention or retirement trigger;
-- cleanup owner;
-- validation;
-- exact Git authority;
-- public verification requirement.
-
-The Worker-authored handoff is context only. It must not grant task authority or
-invent the next task.
+- **Phase**: Restoration or operational lifecycle support.
+- **Reasoning recommendation**: Standard to High depending on unreconstructable
+  state and risk.
+- **Authority**: exact handoff path, classification, consumer, required content,
+  exclusions, retention or retirement trigger, cleanup owner, validation, Git
+  authority, and public verification.
+- **Evidence**: why durable repository truth and restoration prompt are
+  insufficient, what state is unreconstructable, and what must be excluded.
+- **Output**: Worker-authored handoff context only; it must not grant task
+  authority or invent next work.
+- **Transition owner**: Orchestrator.
+- **Stopping rule**: stop if ordinary restoration or durable repository truth is
+  sufficient.
 
 ## AP Integration Task
 

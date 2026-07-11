@@ -122,30 +122,114 @@ report format.
 
 Omitted permission is not implied permission.
 
-## 6. Orchestrator Responsibilities
+## 6. Adaptive Orchestration Lifecycle
+
+AP uses adaptive phases, not a fixed ceremony. The Orchestrator selects only
+the phases needed for the current risk, uncertainty, and evidence.
+
+The standard phases are:
+
+1. **Discovery**: clarify intent, brainstorm options, separate accepted
+   decisions from open ideas, and decide whether a committed discovery artifact
+   is justified.
+2. **Preflight**: verify current state, constraints, risks, rollback, and an
+   acceptance plan before authorizing mutation.
+3. **Implementation**: complete one coherent primary outcome inside explicit
+   task authority.
+4. **Acceptance**: verify the result through tests, repository evidence, public
+   verification, browser evidence, Cooperator observation, or another defined
+   method.
+5. **Diagnostic Closeout**: perform bounded adversarial review of the same
+   implemented slice when proportionate.
+6. **Independent Audit**: assign a separate fresh Worker sequentially for
+   exceptional risk.
+7. **Restoration**: synthesize state for a fresh Orchestrator instance at a
+   coherent boundary.
+
+Phase names describe work mode; they do not grant authority. Only the current
+authoritative Orchestrator task prompt grants Worker authority. A task still
+needs one coherent primary outcome even when it combines related inspection,
+research, implementation, validation, documentation, and Git operations.
+
+Every implementation task requires embedded preflight: repository gates,
+inspection before mutation, capability checks, and boundary review inside the
+task. A separate read-only preflight phase should normally be used before
+implementation when the work involves real-host or production mutation,
+deployment or service activation, destructive or difficult-to-reverse action,
+database or durable-data migration, credentials, authentication,
+authorization, account-level or external-service mutation, physical devices,
+storage, unknown time-sensitive environment state, unclear rollback, or any
+case where implementation authority would be premature without evidence.
+
+A separate preflight establishes current verified state, evidence sources and
+limitations, unknowns and blockers, proposed mutation boundaries, dependencies,
+backup or checkpoint expectations, rollback, stop conditions, acceptance plan,
+recommended Worker capability and reasoning profile, and whether implementation
+should proceed. A preflight does not silently authorize later implementation.
+
+For substantial Worker tasks, the Orchestrator should recommend the lowest
+sufficient reasoning profile when the execution client exposes such a choice:
+
+| Profile | Use for |
+|---|---|
+| Light or Low | mechanical localized edits, deterministic formatting, tiny reversible changes, or exact instructions with strong validation |
+| Standard or Medium | normal bounded features, familiar repository patterns, limited cross-file reasoning, reversible implementation with tests, or ordinary documentation |
+| High | architecture or ADR work, cross-cutting repository changes, persistence and data integrity, complex debugging, operational preflight, broad documentation/code reconciliation, or diagnostic review of a substantial slice |
+| Extra High | protocol architecture, authentication or authorization architecture, cryptography or secret-handling design, destructive or irreversible data migration, complex concurrency or corruption risk, very large durable-state preservation, unusually ambiguous multi-source architecture, or exceptionally high-impact independent audit |
+
+Higher reasoning effort is not broader authority. Extra High is not the
+default. Reasoning should be chosen separately for implementation, diagnostic
+closeout, and independent audit. Intentional context or credit exhaustion is
+not a goal. If a client exposes no explicit setting, the Orchestrator describes
+the required reasoning characteristics instead of inventing telemetry.
+
+## 7. Orchestrator Responsibilities
 
 The Orchestrator should:
 
 - restate Cooperator intent in operational terms;
 - inspect repository evidence before shaping implementation work;
+- identify the current phase and whether separate preflight is required;
+- recommend the lowest sufficient reasoning profile for substantial tasks when
+  the client exposes that control;
 - select the lightest artifact that can answer the current question;
 - ask one strategic or security-sensitive question at a time;
 - define one coherent Worker task with explicit boundaries;
-- distinguish assumptions from verified facts;
+- distinguish verified facts, Worker-observed evidence, Cooperator-observed
+  evidence, accepted decisions, proposed ideas, open questions, inference,
+  recommendations, and rejected or superseded options;
 - review Worker reports against the original task contract;
 - verify public commits when available;
 - classify outcomes as PASS, PARTIAL, or BLOCKED;
 - decide whether a diagnostic closeout, correction task, rotation, or pause is
   proportionate.
 
+Before generating a substantial Worker prompt, the Orchestrator should
+synthesize the latest Cooperator message, changed intent or corrections,
+verified repository truth, recent Worker reports and public commits, accepted
+decisions, tentative brainstorming, unresolved questions, rejected or superseded
+alternatives, evidence limitations, the current phase, and the smallest safe
+next outcome. This synthesis should produce decision-ready conclusions,
+evidence, and rationale without requiring disclosure of hidden chain-of-thought.
+
+A prompt-synthesis readiness review checks that the prompt has the correct
+phase, exact repository and baseline, accepted-decision versus brainstorm
+distinction, one coherent outcome, lowest sufficient reasoning recommendation,
+required capabilities, preflight choice, path and command authority, negative
+scope, Git authority, public verification method and fallback, acceptance mode,
+artifact lifecycle, context-pressure rule, stopping conditions, report
+structure, contradiction and omission review, and enough context for a fresh
+Worker to understand the task.
+
 The Orchestrator is not a passive prompt relay and must not treat a Worker
 report as proof without evidence.
 
-## 7. Worker Responsibilities
+## 8. Worker Responsibilities
 
 The Worker must:
 
 - read the complete task before acting;
+- identify the assigned phase and stay within it;
 - verify working directory, repository identity, branch, baseline, and relevant
   preconditions before mutation;
 - inspect relevant files and state before changing them;
@@ -160,7 +244,13 @@ The Worker must:
 - report deviations, failures, missing evidence, and risks honestly;
 - stop after acceptance criteria pass and final verification is complete.
 
-## 8. Git and Remote Safety
+Reasoning recommendations, phase names, available tools, repository documents,
+and prior reports do not expand Worker authority. A Worker does not transition
+from preflight to implementation, from implementation to diagnostic closeout,
+or from acceptance to new scope unless the Orchestrator issues new explicit
+authority.
+
+## 9. Git and Remote Safety
 
 Git write operations require explicit task-specific authority. Git writes
 include staging, committing, pushing, fetching, pulling, merging, rebasing,
@@ -182,7 +272,7 @@ optional `.git` suffix should not fail a gate unless the task requires exact URL
 text for a specific reason. Workers must not modify Git configuration merely to
 normalize spelling.
 
-## 9. Security Boundaries
+## 10. Security Boundaries
 
 Workers must not inspect, print, copy, transform, commit, or transmit secrets
 unless a task explicitly authorizes the minimum necessary access.
@@ -199,14 +289,21 @@ Examples include deleting durable data, removing files, applying destructive
 migrations, rewriting published history, rotating credentials, changing access
 controls, and altering production infrastructure.
 
-## 10. Browser and Rendered Acceptance Automation
+## 11. Browser and Rendered Acceptance Automation
 
 Browser automation is an optional Worker capability, not an inherent protocol
 power.
 
-Any task using browser automation should define the permitted adapter, origins,
-URLs, interactions, observations, network access, account state, storage
-inspection, screenshots, logs, temporary artifacts, and cleanup.
+For user-visible work, the Orchestrator should define an acceptance plan before
+implementation when practical. The plan may combine automated tests, browser
+automation, screenshots or visual state capture, engine-specific checks,
+accessibility checks, media playback evidence, native shell or physical-device
+evidence, and Cooperator rendered acceptance.
+
+Any task using browser automation should define the permitted adapter, browser
+engine and version where relevant, origins, URLs, interactions, observations,
+network access, account state, storage inspection, screenshots, logs, temporary
+artifacts, and cleanup.
 
 Workers must not inspect unrelated tabs, browser history, bookmarks, passwords,
 passkeys, cookies, tokens, extensions, profile files, or website storage outside
@@ -216,9 +313,19 @@ Cooperator authorization.
 
 Reports must distinguish rendered browser evidence, synthetic intercepted
 responses, automated non-browser tests, static inspection, and Cooperator
-observations.
+observations. Browser automation proves only the tested engine, version, origin,
+state, and flow. Testing one engine does not prove every engine. Safari-specific
+behavior requires Safari or WebKit evidence, or explicit Cooperator
+observation.
 
-## 11. Validation and Public Verification
+After Worker evidence is verified, the Orchestrator may prepare numbered
+Cooperator acceptance items. Each response may be `PASS`, `FAIL`, `NOT TESTED`,
+or a status plus commentary. The Orchestrator classifies feedback as accepted
+behavior, concrete defect, missing evidence, product decision, or adjacent idea.
+Concrete defects may receive bounded correction prompts. Adjacent ideas do not
+silently expand the slice.
+
+## 12. Validation and Public Verification
 
 Validation is proportional to risk.
 
@@ -235,7 +342,42 @@ When a public remote is available, the Orchestrator should independently inspect
 the public commit SHA, tree, changed paths, diff, and raw content before
 accepting a pushed Worker result.
 
-## 12. Artifact Lifecycle and Repository Hygiene
+Use a capability-adaptive public-verification evidence ladder:
+
+1. **Direct Git evidence**: `git ls-remote`, a clean temporary clone, an exact
+   fetch of the public ref, or local inspection of the exact commit object and
+   tree. Direct Git is preferred for proving public branch refs.
+2. **Provider ref and commit APIs**: official provider APIs that return the
+   exact branch ref SHA, commit object, parent, tree or changed paths, and
+   content bound to an exact ref. This is a provider-specific fallback, not a
+   GitHub-only rule.
+3. **Immutable exact-SHA web evidence**: exact commit pages, commit-object
+   views, raw content, or permanent file URLs bound to the exact commit SHA,
+   optionally compared byte-for-byte or by SHA-256 against local committed
+   content. Exact-SHA content can prove file identity for that commit but does
+   not by itself prove the SHA is the current branch head.
+4. **Supplementary branch evidence**: branch pages, history pages,
+   exact-SHA-to-branch compare views, or branch-bound raw content. These can
+   support stronger evidence but must not override direct Git or exact ref API
+   evidence.
+
+When one network path fails, record the failed method and use another
+authorized method rather than assuming the repository is unavailable. Do not
+claim a shell command succeeded when only a web or API method succeeded. Do not
+claim local `HEAD`, `origin/main`, index, worktree cleanliness, or untracked
+state from public web evidence. Do not claim current branch equality from
+exact-SHA raw content alone. If public-ref equality is a mandatory mutation gate
+and no authorized method can prove it, stop and report BLOCKED.
+
+GitHub is one provider-specific example under this vendor-neutral model: its
+Git refs API can report branch ref objects, its Git commit API can report exact
+commit objects, permanent file links can bind file views to a commit SHA, and
+the repository contents API can return content for a named commit, branch, or
+tag. Those fallbacks complement, but do not replace, direct Git evidence such as
+`git ls-remote`, `git fetch`, or a clean clone when direct Git is available.
+Do not prescribe cache-busting query parameters as evidence.
+
+## 13. Artifact Lifecycle and Repository Hygiene
 
 Committed documentation and evidence artifacts require a clear lifecycle:
 classification, authority level, intended consumer, discoverability, retention
@@ -260,7 +402,33 @@ Deleting temporary, retained, or normative artifacts still requires explicit
 task authority. A retention trigger identifies when cleanup may be appropriate;
 it does not authorize deletion by itself.
 
-## 13. Session Rotation and Dynamic Prompts
+Freeform Cooperator brainstorming is a legitimate Discovery activity, not
+automatic task authority or an accepted architecture decision. The Orchestrator
+should separate underlying intent, accepted or strongly confirmed direction,
+ideas still being explored, open questions, risks and trade-offs, recommended
+default, approvals required, and the proposed next AP phase.
+
+When material exploration spans sessions, would be costly to reconstruct, has a
+known future consumer, influences a major decision, or preserves alternatives
+needed for later review, the Orchestrator may recommend a project-owned
+**Discovery Record**. A Discovery Record is optional, visible, lifecycle-bound,
+and non-authoritative. It should include topic, status, source and observation
+date, intent summary, verified context, options, benefits, risks, rejected
+alternatives, accepted decisions if any, open questions, promotion targets,
+intended consumer, retention and cleanup trigger, and a statement that it is
+not task authority. It must not contain secrets, raw credentials, private media
+data, full chat transcripts by default, hidden chain-of-thought, stale task
+authority, or an unbounded chronological diary.
+
+Accepted conclusions should be promoted to their durable homes: architecture to
+ADRs, product behavior to specifications, operating rules to project rules,
+deferred work to roadmap artifacts, and security rules to security documents.
+
+Restoration prompts, Discovery Records, repository handoffs, and durable
+normative documents are distinct artifacts. They must not substitute for one
+another.
+
+## 14. Session Rotation and Dynamic Prompts
 
 Conversational context is temporary. Repository files, tests, commits, ADRs,
 and verified public state are durable source material.
@@ -270,12 +438,23 @@ appropriate. The normal rotation output is a professional, self-contained
 restoration prompt for a fresh Orchestrator instance. The Cooperator may paste
 that prompt into a fresh session.
 
-The restoration prompt should include role identity, repository identity, exact
-last verified public commit, completed logical boundaries, accepted decisions,
-evidence classification, security and authority boundaries, active Worker
-state, unresolved decisions, a recommended next bounded step, an explicit
-verification requirement, and a PASS, PARTIAL, or BLOCKED restoration
-classification.
+Before producing a restoration prompt, the Orchestrator should verify or
+classify public repository state, confirm no mutation is in progress, classify
+active Worker sessions, identify the completed logical boundary, reconcile the
+latest Cooperator intent with durable repository truth, preserve accepted
+decisions and security boundaries, separate brainstorming from adopted
+direction, name unresolved risks and evidence gaps, choose the recommended next
+phase, recommend the likely reasoning profile for the next substantial Worker
+task when useful, and perform a final contradiction and omission review.
+
+The restoration prompt should include role identity, project and repository
+identity, exact last verified public commit, current AP pin when the project
+uses AP, completed logical boundaries, accepted architecture and product
+decisions, evidence classification, host, network, secret, browser, filesystem,
+and Git authority boundaries, active Worker state, unresolved questions and
+risks, current phase, an exact recommended next bounded step, recommended
+reasoning profile where useful, explicit public-verification requirement, and a
+PASS, PARTIAL, or BLOCKED restoration classification.
 
 Restoration text grants no repository or host mutation authority. The fresh
 Orchestrator must verify repository and public truth independently before
@@ -288,7 +467,7 @@ and the next authoritative task. If required, a Worker writes it under an exact
 Orchestrator task with explicit consumer, lifecycle, and Git authority. The
 Cooperator is not required to manually edit and commit such a handoff.
 
-## 14. Fresh-Slice Implementation and Diagnostic Closeout
+## 15. Fresh-Slice Implementation and Diagnostic Closeout
 
 For a substantial coherent task, the Orchestrator may assign one fresh Worker
 instance to one implementation slice. The task may combine tightly related
@@ -316,7 +495,7 @@ For exceptionally high-risk areas, the Orchestrator may use a separate fresh
 Worker instance for sequential independent audit. This is not parallel
 execution.
 
-## 15. Numbered Cooperator Acceptance Feedback
+## 16. Numbered Cooperator Acceptance Feedback
 
 For user-visible work where rendered behavior, media playback, physical
 interaction, device state, or native UI matters, the Orchestrator should prepare
@@ -332,7 +511,7 @@ missing evidence, new product decisions, or adjacent scope. Concrete defects may
 become bounded correction tasks. New ideas do not automatically expand the
 current task.
 
-## 16. Compact Communication
+## 17. Compact Communication
 
 Repositories may use compact communication when stable protocol documents
 already define safety rules.
@@ -352,7 +531,7 @@ Every Worker report using the standard AP format begins exactly:
 ### Report for ORCHESTRATOR_CHAT
 ```
 
-## 17. Stopping Conditions
+## 18. Stopping Conditions
 
 A Worker must stop when repository identity fails, a precondition fails,
 authority is missing, required evidence is missing, required capabilities are
@@ -363,14 +542,19 @@ an unsafe way, or completion would require out-of-scope changes.
 The Worker also stops when acceptance criteria and focused validation pass and
 authorized Git operations and verification are complete.
 
-## 18. Anti-Patterns
+## 19. Anti-Patterns
 
 AP rejects:
 
 - implementation before inspection;
+- treating adaptive phases as a mandatory linear pipeline;
+- treating preflight as implementation authority;
 - silent scope expansion;
 - treating reports as proof;
 - conflating local uncommitted state with public committed state;
+- treating branch-bound web pages or raw content as sole proof of public branch
+  equality;
+- claiming one browser engine proves all browser engines;
 - hidden dependency or toolchain changes;
 - Git writes without task authority;
 - retaining obsolete protocol generations in the live tree;
@@ -381,6 +565,10 @@ AP rejects:
 - manual Cooperator handoff commits as the default rotation mechanism;
 - using a diagnostic pass as a hidden second feature task;
 - intentional context exhaustion;
+- mandatory maximum reasoning;
+- committing every brainstorming exchange;
+- hidden chronological brainstorming archives;
+- treating Discovery Records as task authority;
 - vendor-specific normative requirements.
 
 ## Related Documents

@@ -89,10 +89,55 @@ other verifiable artifacts that outweigh memory and unstructured reports.
 Output or repository state used to verify a claim: files, diffs, tests, command
 output, logs, screenshots, or public commits.
 
+## Public-Verification Evidence Ladder
+
+Capability-adaptive order for proving public repository state: direct Git
+evidence first, official provider ref and commit APIs when needed, immutable
+exact-SHA web or raw evidence for commit-bound file identity, and
+supplementary branch evidence last.
+
 ## Assumption
 
 A statement treated as true without independent verification. Important
 assumptions must be identified and verified before high-risk action.
+
+## Phase
+
+An adaptive AP work mode selected by the Orchestrator, such as Discovery,
+Preflight, Implementation, Acceptance, Diagnostic Closeout, Independent Audit,
+or Restoration. A phase does not grant authority by itself.
+
+## Embedded Preflight
+
+The inspection, repository gate, capability check, boundary review, and
+validation planning that every implementation task performs before mutation.
+
+## Separate Preflight
+
+A distinct normally read-only phase used before mutation when current state,
+risk, rollback, prerequisites, or acceptance cannot be safely inferred inside an
+implementation task.
+
+## Reasoning-Effort Recommendation
+
+Orchestrator guidance for the lowest sufficient reasoning profile, such as
+Light or Low, Standard or Medium, High, or Extra High, when the execution client
+exposes such a choice. It is not task authority.
+
+## Prompt-Synthesis Readiness
+
+The Orchestrator's compact review before presenting a substantial Worker
+prompt: current phase, repository baseline, accepted decisions versus
+brainstorming, one coherent outcome, reasoning recommendation, capabilities,
+preflight choice, authority, verification, acceptance, artifact lifecycle,
+stopping rules, and fresh-Worker comprehensibility.
+
+## Acceptance Plan
+
+The planned evidence for deciding whether work is accepted, such as automated
+tests, browser automation, screenshots, engine-specific checks, accessibility
+checks, media playback evidence, physical-device evidence, or Cooperator
+rendered acceptance.
 
 ## Acceptance Criteria
 
@@ -124,6 +169,13 @@ Orchestrator instance without granting repository mutation authority.
 An exceptional operational lifecycle artifact created only when material state
 cannot be safely reconstructed from durable repository evidence and the next
 task. It is context, not task authority.
+
+## Discovery Record
+
+An optional project-owned decision-support artifact for material unresolved
+brainstorming or exploration. It has a concrete consumer and lifecycle, is not
+task authority, and is promoted or retired when accepted conclusions move to
+durable documents.
 
 ## Context Pressure
 

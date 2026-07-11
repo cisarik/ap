@@ -559,16 +559,100 @@ test_repository_structure_and_scans() {
     [ ! -e "$REPO/WORKERS.md" ] || return 1
     [ ! -e "$REPO/AGENTS.md" ] || return 1
     [ ! -d "$REPO/templates/project" ] || [ -z "$(find "$REPO/templates/project" -type f -print 2>/dev/null)" ] || return 1
-    ! rg -n "copy .*APv3|APv3.md.*to.*AP.md|rename .*APv|choose AP v[0-9]|manual.*handout|initialize .*Worker_1|permanent NEXT" "$REPO" --glob '!/.git/**' --glob '!tests/**' || return 1
+    ! rg -n "copy .*APv3|APv3.md.*to.*AP.md|rename .*APv|choose AP v[0-9]|initialize .*Worker_1|create permanent NEXT|use permanent NEXT as default" "$REPO" --glob '!/.git/**' --glob '!tests/**' || return 1
     ! rg -n "FrameNest|/Users/agile|Michal|Toto pošli|Worker_1|AP version 3|active generation" \
         "$REPO/AP.md" "$REPO/AP_ORCHESTRATOR.md" "$REPO/AP_WORKER.md" \
         "$REPO/PROMPT_CONTRACTS.md" "$REPO/ARTIFACT_LIFECYCLE.md" || return 1
+    [ -f "$REPO/docs/adr/0006-adaptive-orchestration-and-preflight-lifecycle.md" ] || return 1
+    grep -F "0006-adaptive-orchestration-and-preflight-lifecycle.md" "$REPO/docs/adr/README.md" >/dev/null || return 1
     for file in AP.md AP_ORCHESTRATOR.md AP_WORKER.md PROMPT_CONTRACTS.md \
         ARTIFACT_LIFECYCLE.md FAQ.md GLOSSARY.md INTEGRATION.md UPDATING.md \
         CHANGELOG.md
     do
         grep -F "$file" "$REPO/README.md" >/dev/null || return 1
     done
+}
+
+test_adaptive_lifecycle_contracts() {
+    grep -F "AP uses adaptive phases, not a fixed ceremony" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "The phases are not a mandatory linear sequence" "$REPO/docs/adr/0006-adaptive-orchestration-and-preflight-lifecycle.md" >/dev/null || return 1
+    grep -F "Every implementation task requires embedded preflight" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "A separate read-only preflight should normally be used" "$REPO/docs/adr/0006-adaptive-orchestration-and-preflight-lifecycle.md" >/dev/null || return 1
+    grep -F "A preflight does not silently authorize later implementation" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Phase names describe work mode; they do not grant authority" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "one coherent primary outcome" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "The Orchestrator selects only" "$REPO/docs/adr/0006-adaptive-orchestration-and-preflight-lifecycle.md" >/dev/null || return 1
+}
+
+test_reasoning_recommendation_contracts() {
+    grep -F "recommend the lowest sufficient reasoning profile" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Higher reasoning effort is not broader authority" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Extra High is not the" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Reasoning should be chosen separately" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Intentional context or credit exhaustion is" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "If a client exposes no explicit setting" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Reasoning effort is execution guidance only" "$REPO/FAQ.md" >/dev/null || return 1
+}
+
+test_prompt_synthesis_contracts() {
+    grep -F "latest Cooperator message" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "verified repository truth" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "accepted-decision versus brainstorm" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "without requiring disclosure of hidden chain-of-thought" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "a fresh Worker can understand the task" "$REPO/AP_ORCHESTRATOR.md" >/dev/null || return 1
+    grep -F "current phase" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
+    grep -F "recommended reasoning profile where useful" "$REPO/AP_ORCHESTRATOR.md" >/dev/null || return 1
+}
+
+test_verification_evidence_contracts() {
+    grep -F "Direct Git evidence" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Provider ref and commit APIs" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Immutable exact-SHA web evidence" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Supplementary branch evidence" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "current branch head" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "worktree cleanliness, or untracked" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "web or API method succeeded" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Do not prescribe cache-busting query parameters as evidence" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "GitHub is one provider-specific example" "$REPO/AP.md" >/dev/null || return 1
+}
+
+test_acceptance_contracts() {
+    grep -F "engine and version where relevant" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Testing one engine does not prove every engine" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "requires Safari or WebKit evidence" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "separate evidence classes" "$REPO/docs/adr/0006-adaptive-orchestration-and-preflight-lifecycle.md" >/dev/null || return 1
+    grep -F "Cooperator acceptance items" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "silently expand the slice" "$REPO/AP.md" >/dev/null || return 1
+}
+
+test_discovery_artifact_contracts() {
+    grep -F "Cooperator brainstorming is a legitimate Discovery mode" "$REPO/docs/adr/0006-adaptive-orchestration-and-preflight-lifecycle.md" >/dev/null || return 1
+    grep -F "Discovery Records are optional" "$REPO/docs/adr/0006-adaptive-orchestration-and-preflight-lifecycle.md" >/dev/null || return 1
+    grep -F "not task authority" "$REPO/ARTIFACT_LIFECYCLE.md" >/dev/null || return 1
+    grep -F "hidden chronological brainstorming archives" "$REPO/ARTIFACT_LIFECYCLE.md" >/dev/null || return 1
+    grep -F "promote accepted architecture to ADRs" "$REPO/ARTIFACT_LIFECYCLE.md" >/dev/null || return 1
+    [ ! -d "$REPO/.brainstorming" ] || return 1
+    ! find "$REPO" -maxdepth 2 \( -name 'NEXT_*' -o -name 'BOOT_*' -o -name 'WORKERS.md' -o -name '*session-log*' \) -print | grep . >/dev/null
+}
+
+test_prompt_contract_phase_coverage() {
+    grep -F "## Adaptive Phase Contracts" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
+    grep -F "### Discovery Or Intent Synthesis" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
+    grep -F "### Separate Read-Only Preflight" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
+    grep -F "### Fresh Implementation Worker" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
+    grep -F "### Automated And Cooperator Acceptance Plan" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
+    grep -F "### Diagnostic Closeout" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
+    grep -F "### Fresh Independent Audit" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
+    grep -F "### Fresh Orchestrator Restoration" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
+    grep -F "### Optional Discovery Record Creation" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
+    grep -F "### Exceptional Repository Handoff" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
+}
+
+test_vendor_and_secret_scans() {
+    grep -F "AP is vendor-neutral" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "model family, or hosted service" "$REPO/AP.md" >/dev/null || return 1
+    ! rg -n "must use (OpenAI|ChatGPT|Claude|Gemini|GPT-[0-9])|requires (OpenAI|ChatGPT|Claude|Gemini|GPT-[0-9])" "$REPO" --glob '!/.git/**' || return 1
+    ! rg -n "BEGIN (RSA|OPENSSH|EC|DSA) PRIVATE KEY|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9_]{20,}|xox[baprs]-" "$REPO" --glob '!/.git/**' || return 1
 }
 
 test_tool_help_and_docs_agree() {
@@ -608,6 +692,14 @@ run_test "update rejects behind, divergent, unavailable, and dirty states" test_
 run_test "update refuses target commit without executable ap tool" test_update_rejects_target_without_executable_tool
 run_test "Markdown local links and anchors are valid" test_markdown_links_and_anchors
 run_test "repository structure and stale-content scans pass" test_repository_structure_and_scans
+run_test "adaptive lifecycle contracts are present" test_adaptive_lifecycle_contracts
+run_test "reasoning recommendation contracts are present" test_reasoning_recommendation_contracts
+run_test "prompt synthesis contracts are present" test_prompt_synthesis_contracts
+run_test "verification evidence contracts are present" test_verification_evidence_contracts
+run_test "acceptance contracts are present" test_acceptance_contracts
+run_test "Discovery Record artifact contracts are present" test_discovery_artifact_contracts
+run_test "prompt contract phase coverage is present" test_prompt_contract_phase_coverage
+run_test "vendor neutrality and secret-shaped scans pass" test_vendor_and_secret_scans
 run_test "tool help and documentation agree" test_tool_help_and_docs_agree
 run_test "test stdout and stderr artifacts stay inside owned temp root" test_no_external_test_artifacts
 

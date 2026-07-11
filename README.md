@@ -29,6 +29,10 @@ AP provides:
 - a dependency-free `ap` integration tool;
 - ADRs that record durable protocol architecture decisions.
 
+The protocol is adaptive: the Orchestrator selects only the discovery,
+preflight, implementation, acceptance, diagnostic, audit, or restoration phases
+needed for the current risk and evidence.
+
 AP is not a package manager, hosted service, model, framework, project
 generator, or replacement for human judgment.
 
