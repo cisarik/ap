@@ -125,6 +125,13 @@ rollback. In those cases AP uses a separate read-only preflight to verify state,
 limits, prerequisites, rollback, and acceptance before deciding whether to
 mutate anything.
 
+A preflight can be performed by a read-only Worker, or led by the Orchestrator
+with the Cooperator executing one small command or observation at a time in the
+real environment. The second mode is useful for real hosts, sudo, SSH, local
+console, browser, storage, account, or physical-device evidence. A PASS
+preflight only means implementation can be recommended in a new bounded prompt;
+it does not grant mutation authority.
+
 ## Why is preflight not mandatory for every task?
 
 Every implementation task still has embedded preflight: inspect first, verify
@@ -135,9 +142,11 @@ ceremony.
 
 ## Why does the Orchestrator recommend reasoning effort?
 
-Some execution clients expose a reasoning setting. The Orchestrator recommends
-the lowest sufficient profile so the Worker has an appropriate level of care
-for the task's risk and ambiguity.
+Some execution clients expose a reasoning setting. Before every Worker prompt,
+the Orchestrator recommends the lowest sufficient profile and briefly explains
+why, so the Worker has an appropriate level of care for the task's risk and
+ambiguity. No recommendation is needed when the Orchestrator acts directly
+without a Worker.
 
 ## Why is Extra High not always better?
 
@@ -149,26 +158,34 @@ proportionate.
 
 ## Does Worker reasoning grant authority?
 
-No. Reasoning effort is execution guidance only. Authority still comes from the
-current Orchestrator task prompt: exact paths, commands, Git operations,
-network access, browser scope, secrets, validation, and stopping rules.
+No. Reasoning effort is execution guidance only, and the Cooperator keeps final
+control over available client settings. Authority still comes from the current
+Orchestrator task prompt: exact paths, commands, Git operations, network
+access, browser scope, secrets, validation, and stopping rules.
 
 ## How do browser automation and visual acceptance differ?
 
-Browser automation proves only the tested engine, version, origin, state, and
-flow. A Chromium test does not prove Safari behavior. Cooperator rendered
-acceptance covers subjective or physical UX judgment after Worker evidence is
-verified. The Orchestrator keeps automated evidence, Cooperator observations,
-defects, missing evidence, and adjacent ideas separate.
+Browser automation proves only the tested browser or engine, version, origin,
+state, and flow. A Chromium test proves only that Chromium environment. A
+Firefox test proves only that Firefox environment. Generic WebKit automation is
+WebKit-engine evidence, not automatic proof of the shipping Safari browser.
+Safari-specific claims need actual Safari evidence, Safari Technology Preview
+evidence identified as such, or explicit Cooperator observation in Safari.
+Cooperator rendered acceptance covers subjective or physical UX judgment after
+Worker evidence is verified.
 
 ## Why can public verification use different evidence paths?
 
 Direct Git evidence such as `git ls-remote`, exact fetch, or a clean temporary
 clone is preferred for proving public refs. If one environment cannot use
 direct Git, an official provider API, exact-SHA web content, or branch page may
-provide fallback evidence. Those evidence classes are not equal: exact-SHA raw
-content can prove a file at a commit, but it does not by itself prove that the
-commit is the current branch head.
+provide fallback evidence. Those evidence classes are not equal. A Worker
+mutation gate that requires public-ref equality is BLOCKED if no authorized
+method proves the ref. Independent Orchestrator acceptance can PASS from
+fallback evidence only when branch ref identity, exact commit identity, and
+committed content at that SHA are all established. Exact-SHA raw content can
+prove a file at a commit, but it does not by itself prove that the commit is
+the current branch head.
 
 ## When should brainstorming be recorded?
 
@@ -177,14 +194,23 @@ Orchestrator. A project-owned Discovery Record is useful only when unresolved
 exploration spans sessions, has a future consumer, would be costly to
 reconstruct, influences a major decision, or preserves alternatives for later
 review. It is not task authority and should not be a hidden transcript archive.
+It must not be the sole live source of an accepted product, architecture,
+security, or operating decision; accepted conclusions belong in ADRs,
+specifications, project rules, roadmaps, or security artifacts.
 
 ## Why are permanent NEXT files still unnecessary?
 
-At rotation, the normal artifact is a fresh restoration prompt delivered to the
-Cooperator, backed by repository truth, public verification, accepted
-decisions, and Worker evidence. Permanent NEXT or BOOT files tend to become
-stale session state. Repository handoffs remain exceptional for
-unreconstructable state with explicit lifecycle authority.
+At rotation, the normal artifact is a professional self-contained restoration
+prompt delivered to the Cooperator, backed by repository truth, public
+verification, accepted decisions, and Worker evidence. It includes PASS,
+PARTIAL, or BLOCKED classification, identity, last verified public commit or
+limitation, AP pin when applicable, completed boundary, accepted decisions,
+authority boundaries, active Worker and mutation state, unresolved risks,
+current phase, next step, next Worker reasoning recommendation or premature
+statement, verification requirements, and a no-mutation-authority statement.
+Permanent NEXT or BOOT files tend to become stale session state. Repository
+handoffs remain exceptional for unreconstructable state with explicit lifecycle
+authority.
 
 ## When is a diagnostic pass used?
 

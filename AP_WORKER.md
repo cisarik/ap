@@ -56,7 +56,11 @@ verified current state, evidence sources and limits, unknowns and blockers,
 proposed mutation boundary, prerequisites, backup or checkpoint expectations,
 rollback, stop conditions, acceptance plan, required capability profile,
 recommended reasoning profile if requested, and whether implementation should
-proceed. Do not perform the later mutation unless the task explicitly grants it.
+proceed. Classify the preflight as PASS when evidence is sufficient to
+recommend a separately authorized implementation slice, PARTIAL when useful
+evidence exists but a material prerequisite, risk, or rollback detail remains
+unresolved, and BLOCKED when implementation must not be authorized. Do not
+perform the later mutation unless the task explicitly grants it.
 
 ## Task Boundaries
 
@@ -117,14 +121,20 @@ direct Git fails and the task authorizes fallback methods, identify the failed
 method and use official provider APIs, exact-SHA web or raw evidence, or
 supplementary branch evidence according to the task. Do not claim branch-head
 equality from exact-SHA raw content alone. Do not use public web evidence to
-claim local `HEAD`, `origin/main`, index, worktree, or untracked state.
+claim local `HEAD`, `origin/main`, index, worktree, or untracked state. Do not
+present Worker-observed public verification as direct Orchestrator observation.
 
-Browser evidence must report the tested adapter or engine, version when known,
-origin, state, flow, and artifact cleanup. It proves only that tested
-environment. Safari-specific behavior requires Safari/WebKit evidence or
-explicit Cooperator observation. Do not inspect unrelated browser tabs,
-history, profile files, cookies, tokens, passwords, passkeys, extensions, or
-stored site data without exact authority.
+Browser evidence must report the tested adapter, browser or engine, version
+when known, origin, state, flow, and artifact cleanup. It proves only that
+tested environment. Generic WebKit evidence supports WebKit-engine claims only;
+it does not automatically prove shipping Safari behavior. Safari-specific
+behavior requires actual Safari evidence, Safari Technology Preview evidence
+identified as such, or explicit Cooperator observation in Safari. Codec, native
+media, profile, operating-system integration, passkey, browser chrome,
+extension, and platform behavior require evidence from the relevant real
+environment. Do not inspect unrelated browser tabs, history, profile files,
+cookies, tokens, passwords, passkeys, extensions, or stored site data without
+exact authority.
 
 ## Reporting
 

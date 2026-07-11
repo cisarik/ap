@@ -118,11 +118,24 @@ A distinct normally read-only phase used before mutation when current state,
 risk, rollback, prerequisites, or acceptance cannot be safely inferred inside an
 implementation task.
 
+## Worker-Executed Preflight
+
+A separate read-only preflight where a Worker inspects repository, environment,
+or external state within explicit authority and reports evidence.
+
+## Orchestrator-Led Cooperator-Executed Preflight
+
+A separate read-only preflight where the Orchestrator issues one small command
+or observation request at a time, the Cooperator executes it in the authorized
+environment, and the Orchestrator classifies the returned evidence before the
+next step.
+
 ## Reasoning-Effort Recommendation
 
-Orchestrator guidance for the lowest sufficient reasoning profile, such as
-Light or Low, Standard or Medium, High, or Extra High, when the execution client
-exposes such a choice. It is not task authority.
+Orchestrator guidance before every Worker prompt for the lowest sufficient
+reasoning profile, such as Light or Low, Standard or Medium, High, or Extra
+High, when the execution client exposes such a choice. It is not task
+authority.
 
 ## Prompt-Synthesis Readiness
 
@@ -138,6 +151,18 @@ The planned evidence for deciding whether work is accepted, such as automated
 tests, browser automation, screenshots, engine-specific checks, accessibility
 checks, media playback evidence, physical-device evidence, or Cooperator
 rendered acceptance.
+
+## Browser-Product Evidence
+
+Evidence from a named browser product and version, such as Safari, Safari
+Technology Preview, Firefox, or Chrome. It should not be conflated with generic
+engine-level evidence.
+
+## Engine-Level Evidence
+
+Evidence from a browser engine or automation environment, such as Chromium,
+Firefox, or WebKit, limited to the tested engine, version, origin, state, and
+flow.
 
 ## Acceptance Criteria
 
@@ -174,8 +199,8 @@ task. It is context, not task authority.
 
 An optional project-owned decision-support artifact for material unresolved
 brainstorming or exploration. It has a concrete consumer and lifecycle, is not
-task authority, and is promoted or retired when accepted conclusions move to
-durable documents.
+task authority, cannot be the sole live source of an accepted decision, and is
+promoted or retired when accepted conclusions move to durable documents.
 
 ## Context Pressure
 

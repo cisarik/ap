@@ -31,6 +31,7 @@ state, safety-critical evidence, or explicit Orchestrator request.
 |---|---|
 | Persistent role identity | State that the recipient is a Worker instance assigned to WORKER |
 | Task ID and type | Stable reference and task class |
+| Reasoning recommendation | Lowest sufficient available reasoning profile and brief rationale for every Worker prompt |
 | Repository identity | URL, branch, accepted URL spellings, expected refs |
 | Working directory | Exact path or discovery rule |
 | Baseline | Expected commit, parent, subject, changed paths, or empty-state rule |
@@ -56,10 +57,10 @@ Omitted permission is not implied.
 
 ## Adaptive Phase Contracts
 
-Each substantial AP prompt or response should name its phase, reasoning
-recommendation where useful, authority, evidence, output, transition owner, and
-stopping rule. Keep contracts compact; increase detail only when risk,
-cross-cutting scope, or safety requires it.
+Each Worker prompt must name its phase, reasoning recommendation, authority,
+evidence, output, transition owner, and stopping rule. Orchestrator-only
+actions do not require Worker reasoning recommendations. Keep contracts compact;
+increase detail only when risk, cross-cutting scope, or safety requires it.
 
 ### Discovery Or Intent Synthesis
 
@@ -88,12 +89,35 @@ cross-cutting scope, or safety requires it.
 - **Evidence**: current verified state, source limitations, unknowns,
   prerequisites, rollback, backups or checkpoints, environment constraints, and
   acceptance plan.
-- **Output**: PASS, PARTIAL, or BLOCKED preflight report with exact proposed
-  mutation boundary and whether implementation should proceed.
+- **Output**: PASS when evidence is sufficient to recommend a separately
+  authorized implementation slice, PARTIAL when a material prerequisite, risk,
+  or rollback detail remains unresolved, or BLOCKED when implementation must
+  not be authorized. Include exact proposed mutation boundary and whether
+  implementation should proceed.
 - **Transition owner**: Orchestrator, with Cooperator approval when authority,
   safety, or strategy changes.
 - **Stopping rule**: stop if required state cannot be verified or mutation
   authority would be premature.
+
+### Orchestrator-Led Cooperator-Executed Preflight
+
+- **Phase**: Preflight.
+- **Reasoning recommendation**: no Worker recommendation unless a Worker is
+  later assigned; recommend reasoning in the later Worker prompt.
+- **Authority**: Orchestrator issues one read-only command or observation
+  request at a time for the Cooperator to execute in the authorized
+  environment. Universal AP does not prescribe shell labels or host names.
+- **Evidence**: complete Cooperator-returned output, command context,
+  environment label from project rules when available, evidence limits, and
+  Orchestrator classification before the next step.
+- **Output**: stepwise PASS, PARTIAL, or BLOCKED preflight conclusion with
+  threat, benefit, limitation, non-mutation guarantee, rollback or no-rollback
+  relevance, and expected implementation readiness.
+- **Transition owner**: Orchestrator, with Cooperator approval for any later
+  safety-sensitive, irreversible, account-level, physical-device, or production
+  mutation.
+- **Stopping rule**: stop if evidence is incomplete, a step would mutate state
+  without authority, or implementation would require a separate prompt.
 
 ### Fresh Implementation Worker
 
@@ -116,6 +140,12 @@ The implementation prompt may combine related inspection, research,
 architecture recording, tests, documentation, one normal commit and push, and
 evidence reporting only when all serve the same primary outcome.
 
+After a separate preflight PASS, the implementation prompt includes exact
+verified state, approved mutation boundary, checkpoint or backup, rollback,
+step ordering, stop conditions, acceptance plan, required capabilities,
+reasoning recommendation, and exact Git, host, filesystem, account, or service
+authority.
+
 ### Automated And Cooperator Acceptance Plan
 
 - **Phase**: Acceptance.
@@ -124,9 +154,10 @@ evidence reporting only when all serve the same primary outcome.
 - **Authority**: define automated checks, browser scope, screenshots,
   environment observations, Cooperator checklist, and cleanup rules; no new
   feature authority.
-- **Evidence**: test output, browser engine and version, origin and state,
+- **Evidence**: test output, browser or engine and version, origin and state,
   screenshots or logs, accessibility or media evidence, physical observation,
-  and Cooperator responses.
+  and Cooperator responses. Engine-level and browser-product evidence are
+  labelled separately.
 - **Output**: acceptance matrix or numbered checklist with PASS, FAIL, NOT
   TESTED, defects, missing evidence, and adjacent ideas separated.
 - **Transition owner**: Orchestrator classifies evidence and feedback.
@@ -174,11 +205,16 @@ evidence reporting only when all serve the same primary outcome.
   account, browser, credential, or Git mutation authority.
 - **Evidence**: verified public commit, current AP pin when present, completed
   boundaries, accepted decisions, evidence classification, active Worker state,
-  unresolved questions, risks, and latest Cooperator intent separated from
-  brainstorming.
-- **Output**: self-contained restoration prompt with current phase, exact next
-  bounded step, public-verification requirement, and PASS, PARTIAL, or BLOCKED
-  classification.
+  current mutation state, unresolved questions, risks, and materially relevant
+  Cooperator intent separated from brainstorming.
+- **Output**: self-contained restoration prompt with PASS, PARTIAL, or BLOCKED
+  classification, project and repository identity, exact last verified public
+  commit or limitation, AP pin when applicable, completed boundary, accepted
+  decisions, authority boundaries including account and browser, current phase,
+  exact next bounded step, next Worker reasoning recommendation or premature
+  statement, public-verification requirement, and no-mutation-authority
+  statement. Fields may be not applicable, unavailable, or unresolved, but not
+  omitted silently.
 - **Transition owner**: fresh Orchestrator verifies truth before acting.
 - **Stopping rule**: stop if public state or active mutation cannot be
   classified honestly.
@@ -191,10 +227,13 @@ evidence reporting only when all serve the same primary outcome.
 - **Authority**: exact path, consumer, lifecycle, allowed content, validation,
   and Git authority; no hidden transcript archive.
 - **Evidence**: topic, status, observation date, Cooperator intent summary,
-  verified context, options, benefits, risks, rejected alternatives, accepted
-  decisions if any, open questions, promotion targets, and retention triggers.
+  verified context, options, benefits, risks, rejected alternatives, open
+  questions, promotion targets, and retention triggers.
 - **Output**: visible project-owned Discovery Record that states it is not task
-  authority.
+  authority. It may describe an accepted decision only when the same bounded
+  change promotes the decision to the authoritative durable destination or the
+  record links to an existing authoritative artifact; otherwise decision-like
+  items are proposed, candidate, recommended, or open.
 - **Transition owner**: Orchestrator promotes accepted conclusions to ADR,
   product, specification, roadmap, security, or project-rule artifacts.
 - **Stopping rule**: stop if the record lacks a concrete consumer or lifecycle.
@@ -220,6 +259,7 @@ evidence reporting only when all serve the same primary outcome.
 For adopting AP in a consuming project, the task should require:
 
 - clean repository baseline;
+- reasoning recommendation for the Worker performing the integration;
 - `git submodule add https://github.com/cisarik/ap.git .ap`;
 - `./.ap/ap init`;
 - `./.ap/ap doctor`;

@@ -165,10 +165,35 @@ A separate preflight establishes current verified state, evidence sources and
 limitations, unknowns and blockers, proposed mutation boundaries, dependencies,
 backup or checkpoint expectations, rollback, stop conditions, acceptance plan,
 recommended Worker capability and reasoning profile, and whether implementation
-should proceed. A preflight does not silently authorize later implementation.
+should proceed. It reports `PASS` when evidence is sufficient to recommend a
+separately authorized implementation slice, `PARTIAL` when useful evidence
+exists but a material prerequisite, risk, or rollback detail remains unresolved,
+and `BLOCKED` when implementation must not be authorized. A preflight does not
+silently authorize later implementation.
 
-For substantial Worker tasks, the Orchestrator should recommend the lowest
-sufficient reasoning profile when the execution client exposes such a choice:
+Separate preflight can be Worker-executed or Orchestrator-led with Cooperator
+execution. In Worker-executed preflight, a read-only Worker inspects repository,
+environment, or external state within explicit authority and reports evidence.
+In Orchestrator-led, Cooperator-executed preflight, the Orchestrator defines
+the read-only objective, explains threat, benefit, limitation, rollback or
+non-mutation guarantee, and expected evidence, issues one small
+environment-labelled command or observation request at a time, classifies the
+Cooperator-returned complete output before the next step, and grants no later
+implementation authority by the preflight itself. Universal AP does not define
+project-specific shell labels or host names; consuming project rules may define
+those presentation conventions.
+
+After a successful separate preflight, implementation requires a new prompt
+with exact verified state, approved mutation boundary, checkpoint or backup,
+rollback, step ordering, stop conditions, acceptance plan, required
+capabilities, reasoning recommendation, and exact Git, host, filesystem,
+account, or service authority. Safety-sensitive, irreversible, account-level,
+physical-device, production, or similar mutation requires Cooperator approval
+before implementation authority is issued.
+
+Before every Worker prompt, the Orchestrator states the lowest sufficient
+reasoning profile and a brief rationale when the execution client exposes such
+a choice:
 
 | Profile | Use for |
 |---|---|
@@ -177,11 +202,14 @@ sufficient reasoning profile when the execution client exposes such a choice:
 | High | architecture or ADR work, cross-cutting repository changes, persistence and data integrity, complex debugging, operational preflight, broad documentation/code reconciliation, or diagnostic review of a substantial slice |
 | Extra High | protocol architecture, authentication or authorization architecture, cryptography or secret-handling design, destructive or irreversible data migration, complex concurrency or corruption risk, very large durable-state preservation, unusually ambiguous multi-source architecture, or exceptionally high-impact independent audit |
 
-Higher reasoning effort is not broader authority. Extra High is not the
-default. Reasoning should be chosen separately for implementation, diagnostic
-closeout, and independent audit. Intentional context or credit exhaustion is
-not a goal. If a client exposes no explicit setting, the Orchestrator describes
-the required reasoning characteristics instead of inventing telemetry.
+No reasoning recommendation is required for work the Orchestrator performs
+directly without assigning a Worker. Higher reasoning effort is not broader
+authority. Extra High is not the default. Reasoning should be chosen separately
+for preflight, implementation, diagnostic closeout, and independent audit.
+Intentional context, token, time, or credit exhaustion is not a goal. If a
+client exposes no explicit setting, the Orchestrator describes the required
+reasoning characteristics instead of inventing labels or telemetry. The
+Cooperator retains final selection among available client settings.
 
 ## 7. Orchestrator Responsibilities
 
@@ -190,8 +218,8 @@ The Orchestrator should:
 - restate Cooperator intent in operational terms;
 - inspect repository evidence before shaping implementation work;
 - identify the current phase and whether separate preflight is required;
-- recommend the lowest sufficient reasoning profile for substantial tasks when
-  the client exposes that control;
+- recommend the lowest sufficient reasoning profile and rationale before every
+  Worker prompt when the client exposes that control;
 - select the lightest artifact that can answer the current question;
 - ask one strategic or security-sensitive question at a time;
 - define one coherent Worker task with explicit boundaries;
@@ -205,12 +233,21 @@ The Orchestrator should:
   proportionate.
 
 Before generating a substantial Worker prompt, the Orchestrator should
-synthesize the latest Cooperator message, changed intent or corrections,
+synthesize all materially relevant interaction since the last durable verified
+boundary, including latest Cooperator messages, changed intent or corrections,
 verified repository truth, recent Worker reports and public commits, accepted
 decisions, tentative brainstorming, unresolved questions, rejected or superseded
 alternatives, evidence limitations, the current phase, and the smallest safe
-next outcome. This synthesis should produce decision-ready conclusions,
-evidence, and rationale without requiring disclosure of hidden chain-of-thought.
+next outcome. The precedence order is latest explicit Cooperator correction or
+accepted decision, current verified repository and public state, durable
+accepted decisions and project rules, Worker-observed evidence, tentative
+brainstorming and proposals, then superseded or rejected options. A new
+explicit Cooperator decision that conflicts with durable documentation is
+current strategic authority, but the Orchestrator must identify the conflict
+and plan the bounded repository update needed to restore durable consistency.
+Ambiguous brainstorming does not silently rewrite durable repository truth.
+This synthesis should produce decision-ready conclusions, evidence, and
+rationale without requiring disclosure of hidden chain-of-thought.
 
 A prompt-synthesis readiness review checks that the prompt has the correct
 phase, exact repository and baseline, accepted-decision versus brainstorm
@@ -218,8 +255,10 @@ distinction, one coherent outcome, lowest sufficient reasoning recommendation,
 required capabilities, preflight choice, path and command authority, negative
 scope, Git authority, public verification method and fallback, acceptance mode,
 artifact lifecycle, context-pressure rule, stopping conditions, report
-structure, contradiction and omission review, and enough context for a fresh
-Worker to understand the task.
+structure, explicit project-specific deviations, contradiction and omission
+review, and enough self-contained context for a fresh Worker to understand the
+task. The readiness gate optimizes for evidence density and completeness, not
+maximum length or repeated universal rules when references are sufficient.
 
 The Orchestrator is not a passive prompt relay and must not treat a Worker
 report as proof without evidence.
@@ -313,10 +352,16 @@ Cooperator authorization.
 
 Reports must distinguish rendered browser evidence, synthetic intercepted
 responses, automated non-browser tests, static inspection, and Cooperator
-observations. Browser automation proves only the tested engine, version, origin,
-state, and flow. Testing one engine does not prove every engine. Safari-specific
-behavior requires Safari or WebKit evidence, or explicit Cooperator
-observation.
+observations. Browser automation proves only the tested browser or engine,
+version, origin, state, and flow. Chromium automation proves only the tested
+Chromium environment. Firefox automation proves only the tested Firefox
+environment. Generic WebKit automation supports WebKit-engine evidence only and
+does not automatically prove behavior in the shipping Safari browser.
+Safari-specific claims require actual Safari evidence, Safari Technology
+Preview evidence identified as such, or explicit Cooperator observation in
+Safari. Codec, native media, profile, operating-system integration, passkey,
+browser chrome, extension, and platform behavior require evidence from the
+relevant real environment. AP does not mandate a browser automation framework.
 
 After Worker evidence is verified, the Orchestrator may prepare numbered
 Cooperator acceptance items. Each response may be `PASS`, `FAIL`, `NOT TESTED`,
@@ -361,13 +406,28 @@ Use a capability-adaptive public-verification evidence ladder:
    support stronger evidence but must not override direct Git or exact ref API
    evidence.
 
-When one network path fails, record the failed method and use another
-authorized method rather than assuming the repository is unavailable. Do not
-claim a shell command succeeded when only a web or API method succeeded. Do not
-claim local `HEAD`, `origin/main`, index, worktree cleanliness, or untracked
-state from public web evidence. Do not claim current branch equality from
-exact-SHA raw content alone. If public-ref equality is a mandatory mutation gate
-and no authorized method can prove it, stop and report BLOCKED.
+When a Worker mutation gate requires proof that a public ref still equals an
+expected parent before commit or push, the Worker must prove that ref through an
+authorized method. If no authorized method proves the required ref, the Worker
+reports BLOCKED. Exact-SHA raw content alone does not prove current branch
+equality.
+
+For independent Orchestrator acceptance after a Worker push, fallback evidence
+may support PASS only when the combination establishes current public branch ref
+identity, exact commit identity with parent and relevant tree or changed paths,
+and relevant committed content bound to that exact SHA. If exact commit and
+content are known but current branch-head identity is not independently
+established, classify the review as PARTIAL.
+
+When one DNS or network path fails, record the precise failed capability and
+use another authorized tool, environment, or official provider source when
+available rather than repeating the same failed method as though repetition
+changes authority. Do not claim a shell command succeeded when only a web or
+API method succeeded. Do not relabel Worker-observed successful `git ls-remote`
+as direct Orchestrator observation. Do not claim local `HEAD`, `origin/main`,
+index, worktree cleanliness, or untracked state from public web evidence. Do
+not claim current branch equality from exact-SHA raw content alone. Disclose
+residual limitations.
 
 GitHub is one provider-specific example under this vendor-neutral model: its
 Git refs API can report branch ref objects, its Git commit API can report exact
@@ -414,11 +474,15 @@ needed for later review, the Orchestrator may recommend a project-owned
 **Discovery Record**. A Discovery Record is optional, visible, lifecycle-bound,
 and non-authoritative. It should include topic, status, source and observation
 date, intent summary, verified context, options, benefits, risks, rejected
-alternatives, accepted decisions if any, open questions, promotion targets,
-intended consumer, retention and cleanup trigger, and a statement that it is
-not task authority. It must not contain secrets, raw credentials, private media
-data, full chat transcripts by default, hidden chain-of-thought, stale task
-authority, or an unbounded chronological diary.
+alternatives, open questions, promotion targets, intended consumer, retention
+and cleanup trigger, and a statement that it is not task authority. It may
+describe an accepted decision only when that decision is promoted in the same
+bounded change to its authoritative durable destination or the record links to
+the authoritative artifact that already contains it. Otherwise decision-like
+items remain labelled proposed, candidate, recommended, or open. It must not
+contain secrets, raw credentials, private media data, full chat transcripts by
+default, hidden chain-of-thought, stale task authority, or an unbounded
+chronological diary.
 
 Accepted conclusions should be promoted to their durable homes: architecture to
 ADRs, product behavior to specifications, operating rules to project rules,
@@ -438,7 +502,7 @@ appropriate. The normal rotation output is a professional, self-contained
 restoration prompt for a fresh Orchestrator instance. The Cooperator may paste
 that prompt into a fresh session.
 
-Before producing a restoration prompt, the Orchestrator should verify or
+Before producing a restoration prompt, the Orchestrator must verify or
 classify public repository state, confirm no mutation is in progress, classify
 active Worker sessions, identify the completed logical boundary, reconcile the
 latest Cooperator intent with durable repository truth, preserve accepted
@@ -447,14 +511,19 @@ direction, name unresolved risks and evidence gaps, choose the recommended next
 phase, recommend the likely reasoning profile for the next substantial Worker
 task when useful, and perform a final contradiction and omission review.
 
-The restoration prompt should include role identity, project and repository
-identity, exact last verified public commit, current AP pin when the project
-uses AP, completed logical boundaries, accepted architecture and product
-decisions, evidence classification, host, network, secret, browser, filesystem,
-and Git authority boundaries, active Worker state, unresolved questions and
-risks, current phase, an exact recommended next bounded step, recommended
-reasoning profile where useful, explicit public-verification requirement, and a
-PASS, PARTIAL, or BLOCKED restoration classification.
+At an actual Orchestrator rotation, the restoration output is a professional
+self-contained prompt. It must include restoration classification (`PASS`,
+`PARTIAL`, or `BLOCKED`), project and repository identity, exact last
+independently verified public commit or explicit limitation, current AP pin when
+the project uses AP, completed logical boundary, current accepted product and
+architecture decisions, evidence classification, host, network, browser,
+secret, filesystem, account, and Git authority boundaries, active Worker state,
+current mutation state, unresolved questions and risks, current AP phase, exact
+recommended next bounded step, reasoning recommendation for the next Worker
+prompt or an explicit statement that selecting a Worker is premature,
+public-verification requirements, and an explicit statement that restoration
+grants no mutation authority. A field may be marked not applicable,
+unavailable, or unresolved, but it must not disappear silently.
 
 Restoration text grants no repository or host mutation authority. The fresh
 Orchestrator must verify repository and public truth independently before
@@ -519,7 +588,8 @@ already define safety rules.
 A compact Worker prompt may reference `.ap/AP.md`, `.ap/AP_WORKER.md`, and
 project-specific `AGENTS.md` instead of repeating them. It must still define the
 task-specific goal, repository gate, allowed paths, prohibitions, Git authority,
-validation, acceptance criteria, stopping conditions, and report format.
+validation, acceptance criteria, reasoning recommendation, stopping conditions,
+and report format.
 
 Worker reports should be evidence-dense. Unless a task requires more detail, a
 report should include status, start and end commit, changed files, validation,

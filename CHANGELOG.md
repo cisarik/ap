@@ -24,6 +24,11 @@ the authoritative archive for exact content.
 - Formalized adaptive orchestration phases, separate preflight criteria,
   reasoning-effort recommendations, public-verification evidence tiers,
   browser and Cooperator acceptance boundaries, and optional Discovery Records.
+- Tightened the adaptive lifecycle contract so every Worker prompt receives a
+  reasoning recommendation, separate preflight supports Worker-executed and
+  Orchestrator-led Cooperator-executed modes, restoration prompts are
+  field-complete at rotation, Safari/WebKit evidence is labelled precisely, and
+  Discovery Records cannot become sole authority for accepted decisions.
 
 ## Historical Generations
 

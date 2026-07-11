@@ -60,9 +60,16 @@ create hidden chronological brainstorming archives or transcript logs.
 
 A Discovery Record should name its topic, status, source and observation date,
 intent summary, verified context, options considered, benefits, risks, rejected
-alternatives, accepted decisions if any, open questions, promotion targets,
-intended consumer, retention trigger, cleanup trigger, cleanup owner, and the
-statement that it is not task authority.
+alternatives, open questions, promotion targets, intended consumer, retention
+trigger, cleanup trigger, cleanup owner, and the statement that it is not task
+authority.
+
+A Discovery Record must never be the sole live source of an accepted product,
+architecture, security, or operating decision. It may describe an accepted
+decision only when the same bounded change promotes that decision to its
+authoritative durable destination or the record links to the authoritative
+artifact that already contains it. Otherwise label decision-like material as
+proposed, candidate, recommended, or open.
 
 When exploration resolves, promote accepted architecture to ADRs, product
 behavior to specifications, operating rules to project rules, deferred work to

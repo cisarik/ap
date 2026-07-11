@@ -578,30 +578,39 @@ test_adaptive_lifecycle_contracts() {
     grep -F "The phases are not a mandatory linear sequence" "$REPO/docs/adr/0006-adaptive-orchestration-and-preflight-lifecycle.md" >/dev/null || return 1
     grep -F "Every implementation task requires embedded preflight" "$REPO/AP.md" >/dev/null || return 1
     grep -F "A separate read-only preflight should normally be used" "$REPO/docs/adr/0006-adaptive-orchestration-and-preflight-lifecycle.md" >/dev/null || return 1
-    grep -F "A preflight does not silently authorize later implementation" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "silently authorize later implementation" "$REPO/AP.md" >/dev/null || return 1
     grep -F "Phase names describe work mode; they do not grant authority" "$REPO/AP.md" >/dev/null || return 1
     grep -F "one coherent primary outcome" "$REPO/AP.md" >/dev/null || return 1
     grep -F "The Orchestrator selects only" "$REPO/docs/adr/0006-adaptive-orchestration-and-preflight-lifecycle.md" >/dev/null || return 1
 }
 
 test_reasoning_recommendation_contracts() {
-    grep -F "recommend the lowest sufficient reasoning profile" "$REPO/AP.md" >/dev/null || return 1
-    grep -F "Higher reasoning effort is not broader authority" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Before every Worker prompt" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "No reasoning recommendation is required for work the Orchestrator performs" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "recommend the lowest sufficient reasoning profile" "$REPO/AP_ORCHESTRATOR.md" >/dev/null || return 1
+    grep -F "reasoning effort is not broader" "$REPO/AP.md" >/dev/null || return 1
     grep -F "Extra High is not the" "$REPO/AP.md" >/dev/null || return 1
-    grep -F "Reasoning should be chosen separately" "$REPO/AP.md" >/dev/null || return 1
-    grep -F "Intentional context or credit exhaustion is" "$REPO/AP.md" >/dev/null || return 1
-    grep -F "If a client exposes no explicit setting" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "preflight, implementation, diagnostic closeout, and independent audit" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "token, time, or credit exhaustion is not a goal" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "client exposes no explicit setting" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Cooperator retains final selection" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Reasoning recommendation | Lowest sufficient available reasoning profile" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
+    grep -F "reasoning recommendation, stopping conditions" "$REPO/AP.md" >/dev/null || return 1
     grep -F "Reasoning effort is execution guidance only" "$REPO/FAQ.md" >/dev/null || return 1
 }
 
 test_prompt_synthesis_contracts() {
-    grep -F "latest Cooperator message" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "materially relevant interaction since the last durable verified" "$REPO/AP.md" >/dev/null || return 1
     grep -F "verified repository truth" "$REPO/AP.md" >/dev/null || return 1
     grep -F "accepted-decision versus brainstorm" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "latest explicit Cooperator" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Ambiguous brainstorming does not silently rewrite durable repository truth" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "plan the bounded repository update needed to restore durable consistency" "$REPO/AP.md" >/dev/null || return 1
     grep -F "without requiring disclosure of hidden chain-of-thought" "$REPO/AP.md" >/dev/null || return 1
     grep -F "a fresh Worker can understand the task" "$REPO/AP_ORCHESTRATOR.md" >/dev/null || return 1
+    grep -F "evidence density and completeness" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "maximum prompt length" "$REPO/AP_ORCHESTRATOR.md" >/dev/null || return 1
     grep -F "current phase" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
-    grep -F "recommended reasoning profile where useful" "$REPO/AP_ORCHESTRATOR.md" >/dev/null || return 1
 }
 
 test_verification_evidence_contracts() {
@@ -610,25 +619,68 @@ test_verification_evidence_contracts() {
     grep -F "Immutable exact-SHA web evidence" "$REPO/AP.md" >/dev/null || return 1
     grep -F "Supplementary branch evidence" "$REPO/AP.md" >/dev/null || return 1
     grep -F "current branch head" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Worker mutation gate" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "fallback evidence" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "current public branch ref" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "classify the review as PARTIAL" "$REPO/AP.md" >/dev/null || return 1
     grep -F "worktree cleanliness, or untracked" "$REPO/AP.md" >/dev/null || return 1
-    grep -F "web or API method succeeded" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "API method succeeded" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Do not relabel Worker-observed successful" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "record the precise failed capability" "$REPO/AP.md" >/dev/null || return 1
     grep -F "Do not prescribe cache-busting query parameters as evidence" "$REPO/AP.md" >/dev/null || return 1
     grep -F "GitHub is one provider-specific example" "$REPO/AP.md" >/dev/null || return 1
 }
 
 test_acceptance_contracts() {
-    grep -F "engine and version where relevant" "$REPO/AP.md" >/dev/null || return 1
-    grep -F "Testing one engine does not prove every engine" "$REPO/AP.md" >/dev/null || return 1
-    grep -F "requires Safari or WebKit evidence" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "tested browser or engine" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Chromium automation proves only" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Firefox automation proves only" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Generic WebKit automation supports WebKit-engine evidence only" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "does not automatically prove behavior in the shipping Safari browser" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "actual Safari evidence" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Safari Technology" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Codec, native media, profile" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "does not mandate a browser automation framework" "$REPO/AP.md" >/dev/null || return 1
     grep -F "separate evidence classes" "$REPO/docs/adr/0006-adaptive-orchestration-and-preflight-lifecycle.md" >/dev/null || return 1
     grep -F "Cooperator acceptance items" "$REPO/AP.md" >/dev/null || return 1
     grep -F "silently expand the slice" "$REPO/AP.md" >/dev/null || return 1
+}
+
+test_preflight_topology_and_transition_contracts() {
+    grep -F "Worker-executed preflight" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Orchestrator-led, Cooperator-executed preflight" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "one small" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "environment-labelled command or observation request" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "project-specific shell labels" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "reports \`PASS\`" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "\`PARTIAL\` when useful evidence" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "\`BLOCKED\` when implementation must not be authorized" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "After a successful separate preflight, implementation requires a new prompt" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "checkpoint or backup" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Orchestrator-Led Cooperator-Executed Preflight" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
+    grep -F "PASS when evidence is sufficient" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
+}
+
+test_restoration_contracts() {
+    grep -F "At an actual Orchestrator rotation" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "professional" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "self-contained prompt" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "independently verified public commit" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "account, and Git authority" "$REPO/AP_ORCHESTRATOR.md" >/dev/null || return 1
+    grep -F "current mutation state" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "selecting a Worker is premature" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "grants no mutation authority" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "must not disappear silently" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Fields may be not applicable" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
 }
 
 test_discovery_artifact_contracts() {
     grep -F "Cooperator brainstorming is a legitimate Discovery mode" "$REPO/docs/adr/0006-adaptive-orchestration-and-preflight-lifecycle.md" >/dev/null || return 1
     grep -F "Discovery Records are optional" "$REPO/docs/adr/0006-adaptive-orchestration-and-preflight-lifecycle.md" >/dev/null || return 1
     grep -F "not task authority" "$REPO/ARTIFACT_LIFECYCLE.md" >/dev/null || return 1
+    grep -F "must never be the sole live source of an accepted" "$REPO/ARTIFACT_LIFECYCLE.md" >/dev/null || return 1
+    grep -F "same bounded change promotes that decision" "$REPO/ARTIFACT_LIFECYCLE.md" >/dev/null || return 1
+    grep -F "proposed, candidate, recommended, or open" "$REPO/AP.md" >/dev/null || return 1
     grep -F "hidden chronological brainstorming archives" "$REPO/ARTIFACT_LIFECYCLE.md" >/dev/null || return 1
     grep -F "promote accepted architecture to ADRs" "$REPO/ARTIFACT_LIFECYCLE.md" >/dev/null || return 1
     [ ! -d "$REPO/.brainstorming" ] || return 1
@@ -697,6 +749,8 @@ run_test "reasoning recommendation contracts are present" test_reasoning_recomme
 run_test "prompt synthesis contracts are present" test_prompt_synthesis_contracts
 run_test "verification evidence contracts are present" test_verification_evidence_contracts
 run_test "acceptance contracts are present" test_acceptance_contracts
+run_test "preflight topology and transition contracts are present" test_preflight_topology_and_transition_contracts
+run_test "restoration contracts are present" test_restoration_contracts
 run_test "Discovery Record artifact contracts are present" test_discovery_artifact_contracts
 run_test "prompt contract phase coverage is present" test_prompt_contract_phase_coverage
 run_test "vendor neutrality and secret-shaped scans pass" test_vendor_and_secret_scans

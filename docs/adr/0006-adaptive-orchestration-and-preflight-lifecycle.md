@@ -29,6 +29,8 @@ Observed patterns include:
   behavior matters, separate Cooperator rendered acceptance;
 - public verification sometimes needs fallback methods when direct Git is
   unavailable in one environment;
+- real-host and physical-device preflight sometimes works best when the
+  Orchestrator leads and the Cooperator executes one read-only step at a time;
 - Cooperator brainstorming can mix accepted intent, tentative ideas, rejected
   alternatives, corrections, and open questions;
 - restoration prompts must synthesize current intent, repository truth, Worker
@@ -71,19 +73,40 @@ A preflight output should establish current verified state, evidence sources
 and limits, unknowns and blockers, exact proposed mutation boundary,
 dependencies, backup or checkpoint expectations, rollback, stop conditions,
 acceptance plan, recommended Worker capability, recommended reasoning effort,
-and whether implementation should proceed. Preflight does not grant later
-implementation authority.
+and whether implementation should proceed. It reports PASS when evidence is
+sufficient to recommend a separately authorized implementation slice, PARTIAL
+when useful evidence exists but a material prerequisite, risk, or rollback
+detail remains unresolved, and BLOCKED when implementation must not be
+authorized. Preflight does not grant later implementation authority.
 
-For substantial Worker tasks, the Orchestrator should recommend the lowest
-sufficient reasoning profile when the execution client exposes that control.
+Separate preflight supports two execution topologies. In Worker-executed
+preflight, a read-only Worker inspects repository, environment, or external
+state within explicit authority and reports evidence. In Orchestrator-led,
+Cooperator-executed preflight, the Orchestrator defines the objective, explains
+threat, benefit, limitation, rollback or non-mutation guarantee, and expected
+evidence, issues one small environment-labelled command or observation request
+at a time, classifies complete Cooperator-returned output before the next step,
+and grants no later implementation authority by the preflight itself.
+
+After a PASS separate preflight, implementation requires a new prompt with
+exact verified state, approved mutation boundary, checkpoint or backup,
+rollback, step ordering, stop conditions, acceptance plan, required
+capabilities, reasoning recommendation, and exact Git, host, filesystem,
+account, or service authority.
+
+Before every Worker prompt, the Orchestrator should recommend the lowest
+sufficient reasoning profile and brief rationale when the execution client
+exposes that control. No recommendation is required when the Orchestrator acts
+directly without assigning a Worker.
 The vendor-neutral profiles are Light or Low, Standard or Medium, High, and
 Extra High. Higher reasoning is not broader authority. Extra High is reserved
 for protocol architecture, authentication or authorization architecture,
 cryptography or secret-handling design, destructive data migration, severe
 concurrency or corruption risk, very large durable-state preservation,
 unusually ambiguous multi-source architecture, or exceptionally high-impact
-independent audit. Reasoning is selected separately for implementation,
-diagnostic closeout, and audit.
+independent audit. Reasoning is selected separately for preflight,
+implementation, diagnostic closeout, and audit. The Cooperator retains final
+selection among available client settings.
 
 Before presenting a substantial Worker prompt, the Orchestrator applies a
 prompt-synthesis readiness gate. It checks the current phase, exact repository
@@ -91,8 +114,10 @@ and baseline, accepted decisions versus brainstorming, one coherent primary
 outcome, lowest sufficient reasoning recommendation, required capabilities,
 preflight choice, path and command authority, negative scope, Git authority,
 public-verification method and fallback, acceptance mode, artifact lifecycle,
-context-pressure rule, stopping conditions, report structure, contradiction and
-omission review, and fresh-Worker comprehensibility.
+context-pressure rule, stopping conditions, report structure,
+project-specific deviations, contradiction and omission review, and
+fresh-Worker comprehensibility. The gate optimizes for evidence density and
+completeness, not maximum prompt length.
 
 Before producing a restoration prompt, the Orchestrator verifies or clearly
 classifies public repository state, confirms no mutation is in progress,
@@ -101,7 +126,14 @@ reconciles latest Cooperator intent with durable repository truth, preserves
 accepted decisions and security boundaries, separates brainstorming from
 adopted direction, names unresolved risks and evidence gaps, chooses the next
 phase, recommends likely reasoning effort where useful, and performs a final
-contradiction and omission review.
+contradiction and omission review. At actual rotation the restoration output is
+a professional self-contained prompt with explicit PASS, PARTIAL, or BLOCKED
+classification, exact identity and verification fields, authority boundaries
+including account and browser boundaries, current mutation state, current AP
+phase, next bounded step, next Worker reasoning recommendation or premature
+statement, public-verification requirements, and a no-mutation-authority
+statement. Fields may be marked not applicable, unavailable, or unresolved, but
+must not disappear silently.
 
 AP formalizes a capability-adaptive public-verification evidence ladder:
 
@@ -116,6 +148,15 @@ Direct Git is preferred for proving public branch refs. Provider APIs are
 provider-specific fallback evidence. Exact-SHA content can prove file identity
 for that commit but not current branch-head equality by itself. Branch pages
 and branch-bound raw content are supplementary.
+
+For a Worker mutation gate, failure to prove a required public ref through an
+authorized method is BLOCKED. For independent Orchestrator acceptance, fallback
+evidence may support PASS only when it establishes current public branch ref
+identity, exact commit identity with parent and relevant tree or changed paths,
+and relevant committed content bound to that exact SHA. Exact commit and
+content without current branch-head identity is PARTIAL. Worker-observed
+successful Git evidence remains valuable but is not silently relabelled as
+direct Orchestrator observation.
 
 This evidence model is based on official Git and GitHub documentation. Git
 documents `ls-remote` as listing remote references and their object IDs,
@@ -134,10 +175,19 @@ IDs, and repository contents responses for a named commit, branch, or tag. See:
 
 For browser and rendered acceptance, automated browser evidence and Cooperator
 UX acceptance are separate evidence classes. Browser automation proves only the
-tested engine, version, origin, state, and flow. Safari-specific behavior
-requires Safari/WebKit evidence or explicit Cooperator observation. The
-Orchestrator may prepare numbered Cooperator acceptance checklists after Worker
-evidence is verified. Feedback must be classified as accepted behavior,
+tested browser or engine, version, origin, state, and flow. Generic WebKit
+automation supports WebKit-engine evidence only and does not automatically
+prove behavior in the shipping Safari browser. Safari-specific claims require
+actual Safari evidence, Safari Technology Preview evidence identified as such,
+or explicit Cooperator observation in Safari. This distinction follows Apple
+and WebKit documentation that identifies Safari Technology Preview as a browser
+app built on WebKit and WebKit as the engine used by Safari:
+
+- <https://developer.apple.com/documentation/safari-technology-preview-release-notes>
+- <https://developer.apple.com/safari/resources/>
+
+The Orchestrator may prepare numbered Cooperator acceptance checklists after
+Worker evidence is verified. Feedback must be classified as accepted behavior,
 concrete defect, missing evidence, product decision, or adjacent idea.
 
 Cooperator brainstorming is a legitimate Discovery mode but is not
@@ -146,8 +196,13 @@ sessions, has a future consumer, would be costly to reconstruct, influences a
 major decision, or preserves alternatives needed for review, the Orchestrator
 may recommend a project-owned Discovery Record. Discovery Records are optional,
 visible, lifecycle-bound, non-authoritative, and not hidden chronological chat
-archives. Accepted conclusions are promoted to durable artifacts such as ADRs,
-specifications, project rules, roadmaps, or security documents.
+archives. They must not be the sole live source of an accepted product,
+architecture, security, or operating decision. They may describe accepted
+decisions only when the same bounded change promotes the decision to its
+authoritative durable destination or the record links to the artifact that
+already contains it; otherwise decision-like items remain proposed, candidate,
+recommended, or open. Accepted conclusions are promoted to durable artifacts
+such as ADRs, specifications, project rules, roadmaps, or security documents.
 
 Artifact boundaries remain distinct:
 
@@ -179,6 +234,11 @@ provider, browser automation framework, context size, or fixed prompt length.
 Small tasks can remain compact. High-risk tasks can justify longer,
 evidence-dense prompts without making that shape mandatory for all work.
 
+Every Worker prompt now carries a reasoning recommendation, but that
+recommendation may be a concise Light/Low or Standard/Medium line for small
+tasks. This keeps small tasks proportional while removing ambiguity about
+whether the Orchestrator should choose a profile.
+
 ## Rejected Alternatives
 
 - **Mandatory Preflight -> Implementation -> Diagnostic for every task**:
@@ -187,6 +247,9 @@ evidence-dense prompts without making that shape mandatory for all work.
   without matching every task's risk.
 - **Reasoning level as authority**: rejected because authority comes only from
   the current Orchestrator task.
+- **Reasoning recommendations only for substantial Worker tasks**: rejected
+  because even small Worker prompts benefit from an explicit lowest-sufficient
+  profile and rationale.
 - **Permanent NEXT files**: rejected because dynamic restoration and repository
   truth are the normal rotation mechanism.
 - **Manual handout commits**: rejected because the Cooperator should not have
