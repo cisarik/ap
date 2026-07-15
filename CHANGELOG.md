@@ -29,6 +29,10 @@ the authoritative archive for exact content.
   Orchestrator-led Cooperator-executed modes, restoration prompts are
   field-complete at rotation, Safari/WebKit evidence is labelled precisely, and
   Discovery Records cannot become sole authority for accepted decisions.
+- Formalized Worker session profiles, Fresh Evidence Probe mutation boundaries,
+  independent certification limits, bounded correction and re-audit sequencing,
+  logical-block closure, restoration readiness, restoration continuity layers,
+  and project-configurable communication routing.
 
 ## Historical Generations
 

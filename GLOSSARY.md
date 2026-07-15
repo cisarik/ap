@@ -61,6 +61,11 @@ session.
 
 The bounded lifecycle and context of one Worker instance.
 
+## Worker Session Profile
+
+The bounded authority, independence posture, and evidence posture of one
+Worker session. It is not a persistent AP role and not an AP phase.
+
 ## Worker Implementation
 
 The concrete system fulfilling the WORKER role in a session. It may be an
@@ -123,6 +128,17 @@ implementation task.
 A separate read-only preflight where a Worker inspects repository, environment,
 or external state within explicit authority and reports evidence.
 
+## Fresh Evidence Probe
+
+A Worker session profile for collecting narrow fresh evidence with explicit
+mutation-domain boundaries. It is not a new AP phase.
+
+## Temporary Probe-State Mutation
+
+Explicitly authorized mutation of bounded, non-secret temporary evidence
+fixtures or probe artifacts, separate from repository, durable project,
+production, and external-service state.
+
 ## Orchestrator-Led Cooperator-Executed Preflight
 
 A separate read-only preflight where the Orchestrator issues one small command
@@ -179,15 +195,44 @@ A bounded second prompt about the same implemented slice, normally read-only,
 used to examine requirement coverage, negative guarantees, failure behavior,
 security boundaries, documentation truth, test gaps, and Git integrity.
 
-## Independent Fresh Audit
+## Independent Certification
+
+Evidence from a fresh Worker session that did not materially implement the
+target being certified. Implementation self-review and same-session diagnostics
+are valid evidence but not independent certification.
+
+## Fresh Independent Audit
 
 A sequential assignment of a separate fresh Worker instance to verify an
 already implemented slice. It is not parallel execution.
+
+## Bounded Correction Worker
+
+A Worker session profile with implementation authority only for confirmed
+defects and explicitly authorized adjacent consistency changes.
+
+## Fresh Independent Re-Audit
+
+A Worker session profile and form of Independent Audit that targets a
+correction plus the original risk claim using a fresh session independent of
+the correction.
+
+## Logical-Block Closure
+
+An Orchestrator decision that proportionate evidence has established the
+accepted boundary well enough that it should not be reopened speculatively
+without contradictory evidence.
 
 ## Restoration Prompt
 
 A self-contained Orchestrator rotation prompt that restores context for a fresh
 Orchestrator instance without granting repository mutation authority.
+
+## Restoration Readiness
+
+The Orchestrator's PASS, PARTIAL, or BLOCKED review of whether a restoration
+synthesis is complete, current, authority-safe, and executable enough for a
+fresh Orchestrator to continue after verification.
 
 ## Repository Handoff
 

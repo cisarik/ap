@@ -565,6 +565,8 @@ test_repository_structure_and_scans() {
         "$REPO/PROMPT_CONTRACTS.md" "$REPO/ARTIFACT_LIFECYCLE.md" || return 1
     [ -f "$REPO/docs/adr/0006-adaptive-orchestration-and-preflight-lifecycle.md" ] || return 1
     grep -F "0006-adaptive-orchestration-and-preflight-lifecycle.md" "$REPO/docs/adr/README.md" >/dev/null || return 1
+    [ -f "$REPO/docs/adr/0007-worker-session-evidence-and-restoration-lifecycle.md" ] || return 1
+    grep -F "0007-worker-session-evidence-and-restoration-lifecycle.md" "$REPO/docs/adr/README.md" >/dev/null || return 1
     for file in AP.md AP_ORCHESTRATOR.md AP_WORKER.md PROMPT_CONTRACTS.md \
         ARTIFACT_LIFECYCLE.md FAQ.md GLOSSARY.md INTEGRATION.md UPDATING.md \
         CHANGELOG.md
@@ -700,6 +702,88 @@ test_prompt_contract_phase_coverage() {
     grep -F "### Exceptional Repository Handoff" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
 }
 
+test_worker_session_profile_and_evidence_contracts() {
+    grep -F "These three roles are the only persistent AP roles" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Common profiles include Fresh Implementation Worker" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Discovery remains an AP phase, not a Worker role or profile" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Fresh Evidence Probe is a Worker session profile and prompt contract" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "repository mutation" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "temporary probe-state mutation" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "durable project-state mutation" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "external or production mutation" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Temporary probe state must be bounded" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "reported" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "with location and cleanup outcome" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Implementation Worker self-review" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "They are not independent" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "certification" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Same-session diagnostic evidence must be labelled" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "does not independently certify that correction" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "### Report for ORCHESTRATOR_CHAT" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
+    grep -F "Bounded Correction Worker has implementation authority only for confirmed" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "defects and explicitly authorized adjacent consistency changes" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Independent Re-Audit is a Worker session profile and a form of Independent" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Audit, not a permanent role and not a new AP phase" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Re-audit is not universally mandatory" "$REPO/AP.md" >/dev/null || return 1
+    ! rg -n "Discovery Worker" "$REPO" --glob '!/.git/**' --glob '!tests/**' || return 1
+    ! rg -n "Persistent protocol role:.*(Fresh|Evidence|Correction|Audit|Probe)" \
+        "$REPO/AP.md" "$REPO/GLOSSARY.md" || return 1
+    awk '
+        /^## Adaptive Phase Contracts/ { in_phases = 1 }
+        /^### Fresh Evidence Probe/ && in_phases { found = 1 }
+        END { exit found }
+    ' "$REPO/PROMPT_CONTRACTS.md" || return 1
+}
+
+test_evidence_ladder_closure_and_negative_scope_contracts() {
+    grep -F "adaptive evidence ladder as a selection guide, not a mandatory sequence" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Independent audit is not required for every commit" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Use fresh independence when proportionate risk, uncertainty, or evidence cost" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Do not require" "$REPO/AP_ORCHESTRATOR.md" >/dev/null || return 1
+    grep -F "independent audit for every commit" "$REPO/AP_ORCHESTRATOR.md" >/dev/null || return 1
+    grep -F "Higher reasoning effort is not broader" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Extra High is not the default" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "After the formal report, remaining context is not continuing authority" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "The Orchestrator owns the logical-block closure decision" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Closure does not mean the complete feature is finished" "$REPO/AP.md" >/dev/null || return 1
+    ! rg -n "exceptional risk|exceptionally high-risk" \
+        "$REPO/AP.md" "$REPO/AP_ORCHESTRATOR.md" "$REPO/AP_WORKER.md" \
+        "$REPO/PROMPT_CONTRACTS.md" "$REPO/FAQ.md" "$REPO/GLOSSARY.md" || return 1
+    ! rg -n "must .*independent audit.*every commit|audit.*mandatory.*every commit|required .*independent audit.*every commit" \
+        "$REPO/AP.md" "$REPO/AP_ORCHESTRATOR.md" "$REPO/AP_WORKER.md" \
+        "$REPO/PROMPT_CONTRACTS.md" "$REPO/FAQ.md" "$REPO/GLOSSARY.md" || return 1
+    ! rg -n "Worker manager|parallel autonomous|must run.*Workers.*parallel|parallel Worker requirement" \
+        "$REPO" --glob '!/.git/**' --glob '!tests/**' || return 1
+    ! rg -n "minimum prompt length|required prompt length|must rotate after every commit|[0-9]+%.*context" \
+        "$REPO/AP.md" "$REPO/AP_ORCHESTRATOR.md" "$REPO/PROMPT_CONTRACTS.md" "$REPO/FAQ.md" || return 1
+    grep -F "Permanent session-state files are not a default AP distribution artifact" "$REPO/AP.md" >/dev/null || return 1
+}
+
+test_restoration_readiness_and_routing_contracts() {
+    grep -F "Operational continuity" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Strategic continuity" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Development narrative" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Forward horizon" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Restoration must remain synthesis" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "grants no repository, implementation, deployment, production" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "restoration readiness review covers contradiction review" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "\`PASS\` when the synthesis is complete enough" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "\`PARTIAL\` when useful" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "\`BLOCKED\` when the state" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "cannot be restored responsibly" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Cooperator-facing language" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Worker progress language" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Orchestrator-to-Worker prompt language" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "formal Worker report language" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "repository documentation language" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Consuming project rules, normally in a project-owned file such as \`AGENTS.md\`" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Universal AP does not hardcode" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "restoration readiness classification" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
+    ! rg -n "FrameNest|Michal|Slovak|Cursor|Codex|Toto pošli" \
+        "$REPO/AP.md" "$REPO/AP_ORCHESTRATOR.md" "$REPO/AP_WORKER.md" \
+        "$REPO/PROMPT_CONTRACTS.md" "$REPO/FAQ.md" "$REPO/GLOSSARY.md" || return 1
+}
+
 test_vendor_and_secret_scans() {
     grep -F "AP is vendor-neutral" "$REPO/AP.md" >/dev/null || return 1
     grep -F "model family, or hosted service" "$REPO/AP.md" >/dev/null || return 1
@@ -753,6 +837,9 @@ run_test "preflight topology and transition contracts are present" test_prefligh
 run_test "restoration contracts are present" test_restoration_contracts
 run_test "Discovery Record artifact contracts are present" test_discovery_artifact_contracts
 run_test "prompt contract phase coverage is present" test_prompt_contract_phase_coverage
+run_test "Worker session profile and evidence contracts are present" test_worker_session_profile_and_evidence_contracts
+run_test "evidence ladder, closure, and negative-scope contracts are present" test_evidence_ladder_closure_and_negative_scope_contracts
+run_test "restoration readiness and communication routing contracts are present" test_restoration_readiness_and_routing_contracts
 run_test "vendor neutrality and secret-shaped scans pass" test_vendor_and_secret_scans
 run_test "tool help and documentation agree" test_tool_help_and_docs_agree
 run_test "test stdout and stderr artifacts stay inside owned temp root" test_no_external_test_artifacts

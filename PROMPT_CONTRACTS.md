@@ -30,8 +30,10 @@ state, safety-critical evidence, or explicit Orchestrator request.
 | Field | Purpose |
 |---|---|
 | Persistent role identity | State that the recipient is a Worker instance assigned to WORKER |
+| Worker session profile | Fresh Implementation Worker, Worker-Executed Preflight, Fresh Evidence Probe, Diagnostic Worker, Bounded Correction Worker, Fresh Independent Audit, Fresh Independent Re-Audit, or another explicitly defined bounded profile |
 | Task ID and type | Stable reference and task class |
 | Reasoning recommendation | Lowest sufficient available reasoning profile and brief rationale for every Worker prompt |
+| Communication routing | Project-configured Cooperator-facing language, Worker progress language, Orchestrator-to-Worker prompt language, formal Worker report language, and repository documentation language when relevant |
 | Repository identity | URL, branch, accepted URL spellings, expected refs |
 | Working directory | Exact path or discovery rule |
 | Baseline | Expected commit, parent, subject, changed paths, or empty-state rule |
@@ -54,6 +56,79 @@ state, safety-critical evidence, or explicit Orchestrator request.
 | Context-pressure rule | Whether visible usage must be reported |
 
 Omitted permission is not implied.
+
+## Communication Routing Fields
+
+Universal AP defines routing fields, not project-specific values. A prompt may
+state:
+
+- Cooperator-facing language;
+- Worker progress language;
+- Orchestrator-to-Worker prompt language;
+- formal Worker report language;
+- repository documentation language.
+
+Consuming project rules, normally in `AGENTS.md`, supply the actual values.
+The universal contract must not hardcode a project, person, vendor, execution
+client, natural language, host, or shell label.
+
+## Worker Session Profile Contracts
+
+Profiles constrain the authority and evidence posture of a Worker session. They
+are not persistent roles and are not AP phases.
+
+### Fresh Evidence Probe
+
+- **Profile**: Fresh Evidence Probe.
+- **Phase**: the phase named by the task, often Preflight, Diagnostic Closeout,
+  Acceptance, or Restoration support; Fresh Evidence Probe itself is not a
+  phase.
+- **Authority**: collect narrow fresh evidence only inside explicit mutation
+  domains. The prompt must distinguish repository mutation, temporary
+  probe-state mutation, durable project-state mutation, and external or
+  production mutation.
+- **Temporary probe-state mutation**: allowed only when explicitly authorized.
+  Temporary artifacts must be bounded, non-secret, outside protected project
+  state where practical, identified before use, cleaned after use, and reported
+  with location and cleanup outcome.
+- **Read-only default**: repository state, durable project state, production
+  state, external accounts, and external services remain read-only unless
+  separately authorized.
+- **Evidence**: synthetic fixtures, temporary migration databases, bounded
+  stress or concurrency probes, process-state inspection, schema comparison,
+  failure reproduction, bounded browser or host observation, or narrow external
+  evidence when authorized.
+- **Output**: evidence classification, exact temporary locations, cleanup
+  result, limitations, and whether findings require a separately authorized
+  implementation or correction task.
+- **Stopping rule**: stop if evidence collection would require unauthorized
+  repository, durable project, production, external, or secret access.
+
+### Bounded Correction Worker
+
+- **Profile**: Bounded Correction Worker.
+- **Authority**: implementation authority only for confirmed defects and
+  explicitly authorized adjacent consistency changes.
+- **Evidence**: independent finding, Orchestrator-confirmed defect, exact
+  correction boundary, tests, diff, and public verification when authorized.
+- **Output**: correction, validation, one corrective commit when authorized,
+  and a report that does not claim independent certification of its own change.
+- **Stopping rule**: stop when a proposed change is outside the confirmed
+  defect or explicitly authorized consistency boundary.
+
+### Fresh Independent Re-Audit
+
+- **Profile**: Fresh Independent Re-Audit.
+- **Phase**: Independent Audit. Fresh Independent Re-Audit is a form of
+  Independent Audit, not a persistent role and not a new AP phase.
+- **Authority**: fresh Worker session independent of the correction, normally
+  read-only unless the task explicitly says otherwise.
+- **Evidence**: correction diff, original independent finding, original risk
+  claim, tests, public commit, durable decisions, and remaining limitations.
+- **Output**: whether the correction resolves the defect and original risk
+  claim, residual risks, and evidence classification.
+- **Stopping rule**: stop when audit evidence is complete or correction would
+  require new authority.
 
 ## Adaptive Phase Contracts
 
@@ -184,8 +259,8 @@ authority.
 ### Fresh Independent Audit
 
 - **Phase**: Independent Audit.
-- **Reasoning recommendation**: High or Extra High only when impact justifies a
-  separate fresh review.
+- **Reasoning recommendation**: High or Extra High only when impact, risk,
+  uncertainty, or evidence cost justifies a separate fresh review.
 - **Authority**: separate fresh Worker, sequential execution, normally
   read-only; no parallel Worker topology and no new feature task.
 - **Evidence**: current repository files, tests and command output, public
@@ -202,19 +277,27 @@ authority.
 - **Reasoning recommendation**: recommend the likely profile for the next
   substantial Worker task, not for every future action.
 - **Authority**: synthesis only; restoration text grants no repository, host,
-  account, browser, credential, or Git mutation authority.
+  implementation, deployment, production, account, filesystem, external-service,
+  browser, credential, or Git mutation authority.
 - **Evidence**: verified public commit, current AP pin when present, completed
   boundaries, accepted decisions, evidence classification, active Worker state,
   current mutation state, unresolved questions, risks, and materially relevant
   Cooperator intent separated from brainstorming.
-- **Output**: self-contained restoration prompt with PASS, PARTIAL, or BLOCKED
-  classification, project and repository identity, exact last verified public
-  commit or limitation, AP pin when applicable, completed boundary, accepted
-  decisions, authority boundaries including account and browser, current phase,
-  exact next bounded step, next Worker reasoning recommendation or premature
-  statement, public-verification requirement, and no-mutation-authority
-  statement. Fields may be not applicable, unavailable, or unresolved, but not
-  omitted silently.
+- **Output**: evidence-dense synthesis with PASS, PARTIAL, or BLOCKED
+  restoration readiness classification; operational continuity; strategic
+  continuity; development narrative; forward horizon; authority boundaries
+  including account, browser, filesystem, Git, production, and external-service
+  boundaries; current phase; exact next bounded step; next Worker reasoning
+  recommendation or premature statement; public-verification requirement; and
+  no-mutation-authority statement. Fields may be not applicable, unavailable,
+  or unresolved, but not omitted silently.
+- **Readiness review**: contradiction review, omission review, stale-state
+  review, authority review, active-mutation review, active-Worker review,
+  security-boundary review, strategic-direction review, and next-step
+  executability review. PASS means the synthesis is complete enough for a fresh
+  Orchestrator to continue after verification. PARTIAL means useful continuity
+  exists but material uncertainty remains. BLOCKED means the state cannot be
+  restored responsibly.
 - **Transition owner**: fresh Orchestrator verifies truth before acting.
 - **Stopping rule**: stop if public state or active mutation cannot be
   classified honestly.

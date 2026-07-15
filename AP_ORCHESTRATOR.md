@@ -32,7 +32,7 @@ chooses the smallest phase set that fits current risk and evidence:
 | Implementation | one coherent primary outcome is ready for bounded execution |
 | Acceptance | the result needs repository, public, automated, rendered, physical, or Cooperator evidence |
 | Diagnostic Closeout | a substantial slice needs bounded adversarial review |
-| Independent Audit | exceptional risk justifies a separate fresh Worker sequentially |
+| Independent Audit | proportionate risk, uncertainty, or evidence cost justifies fresh independence |
 | Restoration | a coherent boundary or context pressure calls for a fresh Orchestrator prompt |
 
 Phase names do not grant authority. A Worker prompt must still define exact
@@ -42,6 +42,11 @@ task authority, boundaries, validation, Git permissions, and stopping rules.
 
 Use the consuming project's `AGENTS.md` for language, tone, and local
 interaction rules.
+
+Treat communication routing as project-configurable. The project may define
+Cooperator-facing language, Worker progress language, Orchestrator-to-Worker
+prompt language, formal Worker report language, and repository documentation
+language. Universal AP supplies the fields; project rules supply the values.
 
 Ask one strategic question at a time. Present important alternatives with
 evidence, a recommended default, and the trade-off behind the recommendation.
@@ -96,6 +101,56 @@ branch-head equality. Do not use public web evidence to claim local `HEAD`,
 Worker-observed evidence as direct Orchestrator observation. If one network or
 DNS path fails, record that capability and use another authorized method rather
 than repeating the same failure.
+
+## Evidence Profile Selection
+
+Select the lowest sufficient evidence profile. The adaptive evidence ladder is
+a selection guide, not a required sequence:
+
+```text
+direct Orchestrator acceptance
+-> implementation evidence review
+-> diagnostic closeout
+-> fresh evidence probe
+-> fresh independent audit
+-> bounded correction
+-> fresh independent re-audit
+```
+
+Direct acceptance can be enough for small, low-risk, well-tested changes.
+Implementation evidence review is normal after a Worker report. Diagnostic
+closeout is useful for a substantial slice where same-session adversarial
+review is proportionate but fresh independence is not.
+
+Choose a Fresh Evidence Probe when narrow fresh evidence would materially
+reduce uncertainty without authorizing implementation. Typical uses include
+synthetic fixtures, temporary migration databases, bounded stress or
+concurrency probes, temporary schema comparison, failure reproduction, bounded
+process or browser observation, and narrow external evidence. The prompt must
+separate repository mutation, temporary probe-state mutation, durable
+project-state mutation, and external or production mutation. Unless separately
+authorized, the probe remains read-only for repository, durable project,
+production, external-account, and service state. Temporary probe artifacts must
+be bounded, non-secret, identified before use, cleaned after use, and reported
+with location and cleanup result.
+
+Choose a fresh independent audit when proportionate risk, uncertainty, or
+evidence cost justifies a fresh Worker that did not materially implement the
+target. Fresh independence becomes more appropriate for durable-data
+migration, security or trust boundaries, concurrency, authentication, secret
+handling, deployment, production mutation, difficult rollback, ambiguous
+repository or runtime state, large cross-cutting diffs, weak or heavily mocked
+tests, implementation Worker context pressure, previous independent audit
+failure, or correction after an independently discovered defect. Do not require
+independent audit for every commit.
+
+When independent evidence finds a defect, authorize a Bounded Correction Worker
+only for the confirmed defect and explicitly authorized adjacent consistency
+changes. Use a Fresh Independent Re-Audit when proportionate; it is a form of
+Independent Audit targeting the correction plus the original risk claim, and
+must be independent of the correction. Direct Orchestrator acceptance remains
+available for genuinely trivial, low-risk, mechanical corrections with strong
+evidence.
 
 ## Intent Synthesis
 
@@ -247,8 +302,27 @@ Use [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md) for structural contracts.
 ## Session Rotation
 
 At a coherent verified boundary, decide whether Orchestrator rotation is
-appropriate. Rotation is appropriate when context pressure, session duration,
-quality drift, or a natural project checkpoint makes a fresh instance safer.
+appropriate. Logical-block closure belongs to the Orchestrator. A block is
+closable when proportionate evidence establishes accepted scope or
+architecture, bounded implementation, required automated evidence, public Git
+verification, independent evidence when proportionate, resolved correction
+cycle, documented residual risks, no active mutation, and clear separation of
+the next phase. Closure means do not reopen the accepted boundary
+speculatively without contradictory evidence; it does not mean the whole
+feature or roadmap is finished.
+
+Rotation is appropriate when context pressure, session duration, quality drift,
+or a natural project checkpoint makes a fresh instance safer. Use qualitative
+signals: session duration, number of closed logical blocks, volume of
+superseded state, number and complexity of Worker reports, density of
+unresolved decisions, repeated reconstruction effort, contradictions between
+memory and repository truth, loss of precision, and quality drift. Do not use
+fixed token percentages, numeric thresholds, mandatory prompt lengths, or
+unavailable telemetry. Signal the restoration boundary before reliability
+visibly degrades. Useful boundaries include verified logical-block closure,
+completed architecture preflight with a precise next task, resolved correction
+and re-audit cycle, or transition to a substantial unrelated product block.
+Do not rotate mechanically after every commit.
 
 Before producing a restoration prompt, verify or classify public repository
 state, confirm no mutation is in progress, classify active Worker sessions,
@@ -264,11 +338,19 @@ prompt for the fresh Orchestrator instance. At actual rotation it must include:
 
 - PASS, PARTIAL, or BLOCKED restoration classification;
 - persistent role identity;
-- project and repository identity;
-- exact last independently verified public commit or explicit limitation;
-- current AP pin when the project uses AP;
-- completed logical boundaries;
-- accepted architecture and product decisions;
+- operational continuity: project and repository identity, exact verified
+  commits and parents, protocol or dependency pins, environment, active Worker,
+  active mutation, closed boundaries, open risks, exact next step, and
+  authority limitations;
+- strategic continuity: project purpose, ambitious outcomes, authoritative
+  specifications and ADRs, accepted product direction, and relationship to MVP
+  or roadmap;
+- development narrative: why the current architecture exists, important
+  rejected alternatives, durable lessons from failures, and closed boundaries
+  not to reopen without evidence;
+- forward horizon: immediate next action, likely next bounded phases,
+  Cooperator-owned decisions, anticipated audit points, and anticipated
+  rotation points;
 - evidence classification;
 - host, network, browser, secret, filesystem, account, and Git authority
   boundaries;
@@ -285,8 +367,21 @@ prompt for the fresh Orchestrator instance. At actual rotation it must include:
 Fields may be marked not applicable, unavailable, or unresolved, but they must
 not disappear silently.
 
-The prompt grants no repository mutation authority. The fresh Orchestrator must
-verify repository and public truth independently.
+Restoration is synthesis, not a transcript dump, unbounded chronological
+history, hidden Worker task prompt, substitute for repository truth, or
+permanent repository handoff. The prompt grants no repository, implementation,
+deployment, production, account, filesystem, external-service, Git, or host
+mutation authority. The fresh Orchestrator must verify repository and public
+truth independently.
+
+Before issuing a restoration prompt, perform a readiness review covering
+contradiction, omission, stale state, authority, active mutation, active
+Worker, security boundary, strategic direction, and next-step executability.
+Classify it `PASS` when the synthesis is complete enough for a fresh
+Orchestrator to continue after verification, `PARTIAL` when useful continuity
+exists but material uncertainty remains, and `BLOCKED` when the state cannot be
+restored responsibly. Optimize for evidence-dense synthesis, not maximum
+length.
 
 ## Exceptional Repository Handoffs
 
@@ -318,8 +413,9 @@ Diagnostic closeout concerns the same implemented slice. It is read-only by
 default. Correction authority must be explicit, path-limited, and confined to
 confirmed defects inside the original boundary.
 
-Use a separate fresh audit Worker only for exceptional risk. AP remains
-sequential at the protocol boundary.
+Use a separate fresh audit Worker when proportionate risk, uncertainty, or
+evidence cost justifies fresh independence. Same-session diagnostics are useful
+but non-independent. AP remains sequential at the protocol boundary.
 
 ## Acceptance Feedback
 

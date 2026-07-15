@@ -59,7 +59,11 @@ task is complete.
 The uppercase names are protocol abstractions. They are not chats, models,
 providers, IDEs, CLIs, hosted services, or concrete sessions.
 
-## 3. Instances, Sessions, and Capability Profiles
+These three roles are the only persistent AP roles. Worker session profiles,
+capability profiles, phases, execution clients, and internal delegation
+arrangements do not create additional persistent roles.
+
+## 3. Instances, Sessions, and Worker Session Profiles
 
 An Orchestrator instance is one concrete initialized entity temporarily assigned
 to the ORCHESTRATOR role. A Worker instance is one concrete initialized entity
@@ -83,6 +87,80 @@ A multi-agent Worker implementation is still one accountable WORKER at the AP
 boundary. Internal delegation must not expand authority, hide commands, or split
 responsibility. The reporting Worker remains accountable for one consolidated
 report.
+
+A Worker session profile describes the bounded authority, independence posture,
+and evidence posture of one Worker session. A profile is not a persistent role
+and is not an AP phase. Common profiles include Fresh Implementation Worker,
+Worker-Executed Preflight, Fresh Evidence Probe, Diagnostic Worker, Bounded
+Correction Worker, Fresh Independent Audit, and Fresh Independent Re-Audit.
+Discovery remains an AP phase, not a Worker role or profile.
+
+The normal Worker session lifecycle is:
+
+```text
+fresh bounded task -> formal report -> session closed for autonomous work
+```
+
+After the formal report, remaining context is not continuing authority. Unused
+context is safety margin, not permission to continue. A new task requires a new
+explicit Orchestrator prompt. A narrowly related follow-up may reuse a Worker
+session only when the Orchestrator explicitly decides that reuse is acceptable
+and issues a new bounded prompt. A substantial unrelated logical slice should
+normally use a fresh Worker. AP does not require ceremonial destruction of every
+small session; it requires explicit authority renewal.
+
+Implementation Worker self-review, tests, diff inspection, and same-session
+diagnostics are valid implementation evidence. They are not independent
+certification. Same-session diagnostic evidence must be labelled
+non-independent. Independent certification requires a fresh Worker session that
+did not materially implement the target being certified. When the original risk
+justified independent evidence, a Worker that performs a material correction
+does not independently certify that correction.
+
+### Fresh Evidence Probe
+
+A Fresh Evidence Probe is a Worker session profile and prompt contract for
+collecting narrow evidence when proportionate risk, uncertainty, or evidence
+cost justifies a fresh session without granting implementation authority. It is
+not a new AP phase.
+
+A Fresh Evidence Probe may be authorized to construct synthetic fixtures,
+create temporary migration databases, run bounded stress or concurrency probes,
+inspect bounded process state, compare temporary schemas, reproduce failures,
+observe browser or host behavior, or collect narrow external evidence.
+
+The prompt must distinguish these mutation domains:
+
+- repository mutation;
+- temporary probe-state mutation;
+- durable project-state mutation;
+- external or production mutation.
+
+Unless separately authorized, a Fresh Evidence Probe is read-only with respect
+to repository state, durable project state, production state, and external
+accounts or services. It may mutate only explicitly authorized temporary probe
+state.
+
+Temporary probe state must be bounded, non-secret, outside protected project
+state where practical, identified before use, cleaned after use, and reported
+with location and cleanup outcome. Failure to clean temporary artifacts must be
+reported explicitly. A probe must not silently promote diagnostic findings into
+implementation authority.
+
+### Communication Routing
+
+Universal AP is vendor-neutral and project-neutral. It defines configurable
+communication-routing fields, but not project-specific values:
+
+- Cooperator-facing language;
+- Worker progress language;
+- Orchestrator-to-Worker prompt language;
+- formal Worker report language;
+- repository documentation language.
+
+Consuming project rules, normally in a project-owned file such as `AGENTS.md`,
+supply the actual routing values. Universal AP does not hardcode a project,
+person, execution client, vendor, natural language, host, or local shell label.
 
 ## 4. Source of Truth and Evidence
 
@@ -142,7 +220,8 @@ The standard phases are:
 5. **Diagnostic Closeout**: perform bounded adversarial review of the same
    implemented slice when proportionate.
 6. **Independent Audit**: assign a separate fresh Worker sequentially for
-   exceptional risk.
+   proportionate risk, uncertainty, or evidence cost that justifies fresh
+   independence.
 7. **Restoration**: synthesize state for a fresh Orchestrator instance at a
    coherent boundary.
 
@@ -211,6 +290,28 @@ client exposes no explicit setting, the Orchestrator describes the required
 reasoning characteristics instead of inventing labels or telemetry. The
 Cooperator retains final selection among available client settings.
 
+The Orchestrator selects the lowest sufficient evidence profile. AP uses this
+adaptive evidence ladder as a selection guide, not a mandatory sequence:
+
+```text
+direct Orchestrator acceptance
+-> implementation evidence review
+-> diagnostic closeout
+-> fresh evidence probe
+-> fresh independent audit
+-> bounded correction
+-> fresh independent re-audit
+```
+
+Use fresh independence when proportionate risk, uncertainty, or evidence cost
+justifies it. Independent audit is not required for every commit. Independent
+evidence becomes more appropriate for durable-data migration, security or trust
+boundaries, concurrency, authentication, secret handling, deployment,
+production mutation, difficult rollback, ambiguous repository or runtime state,
+large cross-cutting diffs, weak or heavily mocked tests, implementation Worker
+context pressure, previous independent audit failure, or correction after an
+independently discovered defect.
+
 ## 7. Orchestrator Responsibilities
 
 The Orchestrator should:
@@ -262,6 +363,20 @@ maximum length or repeated universal rules when references are sufficient.
 
 The Orchestrator is not a passive prompt relay and must not treat a Worker
 report as proof without evidence.
+
+### Logical-Block Closure
+
+A logical block is closable when proportionate evidence establishes, where
+applicable, accepted scope or architecture, bounded implementation, required
+automated evidence, public Git verification, independent evidence when
+proportionate, a resolved correction cycle, documented residual risks, no
+active mutation, and clear separation of the next phase.
+
+The Orchestrator owns the logical-block closure decision. Closure means the
+accepted boundary should not be reopened speculatively without contradictory
+evidence. Closure does not mean the complete feature is finished, the roadmap
+is complete, future extension is forbidden, or contradictory evidence should be
+ignored.
 
 ## 8. Worker Responsibilities
 
@@ -502,6 +617,19 @@ appropriate. The normal rotation output is a professional, self-contained
 restoration prompt for a fresh Orchestrator instance. The Cooperator may paste
 that prompt into a fresh session.
 
+Context stewardship is qualitative. Signals that restoration or rotation may
+be becoming proportionate include session duration, number of closed logical
+blocks, volume of superseded state, number and complexity of Worker reports,
+density of unresolved decisions, repeated reconstruction effort,
+contradictions between memory and repository truth, loss of precision, and
+quality drift. AP does not define fixed token percentages, numeric context
+thresholds, mandatory prompt lengths, or unavailable telemetry requirements.
+The Orchestrator should signal a restoration boundary before reliability
+visibly degrades. Useful boundaries include verified logical-block closure,
+completed architecture preflight with a precise next task, resolved correction
+and re-audit cycle, or transition to a substantial unrelated product block.
+Rotation is not mechanically required after every commit.
+
 Before producing a restoration prompt, the Orchestrator must verify or
 classify public repository state, confirm no mutation is in progress, classify
 active Worker sessions, identify the completed logical boundary, reconcile the
@@ -512,21 +640,49 @@ phase, recommend the likely reasoning profile for the next substantial Worker
 task when useful, and perform a final contradiction and omission review.
 
 At an actual Orchestrator rotation, the restoration output is a professional
-self-contained prompt. It must include restoration classification (`PASS`,
-`PARTIAL`, or `BLOCKED`), project and repository identity, exact last
-independently verified public commit or explicit limitation, current AP pin when
-the project uses AP, completed logical boundary, current accepted product and
-architecture decisions, evidence classification, host, network, browser,
-secret, filesystem, account, and Git authority boundaries, active Worker state,
-current mutation state, unresolved questions and risks, current AP phase, exact
-recommended next bounded step, reasoning recommendation for the next Worker
-prompt or an explicit statement that selecting a Worker is premature,
-public-verification requirements, and an explicit statement that restoration
-grants no mutation authority. A field may be marked not applicable,
-unavailable, or unresolved, but it must not disappear silently.
+self-contained prompt. It must preserve four continuity layers:
 
-Restoration text grants no repository or host mutation authority. The fresh
-Orchestrator must verify repository and public truth independently before
+- **Operational continuity**: repository identity, verified commits and
+  parents, protocol or dependency pins, environment, active Worker, active
+  mutation, closed boundaries, open risks, exact next step, and authority
+  limitations.
+- **Strategic continuity**: project purpose, ambitious outcomes,
+  authoritative specifications and ADRs, accepted product direction, and
+  relationship to MVP or roadmap.
+- **Development narrative**: why the current architecture exists, important
+  rejected alternatives, durable lessons from failures, and closed boundaries
+  not to reopen without evidence.
+- **Forward horizon**: immediate next action, likely next bounded phases,
+  Cooperator-owned decisions, anticipated audit points, and anticipated
+  rotation points.
+
+Restoration must remain synthesis, not a transcript dump, unbounded
+chronological history, hidden Worker task prompt, substitute for repository
+truth, or permanent repository handoff. It must include restoration
+classification (`PASS`, `PARTIAL`, or `BLOCKED`), project and repository
+identity, exact last independently verified public commit or explicit
+limitation, current AP pin when the project uses AP, completed logical
+boundary, current accepted product and architecture decisions, evidence
+classification, host, network, browser, secret, filesystem, account, and Git
+authority boundaries, active Worker state, current mutation state, unresolved
+questions and risks, current AP phase, exact recommended next bounded step,
+reasoning recommendation for the next Worker prompt or an explicit statement
+that selecting a Worker is premature, public-verification requirements, and an
+explicit statement that restoration grants no mutation authority. A field may
+be marked not applicable, unavailable, or unresolved, but it must not disappear silently.
+
+A restoration readiness review covers contradiction review, omission review,
+stale-state review, authority review, active-mutation review, active-Worker
+review, security-boundary review, strategic-direction review, and next-step
+executability review. It reports `PASS` when the synthesis is complete enough
+for a fresh Orchestrator to continue after verification, `PARTIAL` when useful
+continuity exists but material uncertainty remains, and `BLOCKED` when the state
+cannot be restored responsibly. The review optimizes for complete, evidence-dense
+synthesis, not maximum length.
+
+Restoration text grants no repository, implementation, deployment, production,
+account, filesystem, external-service, Git, or host mutation authority. The
+fresh Orchestrator must verify repository and public truth independently before
 continuing.
 
 Permanent session-state files are not a default AP distribution artifact. A
@@ -560,9 +716,24 @@ implemented slice. It is read-only by default. Correction authority must be
 explicit, limited to confirmed defects inside the original task boundary,
 constrained by exact paths, and normally completed in one corrective commit.
 
-For exceptionally high-risk areas, the Orchestrator may use a separate fresh
-Worker instance for sequential independent audit. This is not parallel
-execution.
+For proportionate risk, uncertainty, or evidence cost, the Orchestrator may use
+a separate fresh Worker instance for sequential independent audit. This is not
+parallel execution.
+
+When independent evidence identifies a defect, the proportional sequence is:
+
+```text
+independent finding -> bounded correction -> fresh independent re-audit when proportionate
+```
+
+A Bounded Correction Worker has implementation authority only for confirmed
+defects and explicitly authorized adjacent consistency changes. Fresh
+Independent Re-Audit is a Worker session profile and a form of Independent
+Audit, not a permanent role and not a new AP phase. It targets the correction
+plus the original risk claim and must use a fresh Worker session independent of
+the correction. Re-audit is not universally mandatory; the Orchestrator may
+directly accept genuinely trivial, low-risk, mechanical corrections when the
+evidence is sufficiently strong.
 
 ## 16. Numbered Cooperator Acceptance Feedback
 

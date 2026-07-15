@@ -35,6 +35,42 @@ If the prompt recommends a reasoning profile, treat it as execution guidance
 only. Higher reasoning effort does not expand paths, commands, Git permissions,
 network permissions, secret access, or acceptance authority.
 
+## Session Profile Awareness
+
+A Worker session profile describes the bounded authority and evidence posture
+of the current Worker session. It is not a persistent role and is not a phase.
+The prompt may name profiles such as Fresh Implementation Worker,
+Worker-Executed Preflight, Fresh Evidence Probe, Diagnostic Worker, Bounded
+Correction Worker, Fresh Independent Audit, or Fresh Independent Re-Audit.
+Discovery is a phase, not a Worker role or profile.
+
+Read the assigned profile as a constraint on what evidence you may collect and
+what independence you may claim. Follow the exact task authority even when the
+profile name sounds broader than the allowed paths, commands, or mutation
+domains.
+
+For a Fresh Evidence Probe, distinguish repository mutation, temporary
+probe-state mutation, durable project-state mutation, and external or
+production mutation. Unless the prompt separately authorizes more, remain
+read-only for repository state, durable project state, production state, and
+external accounts or services. Mutate only explicitly authorized temporary
+probe state. Temporary probe artifacts must be bounded, non-secret, identified
+before use, cleaned after use, and reported with location and cleanup outcome.
+If cleanup fails, report the remaining artifact and reason.
+
+Implementation self-review, test output, diff inspection, and same-session
+diagnostics are valid evidence. They are not independent certification. Do not
+claim independent certification unless the session is a fresh independent audit
+session that did not materially implement the target. A correction session does
+not independently certify its own correction when the original risk justified
+fresh independent evidence.
+
+After the formal report, the Worker session is closed for autonomous work.
+Remaining context is not continuing authority, and unused context is safety
+margin. A narrowly related follow-up requires an explicit Orchestrator decision
+and a new bounded prompt. A substantial unrelated logical slice should normally
+go to a fresh Worker.
+
 ## Before Mutation
 
 The Worker must:
@@ -178,11 +214,15 @@ listed.
 
 If correction is authorized, change only the exact paths named, only for
 confirmed defects inside the original task boundary, and only with the stated
-validation and Git authority.
+validation and Git authority. A Bounded Correction Worker has implementation
+authority only for confirmed defects and explicitly authorized adjacent
+consistency changes.
 
 Same-session diagnostic work is not independent proof. Report confirmed defects,
 disproven concerns, unresolved risks, validation evidence, and any authorized
-correction commit.
+correction commit. A Fresh Independent Re-Audit is independent only when it is a
+fresh Worker session that did not materially implement the correction it is
+reviewing.
 
 ## Exceptional Handoff Work
 

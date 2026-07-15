@@ -140,6 +140,63 @@ preflight is reserved for work where mutation authority would be premature.
 Small documentation fixes and ordinary bounded code changes should not become a
 ceremony.
 
+## Why does not every commit need an independent audit?
+
+Independent audit is evidence, not ceremony. The Orchestrator chooses the
+lowest sufficient evidence profile for the risk, uncertainty, and evidence
+cost. Direct acceptance, implementation evidence review, diagnostic closeout,
+Fresh Evidence Probe, fresh independent audit, bounded correction, and fresh
+independent re-audit form a selection ladder, not a mandatory sequence.
+
+Fresh independence is more appropriate for durable-data migration, security or
+trust boundaries, concurrency, authentication, secret handling, deployment,
+production mutation, difficult rollback, ambiguous repository or runtime state,
+large cross-cutting diffs, weak or heavily mocked tests, implementation Worker
+context pressure, previous independent audit failure, or correction after an
+independently discovered defect.
+
+## Why can fresh sessions improve evidence quality?
+
+A fresh Worker session starts with a bounded prompt instead of accumulated
+implementation assumptions. That can make it easier to notice contradictions,
+test gaps, stale state, or overbroad claims. Freshness is useful when the added
+independence is proportionate; AP does not require a new session for every tiny
+follow-up.
+
+## What is the difference between self-review and independent certification?
+
+Implementation self-review, tests, diff inspection, and same-session diagnostic
+work are valid evidence. They help prove what was changed and checked. They
+are not independent certification because the same session materially shaped or
+implemented the target. Independent certification requires a fresh Worker
+session that did not materially implement what it is certifying.
+
+## What may a Fresh Evidence Probe mutate?
+
+Only explicitly authorized temporary probe state. A probe prompt must
+distinguish repository mutation, temporary probe-state mutation, durable
+project-state mutation, and external or production mutation. Unless separately
+authorized, the probe is read-only for repository state, durable project state,
+production state, and external accounts or services. Temporary artifacts must
+be bounded, non-secret, identified before use, cleaned after use, and reported
+with their location and cleanup result.
+
+## Why is remaining Worker context not authority?
+
+A Worker receives authority from the current Orchestrator task prompt, not from
+unused context capacity. After the formal report, the Worker session is closed
+for autonomous work. A related follow-up requires an explicit Orchestrator
+decision and a new bounded prompt; a substantial unrelated slice should
+normally use a fresh Worker.
+
+## When does a correction need re-audit?
+
+When independent evidence found a defect, the normal proportional sequence is
+independent finding, bounded correction, and fresh independent re-audit when
+the original risk still justifies fresh evidence. Re-audit is not universal.
+The Orchestrator may directly accept genuinely trivial, low-risk, mechanical
+corrections when evidence is strong enough.
+
 ## Why does the Orchestrator recommend reasoning effort?
 
 Some execution clients expose a reasoning setting. Before every Worker prompt,
@@ -211,6 +268,16 @@ statement, verification requirements, and a no-mutation-authority statement.
 Permanent NEXT or BOOT files tend to become stale session state. Repository
 handoffs remain exceptional for unreconstructable state with explicit lifecycle
 authority.
+
+## Why is rotation qualitative rather than token-percentage based?
+
+AP cannot assume every client exposes reliable context telemetry. The
+Orchestrator watches qualitative signals instead: session duration, closed
+logical blocks, superseded state, Worker report complexity, unresolved
+decisions, repeated reconstruction effort, contradictions between memory and
+repository truth, loss of precision, and quality drift. The goal is to signal a
+restoration boundary before reliability degrades, not to rotate mechanically
+after every commit.
 
 ## When is a diagnostic pass used?
 
