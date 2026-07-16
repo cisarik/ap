@@ -61,6 +61,45 @@ session.
 
 The bounded lifecycle and context of one Worker instance.
 
+## Worker Session Target
+
+Mandatory routing metadata in every authoritative Worker prompt. It identifies
+whether the task must be delivered to a `fresh-worker-session` or the
+`current-worker-session`. It does not change the WORKER role, expand authority,
+establish independence by itself, or replace the Worker session profile.
+
+## Fresh Worker Session
+
+A Worker execution session that did not receive the previous task authority,
+inherits no continuing authority from another Worker session, independently
+establishes required repository and environment evidence, and receives complete
+authority only from its new prompt. Fresh Worker is the safe default.
+
+## Current Worker Session
+
+The exact existing Worker execution session intentionally reused under a new
+authoritative prompt. Reuse requires a continuity anchor, explicit expiration of
+prior authority, a complete new bounded grant, re-gating, and non-independent
+evidence classification.
+
+## Continuity Anchor
+
+A precise reference connecting a `current-worker-session` prompt to the intended
+session history, such as the previous task ID, terminal report, accepted commit,
+or another prior authority boundary.
+
+## Authority Renewal
+
+A complete new bounded authority grant to a current Worker session after the
+previous grant expired. It is new authority, not continuation of old authority,
+and requires a new authoritative prompt.
+
+## Terminal Formal Report
+
+A Worker report that ends the current task and expires its authority. Terminal
+statuses include `PASS`, `PARTIAL`, and `BLOCKED`. Explicit task cancellation or
+supersession also expires authority.
+
 ## Worker Session Profile
 
 The bounded authority, independence posture, and evidence posture of one
@@ -199,7 +238,8 @@ security boundaries, documentation truth, test gaps, and Git integrity.
 
 Evidence from a fresh Worker session that did not materially implement the
 target being certified. Implementation self-review and same-session diagnostics
-are valid evidence but not independent certification.
+are valid evidence but not independent certification. Independent certification
+requires the `fresh-worker-session` target.
 
 ## Fresh Independent Audit
 

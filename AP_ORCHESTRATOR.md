@@ -199,6 +199,45 @@ exists, describe the required reasoning characteristics instead of inventing
 labels or telemetry. The Cooperator retains final selection among available
 client settings.
 
+## Worker Session Target Selection
+
+Every authoritative Worker prompt declares exactly one Worker session target:
+
+```text
+Worker session target: fresh-worker-session
+```
+
+or:
+
+```text
+Worker session target: current-worker-session
+```
+
+Fresh Worker is the safe default. Use a fresh target when independence is
+required, the intended current session cannot be identified, retained context is
+materially contaminated or contradictory, or a substantial unrelated logical
+slice makes reuse inappropriate. Fresh Independent Audit and Fresh Independent
+Re-Audit always require `fresh-worker-session`.
+
+Use `current-worker-session` only for intentional reuse of the exact existing
+Worker session. The prompt must identify a continuity anchor, state that prior
+authority expired, grant complete new bounded authority, preserve the WORKER
+role, explain why reuse is proportionate, require repository and environment
+re-gating, classify retained context as convenience rather than authority,
+classify evidence as non-independent, stop on conflict with current repository
+evidence, and require a new terminal report.
+
+The target and Worker session profile are distinct. Diagnostic Worker and
+Bounded Correction Worker do not imply fresh or current targeting. A current
+target combined with independent certification is contradictory and must not be
+issued.
+
+When the Cooperator mediates prompts through copy and paste, display or
+communicate the routing target clearly. Project-specific communication rules may
+localize the user-facing label, while the universal metadata remains English and
+vendor-neutral. A missing, invalid, or ambiguous target never authorizes current
+session reuse; route the task to a fresh session or issue a corrected prompt.
+
 ## Preflight Selection
 
 Every implementation task includes embedded preflight: repository gates,
@@ -245,6 +284,10 @@ mutation authority.
 A strong Worker task defines:
 
 - task ID and task type;
+- Worker session target;
+- Worker session profile;
+- continuity anchor and authority-renewal language when targeting the current
+  Worker session;
 - working directory and repository identity;
 - exact baseline, branch, and remote preconditions;
 - mandatory reading and inspection;
@@ -263,6 +306,11 @@ Omitted permission is not implied permission. Do not rely on the presence of
 Before presenting a professional Worker prompt, run a compact readiness review:
 
 - current phase is correct;
+- Worker session target is explicit and compatible with the Worker session
+  profile;
+- fresh targeting is used by default, or current-session reuse is justified with
+  a continuity anchor and complete new authority grant;
+- independent certification never targets the current Worker session;
 - repository, branch, baseline, refs, and status gate are exact;
 - accepted decisions are separated from brainstorming;
 - one coherent primary outcome is named;
@@ -277,7 +325,8 @@ Before presenting a professional Worker prompt, run a compact readiness review:
 - context-pressure reporting is addressed when useful;
 - explicit project-specific deviations are named;
 - contradictions and omissions have been reviewed adversarially;
-- a fresh Worker can understand the task without hidden context.
+- the intended Worker session can understand its complete authority without
+  hidden context.
 
 Use evidence density instead of maximum prompt length. Reference stable
 universal rules instead of duplicating them when references are sufficient. A
@@ -290,8 +339,10 @@ AP uses task-specific generated prompts rather than static project copies of
 universal bootstrap or handoff files.
 
 When handing a Worker prompt to the Cooperator, use the consuming project's
-required presentation convention if one exists. The default AP report heading
-for Workers is:
+required presentation convention if one exists and communicate whether the
+prompt targets a fresh or current Worker session. Localized user-facing labels
+may be used, but the prompt retains the vendor-neutral target metadata. The
+default AP report heading for Workers is:
 
 ```text
 ### Report for ORCHESTRATOR_CHAT
@@ -409,13 +460,20 @@ public commit and diff, validation, documentation truth, and residual risks.
 Then decide whether direct acceptance is enough or whether one diagnostic
 closeout is proportionate.
 
+The terminal implementation report expires the Worker's authority. A diagnostic
+closeout or correction requires a new prompt with an explicit Worker session
+target. Reusing the implementation session is permitted only as
+`current-worker-session` under a complete new bounded grant, and its evidence
+remains non-independent.
+
 Diagnostic closeout concerns the same implemented slice. It is read-only by
 default. Correction authority must be explicit, path-limited, and confined to
 confirmed defects inside the original boundary.
 
 Use a separate fresh audit Worker when proportionate risk, uncertainty, or
 evidence cost justifies fresh independence. Same-session diagnostics are useful
-but non-independent. AP remains sequential at the protocol boundary.
+but non-independent. Fresh Independent Audit and Fresh Independent Re-Audit must
+target `fresh-worker-session`. AP remains sequential at the protocol boundary.
 
 ## Acceptance Feedback
 
@@ -474,6 +532,8 @@ security artifacts.
 - Separate facts, assumptions, Worker claims, brainstorming, accepted decisions,
   and rejected options.
 - Choose the current phase.
+- Choose and clearly communicate the Worker session target.
+- Verify target/profile compatibility and use fresh as the safe default.
 - Decide whether separate preflight is needed.
 - Recommend the lowest sufficient reasoning profile before every Worker prompt.
 - Choose the lightest sufficient next artifact.
@@ -481,6 +541,8 @@ security artifacts.
 - Name exact permissions and prohibitions.
 - Define validation and acceptance criteria.
 - Review the report against the task.
+- Treat a terminal `PASS`, `PARTIAL`, or `BLOCKED` report as expiration of the
+  current Worker authority.
 - Verify public commits when available.
 - Decide accept, correct, continue, pause, rotate, or close.
 

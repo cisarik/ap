@@ -114,7 +114,40 @@ comes first.
 
 Only through the current authoritative Orchestrator task prompt. The Worker
 reads the project rules and pinned AP files, verifies the repository gate, and
-acts only inside the task's boundaries.
+acts only inside the task's boundaries. The prompt declares:
+
+```text
+Worker session target: fresh-worker-session
+```
+
+Freshness does not create a new permanent role. The session is still assigned to
+the WORKER role.
+
+## Must every Worker task use a fresh session?
+
+No. Fresh Worker is the safe default and is required for independent
+certification, but a current session may be reused for a direct continuation,
+missing evidence, bounded self-correction, interrupted-task resumption after
+re-gating, or report repair.
+
+## When may the current Worker be reused?
+
+Only when a new authoritative prompt explicitly declares:
+
+```text
+Worker session target: current-worker-session
+```
+
+The prompt must identify the intended prior task or report, state that old
+authority expired, grant complete new bounded authority, require re-gating, and
+classify the result as non-independent. Retained context is convenience, not
+authority.
+
+## What happens if the Worker session target is missing?
+
+A missing, invalid, or ambiguous target never authorizes current-session reuse.
+The task must be routed to a fresh Worker session or corrected before work
+continues.
 
 ## Why is preflight sometimes separate?
 
@@ -169,7 +202,9 @@ Implementation self-review, tests, diff inspection, and same-session diagnostic
 work are valid evidence. They help prove what was changed and checked. They
 are not independent certification because the same session materially shaped or
 implemented the target. Independent certification requires a fresh Worker
-session that did not materially implement what it is certifying.
+session that did not materially implement what it is certifying. An
+implementation Worker cannot independently audit itself, and changing its
+profile label does not create independence.
 
 ## What may a Fresh Evidence Probe mutate?
 
@@ -184,10 +219,18 @@ with their location and cleanup result.
 ## Why is remaining Worker context not authority?
 
 A Worker receives authority from the current Orchestrator task prompt, not from
-unused context capacity. After the formal report, the Worker session is closed
-for autonomous work. A related follow-up requires an explicit Orchestrator
-decision and a new bounded prompt; a substantial unrelated slice should
-normally use a fresh Worker.
+unused context capacity. After a terminal `PASS`, `PARTIAL`, or `BLOCKED`
+report, the authority expires and the Worker session is closed for autonomous
+work. Cancellation or supersession also expires authority. A related follow-up
+requires a new prompt with an explicit Worker session target and a complete new
+bounded grant; a substantial unrelated slice should normally use a fresh
+Worker.
+
+## Does an open chat retain Worker authority?
+
+No. An open conversation, retained repository context, or remaining context
+capacity does not preserve expired authority. Reuse of that chat requires a new
+prompt targeting `current-worker-session`.
 
 ## When does a correction need re-audit?
 

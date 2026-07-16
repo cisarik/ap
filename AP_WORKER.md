@@ -35,6 +35,37 @@ If the prompt recommends a reasoning profile, treat it as execution guidance
 only. Higher reasoning effort does not expand paths, commands, Git permissions,
 network permissions, secret access, or acceptance authority.
 
+## Worker Session Target
+
+Every authoritative Worker prompt must declare exactly one:
+
+```text
+Worker session target: fresh-worker-session
+```
+
+or:
+
+```text
+Worker session target: current-worker-session
+```
+
+Inspect the declared target before acting. The target identifies which execution
+session receives the task; it does not change the WORKER role, expand authority,
+establish independence by itself, or replace the Worker session profile.
+
+For `fresh-worker-session`, establish repository and environment evidence
+without treating another session's context or authority as inherited. For
+`current-worker-session`, verify that the continuity anchor identifies the
+actual session history, the prompt states that prior authority expired, and the
+prompt grants complete new bounded authority. Re-gate repository and environment
+state before renewed work. Retained context is convenience, not authority.
+
+A missing, invalid, or ambiguous target never permits current-session
+continuation. Stop and require a corrected prompt unless the task is routed to a
+fresh Worker session. Stop when a current-session continuity anchor does not
+match the actual session history or retained context conflicts materially with
+current repository evidence.
+
 ## Session Profile Awareness
 
 A Worker session profile describes the bounded authority and evidence posture
@@ -47,7 +78,9 @@ Discovery is a phase, not a Worker role or profile.
 Read the assigned profile as a constraint on what evidence you may collect and
 what independence you may claim. Follow the exact task authority even when the
 profile name sounds broader than the allowed paths, commands, or mutation
-domains.
+domains. A Worker session target and Worker session profile are distinct.
+Diagnostic Worker and Bounded Correction Worker do not imply fresh or current
+targeting.
 
 For a Fresh Evidence Probe, distinguish repository mutation, temporary
 probe-state mutation, durable project-state mutation, and external or
@@ -63,19 +96,29 @@ diagnostics are valid evidence. They are not independent certification. Do not
 claim independent certification unless the session is a fresh independent audit
 session that did not materially implement the target. A correction session does
 not independently certify its own correction when the original risk justified
-fresh independent evidence.
+fresh independent evidence. Fresh Independent Audit and Fresh Independent
+Re-Audit require `fresh-worker-session`. A prompt combining
+`current-worker-session` with independent certification is contradictory and
+must be refused. Changing a profile label or using internal agents in the same
+coordinated run does not create independent evidence.
 
-After the formal report, the Worker session is closed for autonomous work.
-Remaining context is not continuing authority, and unused context is safety
-margin. A narrowly related follow-up requires an explicit Orchestrator decision
-and a new bounded prompt. A substantial unrelated logical slice should normally
-go to a fresh Worker.
+After a terminal formal report with `PASS`, `PARTIAL`, or `BLOCKED`, the Worker
+session is closed for autonomous work and its authority expires. Authority also
+expires when the task is explicitly cancelled or superseded. Remaining context
+is not continuing authority, and unused context is safety margin. A narrowly
+related follow-up requires an explicit Orchestrator decision, an explicit Worker
+session target, and a complete new bounded prompt. Reuse is a new authority
+grant, not continuation of the expired grant. A substantial unrelated logical
+slice should normally go to a fresh Worker.
 
 ## Before Mutation
 
 The Worker must:
 
 - read the complete task;
+- inspect the Worker session target and confirm target/profile compatibility;
+- for current-session reuse, verify the continuity anchor, expired prior
+  authority, complete new grant, and non-independent evidence posture;
 - identify the assigned phase and the authority attached to it;
 - verify that required capabilities are available;
 - resolve the working directory and Git root when required;
@@ -188,6 +231,11 @@ safety-critical evidence.
 Distinguish directly observed evidence from assumptions, prior Worker claims,
 and unverified inference.
 
+A terminal report with `PASS`, `PARTIAL`, or `BLOCKED` expires the current task
+authority. Stop autonomous work after submitting it. A follow-up in the same
+conversation requires a new prompt explicitly targeting
+`current-worker-session`; an open conversation alone grants nothing.
+
 Report deviations from the assigned phase. If implementation would require
 completion of a missing preflight, or if acceptance feedback reveals new
 product scope rather than a concrete defect inside the task, stop and report
@@ -239,6 +287,10 @@ full content or shared inspection is impossible.
 Stop when:
 
 - task authority is missing;
+- the Worker session target is missing, invalid, contradictory, or delivered to
+  the wrong session;
+- a current-session continuity anchor does not match the actual session history;
+- a prompt claims current-session independent certification;
 - repository identity or preconditions fail;
 - required capabilities are unavailable;
 - required evidence is missing;
@@ -246,13 +298,17 @@ Stop when:
 - secrets would be exposed;
 - validation requires a forbidden command;
 - completion would require unauthorized destructive or out-of-scope action;
-- acceptance criteria pass and final verification is complete.
+- acceptance criteria pass and final verification is complete;
+- a terminal `PASS`, `PARTIAL`, or `BLOCKED` report has been submitted, or the
+  task has been cancelled or superseded.
 
 ## Practical Checklist
 
 Before change:
 
 - read the task and relevant protocol files;
+- verify the Worker session target and, for current reuse, the continuity anchor
+  and complete new authority grant;
 - verify root, branch, remote, baseline, and status;
 - confirm allowed paths, commands, Git authority, and stopping conditions.
 

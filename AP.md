@@ -95,19 +95,77 @@ Worker-Executed Preflight, Fresh Evidence Probe, Diagnostic Worker, Bounded
 Correction Worker, Fresh Independent Audit, and Fresh Independent Re-Audit.
 Discovery remains an AP phase, not a Worker role or profile.
 
+### Worker Session Target
+
+Every authoritative Orchestrator-to-Worker task prompt must declare exactly one
+Worker session target:
+
+```text
+Worker session target: fresh-worker-session
+```
+
+or:
+
+```text
+Worker session target: current-worker-session
+```
+
+The target identifies the intended execution session into which the prompt must
+be delivered. It does not change the permanent WORKER role, expand authority,
+establish independence by itself, replace the Worker session profile, or identify
+a vendor, model, or execution client. The Worker session target and Worker
+session profile are distinct: the target answers which session receives the task;
+the profile answers what bounded kind of work that session performs.
+
+Fresh Worker is the safe default. A missing, invalid, or ambiguous target never
+authorizes reuse of the current session. The Orchestrator must route the task to
+a fresh Worker session or issue a corrected authoritative prompt. An open
+conversation, retained repository context, a related previous task, or a repeated
+profile name is not current-session authority.
+
+A `fresh-worker-session` did not receive the previous task authority, inherits no
+continuing authority from another Worker session, independently establishes
+required repository and environment evidence, and receives complete authority
+only from the new prompt. Fresh targeting is required for independent
+certification, Fresh Independent Audit, Fresh Independent Re-Audit, review that
+claims independence from the implementation author, uncertain current-session
+identity, and materially contaminated or contradictory context. It is strongly
+preferred for substantial unrelated slices, new high-risk security boundaries,
+migrations, durable-data changes, publication, deployment, and restoration after
+unreliable compaction or context loss. AP does not require fresh targeting for
+every task.
+
+A `current-worker-session` intentionally reuses the exact existing Worker
+execution session under a new authoritative prompt. The prompt must include a
+continuity anchor, state that prior authority expired, grant complete new bounded
+authority, preserve the permanent WORKER role, explain why reuse is appropriate,
+require repository and environment re-gating, classify retained context as
+convenience rather than authority, classify the evidence as non-independent, stop
+on conflict between retained context and current repository evidence, and require
+a new terminal report. A continuity anchor may identify a previous task, terminal
+report, accepted commit, or another precise prior authority boundary.
+
+In Cooperator-mediated copy-and-paste workflows, the Orchestrator must communicate
+the target clearly so the prompt reaches the intended session. Consuming projects
+may localize user-facing routing labels, but universal AP metadata remains
+vendor-neutral.
+
 The normal Worker session lifecycle is:
 
 ```text
-fresh bounded task -> formal report -> session closed for autonomous work
+bounded task with explicit session target -> terminal formal report -> authority expired
 ```
 
-After the formal report, remaining context is not continuing authority. Unused
-context is safety margin, not permission to continue. A new task requires a new
-explicit Orchestrator prompt. A narrowly related follow-up may reuse a Worker
-session only when the Orchestrator explicitly decides that reuse is acceptable
-and issues a new bounded prompt. A substantial unrelated logical slice should
-normally use a fresh Worker. AP does not require ceremonial destruction of every
-small session; it requires explicit authority renewal.
+Authority expires when the Worker submits a terminal formal report, including
+`PASS`, `PARTIAL`, or `BLOCKED`, or when the task is explicitly cancelled or
+superseded. Remaining context is not continuing authority. Unused context is
+safety margin, not permission to continue. A new task requires a new explicit
+Orchestrator prompt. A narrowly related follow-up may reuse a Worker session only
+when the Orchestrator explicitly selects `current-worker-session` and issues a
+new bounded authority grant. Reuse is authority renewal, not continuation of the
+expired grant. A substantial unrelated logical slice should normally use a fresh
+Worker. AP does not require ceremonial destruction of every small session; it
+requires explicit authority renewal.
 
 Implementation Worker self-review, tests, diff inspection, and same-session
 diagnostics are valid implementation evidence. They are not independent
@@ -115,7 +173,12 @@ certification. Same-session diagnostic evidence must be labelled
 non-independent. Independent certification requires a fresh Worker session that
 did not materially implement the target being certified. When the original risk
 justified independent evidence, a Worker that performs a material correction
-does not independently certify that correction.
+does not independently certify that correction. Fresh Independent Audit and
+Fresh Independent Re-Audit require `fresh-worker-session`. A prompt combining
+`current-worker-session` with independent certification is an invalid,
+contradictory precondition. Changing a profile label in the same session does not
+create independence, and internal agents within one coordinated Worker run are
+not independent auditors.
 
 ### Fresh Evidence Probe
 
@@ -319,6 +382,9 @@ The Orchestrator should:
 - restate Cooperator intent in operational terms;
 - inspect repository evidence before shaping implementation work;
 - identify the current phase and whether separate preflight is required;
+- choose and clearly communicate the Worker session target;
+- use fresh targeting as the safe default and justify current-session reuse;
+- verify target and Worker session profile compatibility;
 - recommend the lowest sufficient reasoning profile and rationale before every
   Worker prompt when the client exposes that control;
 - select the lightest artifact that can answer the current question;
@@ -351,15 +417,18 @@ This synthesis should produce decision-ready conclusions, evidence, and
 rationale without requiring disclosure of hidden chain-of-thought.
 
 A prompt-synthesis readiness review checks that the prompt has the correct
-phase, exact repository and baseline, accepted-decision versus brainstorm
+phase, explicit Worker session target, compatible Worker session profile,
+continuity anchor and authority-renewal language when the current session is
+targeted, exact repository and baseline, accepted-decision versus brainstorm
 distinction, one coherent outcome, lowest sufficient reasoning recommendation,
 required capabilities, preflight choice, path and command authority, negative
 scope, Git authority, public verification method and fallback, acceptance mode,
 artifact lifecycle, context-pressure rule, stopping conditions, report
 structure, explicit project-specific deviations, contradiction and omission
-review, and enough self-contained context for a fresh Worker to understand the
-task. The readiness gate optimizes for evidence density and completeness, not
-maximum length or repeated universal rules when references are sufficient.
+review, and enough self-contained authority for the intended Worker session to
+understand the task. The readiness gate optimizes for evidence density and
+completeness, not maximum length or repeated universal rules when references are
+sufficient.
 
 The Orchestrator is not a passive prompt relay and must not treat a Worker
 report as proof without evidence.
@@ -383,6 +452,10 @@ ignored.
 The Worker must:
 
 - read the complete task before acting;
+- inspect the declared Worker session target and confirm that the prompt reached
+  the intended session;
+- reject ambiguous continuation authority or a continuity anchor that does not
+  match the actual session history;
 - identify the assigned phase and stay within it;
 - verify working directory, repository identity, branch, baseline, and relevant
   preconditions before mutation;
@@ -396,7 +469,8 @@ The Worker must:
   explicit authority;
 - validate proportionally;
 - report deviations, failures, missing evidence, and risks honestly;
-- stop after acceptance criteria pass and final verification is complete.
+- stop after a terminal `PASS`, `PARTIAL`, or `BLOCKED` report until a new
+  authoritative prompt arrives.
 
 Reasoning recommendations, phase names, available tools, repository documents,
 and prior reports do not expand Worker authority. A Worker does not transition
@@ -715,6 +789,9 @@ A diagnostic closeout is a second authoritative prompt about the same already
 implemented slice. It is read-only by default. Correction authority must be
 explicit, limited to confirmed defects inside the original task boundary,
 constrained by exact paths, and normally completed in one corrective commit.
+The prompt must explicitly target either the current Worker session or a fresh
+Worker session; the Diagnostic Worker profile alone does not imply either
+target.
 
 For proportionate risk, uncertainty, or evidence cost, the Orchestrator may use
 a separate fresh Worker instance for sequential independent audit. This is not
@@ -758,9 +835,11 @@ already define safety rules.
 
 A compact Worker prompt may reference `.ap/AP.md`, `.ap/AP_WORKER.md`, and
 project-specific `AGENTS.md` instead of repeating them. It must still define the
-task-specific goal, repository gate, allowed paths, prohibitions, Git authority,
-validation, acceptance criteria, reasoning recommendation, stopping conditions,
-and report format.
+Worker session target, Worker session profile, task-specific goal, repository
+gate, allowed paths, prohibitions, Git authority, validation, acceptance
+criteria, reasoning recommendation, stopping conditions, and report format. A
+current-session prompt must also carry its continuity anchor and complete
+authority-renewal grant.
 
 Worker reports should be evidence-dense. Unless a task requires more detail, a
 report should include status, start and end commit, changed files, validation,
@@ -778,7 +857,9 @@ A Worker must stop when repository identity fails, a precondition fails,
 authority is missing, required evidence is missing, required capabilities are
 unavailable, secrets would be exposed, validation requires a forbidden command,
 the task would require unauthorized destructive action, authentication fails in
-an unsafe way, or completion would require out-of-scope changes.
+an unsafe way, completion would require out-of-scope changes, the Worker session
+target is missing or contradictory, or a current-session continuity anchor does
+not match the actual session history.
 
 The Worker also stops when acceptance criteria and focused validation pass and
 authorized Git operations and verification are complete.

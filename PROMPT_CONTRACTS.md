@@ -30,8 +30,10 @@ state, safety-critical evidence, or explicit Orchestrator request.
 | Field | Purpose |
 |---|---|
 | Persistent role identity | State that the recipient is a Worker instance assigned to WORKER |
+| Worker session target | Mandatory `fresh-worker-session` or `current-worker-session` routing declaration |
 | Worker session profile | Fresh Implementation Worker, Worker-Executed Preflight, Fresh Evidence Probe, Diagnostic Worker, Bounded Correction Worker, Fresh Independent Audit, Fresh Independent Re-Audit, or another explicitly defined bounded profile |
-| Task ID and type | Stable reference and task class |
+| Task identity | Stable task ID, type, and coherent outcome reference |
+| Continuity anchor | Required for `current-worker-session`; identifies the previous task, terminal report, accepted commit, or other precise prior authority boundary |
 | Reasoning recommendation | Lowest sufficient available reasoning profile and brief rationale for every Worker prompt |
 | Communication routing | Project-configured Cooperator-facing language, Worker progress language, Orchestrator-to-Worker prompt language, formal Worker report language, and repository documentation language when relevant |
 | Repository identity | URL, branch, accepted URL spellings, expected refs |
@@ -41,8 +43,8 @@ state, safety-critical evidence, or explicit Orchestrator request.
 | Repository gate | Root, remote, branch, status, public ref, and untracked-state checks |
 | Goal | One coherent outcome |
 | Accepted decisions | Decisions already made by the Cooperator or durable project records |
-| Allowed paths | Exact write scope |
-| Exclusions | Scope that must not change |
+| Positive authority | Exact allowed paths and permitted command or mutation domains |
+| Negative authority | Exact excluded paths, forbidden commands, and prohibited scope |
 | Commands | Allowed and forbidden command classes |
 | Dependency authority | Install, update, lockfile, and runtime authority |
 | Git authority | Exact fetch, stage, commit, push, or read-only rule |
@@ -50,12 +52,80 @@ state, safety-critical evidence, or explicit Orchestrator request.
 | Secret authority | Whether secret access is allowed; normally none |
 | Browser authority | Allowed origins, interactions, storage, screenshots, and cleanup |
 | Validation | Required checks and expected evidence |
-| Acceptance criteria | Concrete pass conditions |
 | Stopping conditions | Conditions that require stopping without improvisation |
-| Report format | Required sections and header |
+| Completion and report contract | Concrete pass conditions, terminal status, required report sections, and header |
 | Context-pressure rule | Whether visible usage must be reported |
 
 Omitted permission is not implied.
+
+## Worker Session Target Contract
+
+Every authoritative Worker task prompt declares exactly one:
+
+```text
+Worker session target: fresh-worker-session
+```
+
+or:
+
+```text
+Worker session target: current-worker-session
+```
+
+The target identifies the intended execution session into which the prompt must
+be delivered. It is distinct from persistent role identity and Worker session
+profile. It does not expand authority or establish independence by itself.
+
+Fresh Worker is the safe default. A missing, invalid, or ambiguous target never
+authorizes current-session reuse. Route the task to a fresh Worker session or
+stop and obtain a corrected prompt.
+
+For `current-worker-session`, the prompt must provide a continuity anchor, state
+that prior authority expired, grant complete new bounded authority, explain why
+reuse is appropriate, preserve the WORKER role, require repository and
+environment re-gating, state that retained context is convenience rather than
+authority, classify the evidence as non-independent, stop on conflict with
+current repository evidence, and require a new terminal report.
+
+Fresh Independent Audit, Fresh Independent Re-Audit, and independent
+certification require `fresh-worker-session`. A prompt combining
+`current-worker-session` with independent certification is invalid. A profile
+name alone never supplies the target.
+
+### Concise Valid Examples
+
+Fresh implementation:
+
+```text
+Worker session target: fresh-worker-session
+Worker session profile: Fresh Implementation Worker
+Task identity: implement one bounded catalog endpoint
+```
+
+Current-session continuation:
+
+```text
+Worker session target: current-worker-session
+Worker session profile: Diagnostic Worker
+Continuity anchor: terminal PASS report for task CATALOG-17
+Authority renewal: prior authority expired; this prompt grants a new read-only diagnostic task
+Evidence posture: non-independent
+```
+
+Fresh independent audit:
+
+```text
+Worker session target: fresh-worker-session
+Worker session profile: Fresh Independent Audit
+Task identity: independently audit commit <exact-sha>
+```
+
+### Invalid Combinations
+
+- `current-worker-session` with independent certification;
+- omitted target used to continue mutation in an open conversation;
+- a Fresh Implementation Worker, Diagnostic Worker, or Bounded Correction
+  Worker profile treated as session routing without an explicit target.
 
 ## Communication Routing Fields
 
@@ -80,6 +150,7 @@ are not persistent roles and are not AP phases.
 ### Fresh Evidence Probe
 
 - **Profile**: Fresh Evidence Probe.
+- **Worker session target**: `fresh-worker-session`.
 - **Phase**: the phase named by the task, often Preflight, Diagnostic Closeout,
   Acceptance, or Restoration support; Fresh Evidence Probe itself is not a
   phase.
@@ -107,6 +178,8 @@ are not persistent roles and are not AP phases.
 ### Bounded Correction Worker
 
 - **Profile**: Bounded Correction Worker.
+- **Worker session target**: explicit fresh or current target; the profile alone
+  does not select the execution session.
 - **Authority**: implementation authority only for confirmed defects and
   explicitly authorized adjacent consistency changes.
 - **Evidence**: independent finding, Orchestrator-confirmed defect, exact
@@ -119,6 +192,7 @@ are not persistent roles and are not AP phases.
 ### Fresh Independent Re-Audit
 
 - **Profile**: Fresh Independent Re-Audit.
+- **Worker session target**: `fresh-worker-session`.
 - **Phase**: Independent Audit. Fresh Independent Re-Audit is a form of
   Independent Audit, not a persistent role and not a new AP phase.
 - **Authority**: fresh Worker session independent of the correction, normally
@@ -132,10 +206,12 @@ are not persistent roles and are not AP phases.
 
 ## Adaptive Phase Contracts
 
-Each Worker prompt must name its phase, reasoning recommendation, authority,
-evidence, output, transition owner, and stopping rule. Orchestrator-only
-actions do not require Worker reasoning recommendations. Keep contracts compact;
-increase detail only when risk, cross-cutting scope, or safety requires it.
+Each Worker prompt must name its Worker session target, Worker session profile,
+phase, reasoning recommendation, authority, evidence, output, transition owner,
+and stopping rule. A `current-worker-session` prompt must also name its
+continuity anchor and complete authority renewal. Orchestrator-only actions do
+not require Worker reasoning recommendations. Keep contracts compact; increase
+detail only when risk, cross-cutting scope, or safety requires it.
 
 ### Discovery Or Intent Synthesis
 
@@ -196,6 +272,7 @@ increase detail only when risk, cross-cutting scope, or safety requires it.
 
 ### Fresh Implementation Worker
 
+- **Worker session target**: `fresh-worker-session`.
 - **Phase**: Implementation.
 - **Reasoning recommendation**: lowest sufficient profile for the slice;
   choose separately from any later diagnostic.
@@ -241,6 +318,8 @@ authority.
 
 ### Diagnostic Closeout
 
+- **Worker session target**: explicit `fresh-worker-session` or
+  `current-worker-session`; Diagnostic Worker does not imply either target.
 - **Phase**: Diagnostic Closeout.
 - **Reasoning recommendation**: choose independently; often High for a
   substantial slice.
@@ -258,6 +337,7 @@ authority.
 
 ### Fresh Independent Audit
 
+- **Worker session target**: `fresh-worker-session`.
 - **Phase**: Independent Audit.
 - **Reasoning recommendation**: High or Extra High only when impact, risk,
   uncertainty, or evidence cost justifies a separate fresh review.
@@ -270,6 +350,10 @@ authority.
 - **Transition owner**: Orchestrator.
 - **Stopping rule**: stop when audit evidence is complete or correction would
   require authority not granted.
+
+A Fresh Independent Audit prompt targeting `current-worker-session` is
+contradictory and invalid. Internal agents used within one accountable Worker run
+are not separate independent auditors.
 
 ### Fresh Orchestrator Restoration
 

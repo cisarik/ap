@@ -33,6 +33,10 @@ the authoritative archive for exact content.
   independent certification limits, bounded correction and re-audit sequencing,
   logical-block closure, restoration readiness, restoration continuity layers,
   and project-configurable communication routing.
+- Added mandatory fresh/current Worker session targeting, explicit
+  current-session authority renewal, terminal authority expiration for
+  PASS/PARTIAL/BLOCKED and cancelled or superseded tasks, and target-linked
+  independent certification boundaries.
 
 ## Historical Generations
 

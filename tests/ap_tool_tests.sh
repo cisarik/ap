@@ -609,8 +609,9 @@ test_prompt_synthesis_contracts() {
     grep -F "Ambiguous brainstorming does not silently rewrite durable repository truth" "$REPO/AP.md" >/dev/null || return 1
     grep -F "plan the bounded repository update needed to restore durable consistency" "$REPO/AP.md" >/dev/null || return 1
     grep -F "without requiring disclosure of hidden chain-of-thought" "$REPO/AP.md" >/dev/null || return 1
-    grep -F "a fresh Worker can understand the task" "$REPO/AP_ORCHESTRATOR.md" >/dev/null || return 1
-    grep -F "evidence density and completeness" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "the intended Worker session can understand its complete authority" "$REPO/AP_ORCHESTRATOR.md" >/dev/null || return 1
+    grep -F "evidence density" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "completeness, not maximum length" "$REPO/AP.md" >/dev/null || return 1
     grep -F "maximum prompt length" "$REPO/AP_ORCHESTRATOR.md" >/dev/null || return 1
     grep -F "current phase" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
 }
@@ -735,6 +736,33 @@ test_worker_session_profile_and_evidence_contracts() {
     ' "$REPO/PROMPT_CONTRACTS.md" || return 1
 }
 
+test_worker_session_target_and_authority_renewal_contracts() {
+    grep -F "Every authoritative Orchestrator-to-Worker task prompt must declare exactly one" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Worker session target: fresh-worker-session" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Worker session target: current-worker-session" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Fresh Worker is the safe default" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "continuity anchor" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "prior authority expired" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Reuse is authority renewal, not continuation of the" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Retained context is convenience, not authority" "$REPO/AP_WORKER.md" >/dev/null || return 1
+    grep -F "\`PASS\`, \`PARTIAL\`, or \`BLOCKED\`" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "cancelled or" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "superseded" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Fresh Independent Re-Audit require \`fresh-worker-session\`" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "\`current-worker-session\` with independent certification is an invalid" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "session profile are distinct" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Worker session target | Mandatory \`fresh-worker-session\` or \`current-worker-session\`" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
+    grep -F "Continuity anchor | Required for \`current-worker-session\`" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
+    grep -F "Positive authority | Exact allowed paths" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
+    grep -F "Negative authority | Exact excluded paths" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
+    grep -F "Completion and report contract | Concrete pass conditions" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
+    grep -F "omitted target used to continue mutation" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
+    grep -F "name alone never supplies the target" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
+    [ -f "$REPO/docs/adr/0008-worker-session-target-and-authority-renewal.md" ] || return 1
+    grep -F "0008-worker-session-target-and-authority-renewal.md" "$REPO/docs/adr/README.md" >/dev/null || return 1
+    grep -F "mandatory fresh/current Worker session targeting" "$REPO/CHANGELOG.md" >/dev/null || return 1
+}
+
 test_evidence_ladder_closure_and_negative_scope_contracts() {
     grep -F "adaptive evidence ladder as a selection guide, not a mandatory sequence" "$REPO/AP.md" >/dev/null || return 1
     grep -F "Independent audit is not required for every commit" "$REPO/AP.md" >/dev/null || return 1
@@ -743,7 +771,7 @@ test_evidence_ladder_closure_and_negative_scope_contracts() {
     grep -F "independent audit for every commit" "$REPO/AP_ORCHESTRATOR.md" >/dev/null || return 1
     grep -F "Higher reasoning effort is not broader" "$REPO/AP.md" >/dev/null || return 1
     grep -F "Extra High is not the default" "$REPO/AP.md" >/dev/null || return 1
-    grep -F "After the formal report, remaining context is not continuing authority" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Remaining context is not continuing authority" "$REPO/AP.md" >/dev/null || return 1
     grep -F "The Orchestrator owns the logical-block closure decision" "$REPO/AP.md" >/dev/null || return 1
     grep -F "Closure does not mean the complete feature is finished" "$REPO/AP.md" >/dev/null || return 1
     ! rg -n "exceptional risk|exceptionally high-risk" \
@@ -838,6 +866,7 @@ run_test "restoration contracts are present" test_restoration_contracts
 run_test "Discovery Record artifact contracts are present" test_discovery_artifact_contracts
 run_test "prompt contract phase coverage is present" test_prompt_contract_phase_coverage
 run_test "Worker session profile and evidence contracts are present" test_worker_session_profile_and_evidence_contracts
+run_test "Worker session target and authority renewal contracts are present" test_worker_session_target_and_authority_renewal_contracts
 run_test "evidence ladder, closure, and negative-scope contracts are present" test_evidence_ladder_closure_and_negative_scope_contracts
 run_test "restoration readiness and communication routing contracts are present" test_restoration_readiness_and_routing_contracts
 run_test "vendor neutrality and secret-shaped scans pass" test_vendor_and_secret_scans
