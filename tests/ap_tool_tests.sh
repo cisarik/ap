@@ -138,29 +138,86 @@ assert_text_contract() {
     tr '\n' ' ' < "$file" | grep -F "$text" >/dev/null
 }
 
-assert_section_contract() {
+assert_section_contract() (
     file=$1
     start_heading=$2
     end_heading=$3
     text=$4
-    awk -v start="$start_heading" -v end="$end_heading" '
+    section_text=$(awk -v start="$start_heading" -v end="$end_heading" '
         $0 == start {
+            start_count++
             found_start = 1
             in_section = 1
         }
         in_section && $0 == end {
             found_end = 1
-            exit
+            in_section = 0
+            next
         }
         in_section {
             print
         }
         END {
-            if (!found_start || !found_end) {
+            if (!found_start || !found_end || start_count != 1) {
                 exit 1
             }
         }
-    ' "$file" | tr '\n' ' ' | grep -F -- "$text" >/dev/null
+    ' "$file") || return 1
+    printf '%s\n' "$section_text" | tr '\n' ' ' | grep -F -- "$text" >/dev/null
+)
+
+test_section_contract_helper_boundaries() {
+    fixtures=$TMPROOT/section-contract-fixtures
+    mkdir -p "$fixtures"
+
+    cat > "$fixtures/valid.md" <<'EOF'
+## Before
+
+outside
+
+## Intended
+
+phrase inside the intended section
+- fixed phrase beginning with a hyphen
+harmless Markdown line wrapping
+remains normalized
+
+## After
+
+phrase only after the intended section
+EOF
+    assert_section_contract "$fixtures/valid.md" "## Intended" "## After" \
+        "phrase inside the intended section" || return 1
+    assert_section_contract "$fixtures/valid.md" "## Intended" "## After" \
+        "- fixed phrase beginning with a hyphen" || return 1
+    assert_section_contract "$fixtures/valid.md" "## Intended" "## After" \
+        "harmless Markdown line wrapping remains normalized" || return 1
+    ! assert_section_contract "$fixtures/valid.md" "## Missing" "## After" \
+        "phrase inside the intended section" || return 1
+    ! assert_section_contract "$fixtures/valid.md" "## Intended" "## After" \
+        "phrase only after the intended section" || return 1
+
+    cat > "$fixtures/missing-end.md" <<'EOF'
+## Intended
+
+phrase emitted before the missing end heading
+EOF
+    ! assert_section_contract "$fixtures/missing-end.md" "## Intended" "## Missing End" \
+        "phrase emitted before the missing end heading" || return 1
+
+    cat > "$fixtures/duplicate-start.md" <<'EOF'
+## Intended
+
+first section text
+
+## Intended
+
+second section text
+
+## After
+EOF
+    ! assert_section_contract "$fixtures/duplicate-start.md" "## Intended" "## After" \
+        "second section text"
 }
 
 hash_file() {
@@ -934,6 +991,7 @@ test_no_external_test_artifacts() {
 
 copy_worktree_to_source
 
+run_test "section contract helper enforces exact boundaries" test_section_contract_helper_boundaries
 run_test "init creates missing AGENTS.md without commit" test_init_creates_agents
 run_test "init preserves existing AGENTS.md content, mode, and idempotence" test_init_preserves_existing_content_mode_and_idempotent
 run_test "init repairs stale block and preserves outside content" test_init_replaces_stale_block_and_preserves_outside
