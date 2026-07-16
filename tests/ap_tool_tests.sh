@@ -138,6 +138,31 @@ assert_text_contract() {
     tr '\n' ' ' < "$file" | grep -F "$text" >/dev/null
 }
 
+assert_section_contract() {
+    file=$1
+    start_heading=$2
+    end_heading=$3
+    text=$4
+    awk -v start="$start_heading" -v end="$end_heading" '
+        $0 == start {
+            found_start = 1
+            in_section = 1
+        }
+        in_section && $0 == end {
+            found_end = 1
+            exit
+        }
+        in_section {
+            print
+        }
+        END {
+            if (!found_start || !found_end) {
+                exit 1
+            }
+        }
+    ' "$file" | tr '\n' ' ' | grep -F -- "$text" >/dev/null
+}
+
 hash_file() {
     cksum "$1"
 }
@@ -774,30 +799,65 @@ test_worker_session_profile_and_evidence_contracts() {
 }
 
 test_worker_session_target_and_authority_renewal_contracts() {
-    grep -F "Every authoritative Orchestrator-to-Worker task prompt must declare exactly one" "$REPO/AP.md" >/dev/null || return 1
-    grep -F "Worker session target: fresh-worker-session" "$REPO/AP.md" >/dev/null || return 1
-    grep -F "Worker session target: current-worker-session" "$REPO/AP.md" >/dev/null || return 1
-    grep -F "Fresh Worker is the safe default" "$REPO/AP.md" >/dev/null || return 1
-    grep -F "continuity anchor" "$REPO/AP.md" >/dev/null || return 1
-    grep -F "prior authority expired" "$REPO/AP.md" >/dev/null || return 1
-    grep -F "Reuse is authority renewal, not continuation of the" "$REPO/AP.md" >/dev/null || return 1
-    grep -F "Retained context is convenience, not authority" "$REPO/AP_WORKER.md" >/dev/null || return 1
-    grep -F "\`PASS\`, \`PARTIAL\`, or \`BLOCKED\`" "$REPO/AP.md" >/dev/null || return 1
-    grep -F "cancelled or" "$REPO/AP.md" >/dev/null || return 1
-    grep -F "superseded" "$REPO/AP.md" >/dev/null || return 1
-    grep -F "Fresh Independent Re-Audit require \`fresh-worker-session\`" "$REPO/AP.md" >/dev/null || return 1
-    grep -F "\`current-worker-session\` with independent certification is an invalid" "$REPO/AP.md" >/dev/null || return 1
-    grep -F "session profile are distinct" "$REPO/AP.md" >/dev/null || return 1
-    grep -F "Worker session target | Mandatory \`fresh-worker-session\` or \`current-worker-session\`" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
-    grep -F "Continuity anchor | Required for \`current-worker-session\`" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
-    grep -F "Positive authority | Exact allowed paths" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
-    grep -F "Negative authority | Exact excluded paths" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
-    grep -F "Completion and report contract | Concrete pass conditions" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
-    grep -F "omitted target used to continue mutation" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
-    grep -F "name alone never supplies the target" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
+    assert_section_contract "$REPO/AP.md" "### Worker Session Target" "### Fresh Evidence Probe" \
+        "Every authoritative Orchestrator-to-Worker task prompt must declare exactly one Worker session target" || return 1
+    assert_section_contract "$REPO/AP.md" "### Worker Session Target" "### Fresh Evidence Probe" \
+        "Worker session target: current-worker-session" || return 1
+    assert_section_contract "$REPO/AP.md" "### Worker Session Target" "### Fresh Evidence Probe" \
+        "A missing, invalid, or ambiguous target never authorizes reuse of the current session" || return 1
+    assert_section_contract "$REPO/AP.md" "### Worker Session Target" "### Fresh Evidence Probe" \
+        "A \`current-worker-session\` intentionally reuses the exact existing Worker execution session under a new authoritative prompt" || return 1
+    assert_section_contract "$REPO/AP.md" "### Worker Session Target" "### Fresh Evidence Probe" \
+        "The prompt must include a continuity anchor, state that prior authority expired, grant complete new bounded authority, preserve the permanent WORKER role, explain why reuse is appropriate" || return 1
+    assert_section_contract "$REPO/AP.md" "### Worker Session Target" "### Fresh Evidence Probe" \
+        "require repository and environment re-gating, classify retained context as convenience rather than authority, classify the evidence as non-independent, stop on conflict between retained context and current repository evidence, and require a new terminal report" || return 1
+    assert_section_contract "$REPO/AP.md" "### Worker Session Target" "### Fresh Evidence Probe" \
+        "Authority expires when the Worker submits a terminal formal report, including \`PASS\`, \`PARTIAL\`, or \`BLOCKED\`, or when the task is explicitly cancelled or superseded" || return 1
+    assert_section_contract "$REPO/AP.md" "### Worker Session Target" "### Fresh Evidence Probe" \
+        "A new task requires a new explicit Orchestrator prompt" || return 1
+    assert_section_contract "$REPO/AP.md" "### Worker Session Target" "### Fresh Evidence Probe" \
+        "Reuse is authority renewal, not continuation of the expired grant" || return 1
+    assert_section_contract "$REPO/AP.md" "### Worker Session Target" "### Fresh Evidence Probe" \
+        "The Worker session target and Worker session profile are distinct: the target answers which session receives the task; the profile answers what bounded kind of work that session performs" || return 1
+
+    assert_section_contract "$REPO/AP_ORCHESTRATOR.md" "## Worker Session Target Selection" "## Preflight Selection" \
+        "Use \`current-worker-session\` only for intentional reuse of the exact existing Worker session" || return 1
+    assert_section_contract "$REPO/AP_ORCHESTRATOR.md" "## Worker Session Target Selection" "## Preflight Selection" \
+        "The prompt must identify a continuity anchor, state that prior authority expired, grant complete new bounded authority, preserve the WORKER role, explain why reuse is proportionate, require repository and environment re-gating, classify retained context as convenience rather than authority, classify evidence as non-independent, stop on conflict with current repository evidence, and require a new terminal report" || return 1
+
+    assert_section_contract "$REPO/AP_WORKER.md" "## Worker Session Target" "## Session Profile Awareness" \
+        "For \`current-worker-session\`, verify that the continuity anchor identifies the actual session history, the prompt states that prior authority expired, and the prompt grants complete new bounded authority" || return 1
+    assert_section_contract "$REPO/AP_WORKER.md" "## Worker Session Target" "## Session Profile Awareness" \
+        "Re-gate repository and environment state before renewed work. Retained context is convenience, not authority" || return 1
+    assert_section_contract "$REPO/AP_WORKER.md" "## Worker Session Target" "## Session Profile Awareness" \
+        "Stop when a current-session continuity anchor does not match the actual session history or retained context conflicts materially with current repository evidence" || return 1
+    assert_section_contract "$REPO/AP_WORKER.md" "## Session Profile Awareness" "## Checkout Topology Gate" \
+        "After a terminal formal report with \`PASS\`, \`PARTIAL\`, or \`BLOCKED\`, the Worker session is closed for autonomous work and its authority expires. Authority also expires when the task is explicitly cancelled or superseded" || return 1
+    assert_section_contract "$REPO/AP_WORKER.md" "## Session Profile Awareness" "## Checkout Topology Gate" \
+        "A narrowly related follow-up requires an explicit Orchestrator decision, an explicit Worker session target, and a complete new bounded prompt" || return 1
+
+    assert_section_contract "$REPO/PROMPT_CONTRACTS.md" "## Common Worker Task Fields" "## Repository Checkout Topology Contract" \
+        "Worker session target | Mandatory \`fresh-worker-session\` or \`current-worker-session\` routing declaration" || return 1
+    assert_section_contract "$REPO/PROMPT_CONTRACTS.md" "## Common Worker Task Fields" "## Repository Checkout Topology Contract" \
+        "Continuity anchor | Required for \`current-worker-session\`" || return 1
+    assert_section_contract "$REPO/PROMPT_CONTRACTS.md" "## Common Worker Task Fields" "## Repository Checkout Topology Contract" \
+        "Positive authority | Exact allowed paths" || return 1
+    assert_section_contract "$REPO/PROMPT_CONTRACTS.md" "## Common Worker Task Fields" "## Repository Checkout Topology Contract" \
+        "Negative authority | Exact excluded paths" || return 1
+    assert_section_contract "$REPO/PROMPT_CONTRACTS.md" "## Common Worker Task Fields" "## Repository Checkout Topology Contract" \
+        "Completion and report contract | Concrete pass conditions" || return 1
+    assert_section_contract "$REPO/PROMPT_CONTRACTS.md" "## Worker Session Target Contract" "## Communication Routing Fields" \
+        "A profile name alone never supplies the target" || return 1
+    assert_section_contract "$REPO/PROMPT_CONTRACTS.md" "### Fresh Independent Re-Audit" "## Adaptive Phase Contracts" \
+        "- **Worker session target**: \`fresh-worker-session\`." || return 1
+    assert_section_contract "$REPO/PROMPT_CONTRACTS.md" "### Fresh Independent Audit" "### Fresh Orchestrator Restoration" \
+        "- **Worker session target**: \`fresh-worker-session\`." || return 1
+    assert_section_contract "$REPO/PROMPT_CONTRACTS.md" "### Fresh Independent Audit" "### Fresh Orchestrator Restoration" \
+        "A Fresh Independent Audit prompt targeting \`current-worker-session\` is contradictory and invalid" || return 1
+
     [ -f "$REPO/docs/adr/0008-worker-session-target-and-authority-renewal.md" ] || return 1
-    grep -F "0008-worker-session-target-and-authority-renewal.md" "$REPO/docs/adr/README.md" >/dev/null || return 1
-    grep -F "mandatory fresh/current Worker session targeting" "$REPO/CHANGELOG.md" >/dev/null || return 1
+    assert_contains "$REPO/docs/adr/README.md" "0008-worker-session-target-and-authority-renewal.md" || return 1
+    assert_contains "$REPO/CHANGELOG.md" "mandatory fresh/current Worker session targeting" || return 1
 }
 
 test_evidence_ladder_closure_and_negative_scope_contracts() {
