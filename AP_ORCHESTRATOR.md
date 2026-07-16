@@ -279,6 +279,36 @@ filesystem, account, or service authority. Obtain Cooperator approval before
 safety-sensitive, irreversible, account-level, physical-device, or production
 mutation authority.
 
+## Checkout Topology and Repository Gates
+
+Identify the checkout topology from repository evidence and integration
+configuration before constructing a repository gate. Do not infer topology
+solely because a path ends in `.ap`. State the expected topology whenever it
+materially changes which identity or synchronization invariants apply.
+
+For a standalone checkout, a task may require the exact repository root, remote
+identity, active branch, `HEAD`, subject, parent, cleanliness, untracked-state
+policy, remote-tracking ref, and public branch ref. Cleanliness may separately
+cover the tracked worktree and index. Preserve pre-commit and pre-push
+public-ref gates for standalone mutation tasks when the task requires them. An
+unexpected detached HEAD remains a valid failure when the task explicitly
+requires an active standalone branch.
+
+For a pinned submodule checkout, use the containing repository's gitlink as the
+adoption evidence. The gate should verify the containing repository root and
+submodule path when relevant, canonical submodule identity, recorded gitlink,
+submodule `HEAD`, worktree and index cleanliness, untracked-state policy, and
+health checks. A detached submodule at the exact gitlink is normal. An active
+`main` branch is not required, and the submodule must not be attached to a
+moving branch merely to satisfy a malformed standalone-style gate.
+
+Distinguish public distribution state from consuming-project pin state. Local
+`origin/main` and public `refs/heads/main` may be newer than the consumer's pin
+without invalidating it. A mismatch between submodule `HEAD` and the containing
+repository gitlink is a failure, as is prohibited dirtiness. Adoption of a new
+AP version requires a separately authorized gitlink update; public branch
+freshness does not substitute for that evidence.
+
 ## Task Shaping
 
 A strong Worker task defines:
@@ -289,7 +319,8 @@ A strong Worker task defines:
 - continuity anchor and authority-renewal language when targeting the current
   Worker session;
 - working directory and repository identity;
-- exact baseline, branch, and remote preconditions;
+- checkout topology and exact baseline, applicable branch, and remote
+  preconditions;
 - mandatory reading and inspection;
 - one coherent goal;
 - accepted decisions and constraints;
@@ -311,7 +342,8 @@ Before presenting a professional Worker prompt, run a compact readiness review:
 - fresh targeting is used by default, or current-session reuse is justified with
   a continuity anchor and complete new authority grant;
 - independent certification never targets the current Worker session;
-- repository, branch, baseline, refs, and status gate are exact;
+- repository topology, applicable branch, baseline, refs, synchronization
+  invariants, and status gate are exact;
 - accepted decisions are separated from brainstorming;
 - one coherent primary outcome is named;
 - lowest sufficient reasoning recommendation and rationale are recorded;

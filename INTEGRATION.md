@@ -81,6 +81,24 @@ commit expected by the superproject. See:
 - <https://git-scm.com/docs/git-submodule>
 - <https://git-scm.com/docs/gitmodules>
 
+## Pinned Submodule Checkout Topology
+
+The consuming repository owns the `.ap` gitlink that declares its accepted AP
+version. An ordinary initialized submodule checkout may therefore be in detached
+HEAD at that exact commit. This is the expected pinned submodule topology, not
+an error, and attaching `.ap` to `main` is not part of ordinary consumption.
+
+Strict `./.ap/ap doctor` validates the accepted pin by comparing the containing
+repository gitlink with the `.ap` checkout `HEAD`, along with canonical identity
+and cleanliness. It does not require an active `main` branch. Public AP `main`
+and the submodule's local `origin/main` may advance while a consuming project
+intentionally remains on its older accepted pin.
+
+Adopting a newer AP version requires a separate explicit submodule-update task,
+validation of the candidate, and a containing-repository commit that changes
+the `.ap` gitlink. Do not attach or update the submodule merely to make its
+checkout resemble a standalone AP development checkout.
+
 ## Health Check
 
 Run:

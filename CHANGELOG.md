@@ -37,6 +37,10 @@ the authoritative archive for exact content.
   current-session authority renewal, terminal authority expiration for
   PASS/PARTIAL/BLOCKED and cancelled or superseded tasks, and target-linked
   independent certification boundaries.
+- Made repository gates checkout-topology aware: detached pinned submodules pass
+  at the exact containing-repository gitlink, standalone checkouts retain
+  applicable active-branch and public-ref gates, and regression coverage
+  protects detached-submodule doctor behavior.
 
 ## Historical Generations
 

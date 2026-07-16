@@ -47,6 +47,42 @@ You can also clone with:
 git clone --recurse-submodules <project-url>
 ```
 
+## Why is `.ap` in detached HEAD?
+
+The consuming repository records an exact AP commit in its `.ap` gitlink.
+Standard submodule initialization checks out that commit directly, so detached
+HEAD is normal for this pinned submodule topology.
+
+## Is detached HEAD an error in a submodule?
+
+No. Detached HEAD alone is not a failure for a pinned submodule when `.ap`
+`HEAD` equals the containing repository gitlink and the required identity and
+cleanliness checks pass.
+
+## Must `.ap` be on `main`?
+
+No. Attaching `.ap` to `main` is not required for ordinary consumption and must
+not be done merely to satisfy a standalone-style repository gate.
+
+## What should a Worker compare for a pinned submodule?
+
+Compare the containing repository's recorded `.ap` gitlink with the submodule
+`HEAD`. They must match when the project is expected to be synchronized. Do not
+replace this check with public remote `main` equality.
+
+## Can public AP `main` be newer than the project pin?
+
+Yes. A consuming project may intentionally remain pinned while public AP
+`main` advances. The project adopts a newer version only through an explicitly
+authorized gitlink update and containing-repository commit.
+
+## When is active branch verification still required?
+
+When a task declares a standalone checkout and explicitly requires work on an
+active branch. In that topology an unexpected detached HEAD may remain a
+repository-gate failure, and applicable public-ref commit and push protections
+still apply.
+
 ## Where do project-specific rules live?
 
 In the consuming project's root `AGENTS.md`, outside the managed AP integration

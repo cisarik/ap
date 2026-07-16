@@ -36,11 +36,12 @@ state, safety-critical evidence, or explicit Orchestrator request.
 | Continuity anchor | Required for `current-worker-session`; identifies the previous task, terminal report, accepted commit, or other precise prior authority boundary |
 | Reasoning recommendation | Lowest sufficient available reasoning profile and brief rationale for every Worker prompt |
 | Communication routing | Project-configured Cooperator-facing language, Worker progress language, Orchestrator-to-Worker prompt language, formal Worker report language, and repository documentation language when relevant |
-| Repository identity | URL, branch, accepted URL spellings, expected refs |
+| Repository checkout topology | Declared repository context such as standalone checkout or pinned submodule checkout |
+| Repository identity | URL, applicable branch, accepted URL spellings, expected refs, containing repository, submodule path, and gitlink where relevant |
 | Working directory | Exact path or discovery rule |
 | Baseline | Expected commit, parent, subject, changed paths, or empty-state rule |
 | Mandatory reading | Project `AGENTS.md`, `.ap/AP.md`, `.ap/AP_WORKER.md`, and task-relevant files |
-| Repository gate | Root, remote, branch, status, public ref, and untracked-state checks |
+| Repository gate | Topology-specific root, identity, synchronization, applicable branch, status, public-ref, and untracked-state checks |
 | Goal | One coherent outcome |
 | Accepted decisions | Decisions already made by the Cooperator or durable project records |
 | Positive authority | Exact allowed paths and permitted command or mutation domains |
@@ -57,6 +58,35 @@ state, safety-critical evidence, or explicit Orchestrator request.
 | Context-pressure rule | Whether visible usage must be reported |
 
 Omitted permission is not implied.
+
+## Repository Checkout Topology Contract
+
+Repository identity requirements must match the checkout topology. The prompt
+states the expected topology whenever it materially changes the gate. This
+declaration supplies repository context; it does not expand mutation authority.
+
+A standalone implementation task may use:
+
+```text
+Repository checkout topology: standalone checkout
+Expected branch: main
+Expected HEAD: <commit>
+```
+
+A pinned submodule inspection task may use:
+
+```text
+Repository checkout topology: pinned submodule checkout
+Containing-repository gitlink: <commit>
+Expected submodule HEAD: <same commit>
+Detached HEAD: accepted
+```
+
+Require branch metadata only when branch attachment is part of the declared
+topology. For a pinned submodule, require equality between the containing
+repository gitlink and submodule `HEAD`; do not make public remote `main`
+equality a universal consumer-pin invariant. Checkout attachment or update
+requires explicit authority.
 
 ## Worker Session Target Contract
 

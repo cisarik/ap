@@ -34,6 +34,15 @@ Updates are explicit: check the available AP commit, move the submodule pointer
 only through a reviewable update command, validate compatibility, then commit
 the changed gitlink in the consuming project.
 
+Repository gates must match the declared checkout topology. A standalone
+checkout may require an exact active branch. A pinned submodule checkout may
+correctly use detached HEAD when the submodule `HEAD` equals the containing
+repository's recorded gitlink. Public remote `main` equality is not required for
+a consumer pin because the public branch may have advanced. Topology does not
+weaken repository identity, cleanliness, or applicable public-ref protections,
+and attaching, updating, or otherwise changing a checkout requires explicit
+authority.
+
 ## 2. Roles
 
 AP uses three persistent protocol roles.
@@ -393,6 +402,8 @@ The Orchestrator should:
 - distinguish verified facts, Worker-observed evidence, Cooperator-observed
   evidence, accepted decisions, proposed ideas, open questions, inference,
   recommendations, and rejected or superseded options;
+- identify repository checkout topology and specify the identity,
+  synchronization, branch, and public-ref invariants that actually apply;
 - review Worker reports against the original task contract;
 - verify public commits when available;
 - classify outcomes as PASS, PARTIAL, or BLOCKED;
@@ -457,8 +468,8 @@ The Worker must:
 - reject ambiguous continuation authority or a continuity anchor that does not
   match the actual session history;
 - identify the assigned phase and stay within it;
-- verify working directory, repository identity, branch, baseline, and relevant
-  preconditions before mutation;
+- verify working directory, declared checkout topology, repository identity,
+  applicable branch, baseline, and relevant preconditions before mutation;
 - inspect relevant files and state before changing them;
 - change only authorized paths;
 - run only authorized or task-compatible commands;

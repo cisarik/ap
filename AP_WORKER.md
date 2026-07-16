@@ -111,6 +111,28 @@ session target, and a complete new bounded prompt. Reuse is a new authority
 grant, not continuation of the expired grant. A substantial unrelated logical
 slice should normally go to a fresh Worker.
 
+## Checkout Topology Gate
+
+Verify the checkout topology declared by the task against repository evidence,
+then apply only the gate for that topology. If the declaration and evidence
+conflict, stop and report BLOCKED rather than silently rewriting the gate.
+
+For a standalone checkout that explicitly requires an active branch, verify
+that branch together with the authorized repository identity, baseline,
+cleanliness, remote-tracking, and public-ref invariants. An unexpected detached
+HEAD may fail that gate.
+
+For a pinned submodule checkout, compare the containing repository's recorded
+gitlink with the submodule `HEAD`. Detached HEAD is accepted when both commits
+match and the remaining identity, index, worktree, untracked-state, and health
+requirements pass. Do not require the submodule's local `origin/main` or public
+remote `main` to equal the consumer pin; either branch may have advanced.
+
+Reject an active-branch requirement that conflicts with an explicitly pinned
+submodule gate unless renewed authority corrects the task. Never attach, update,
+or otherwise change a submodule merely to satisfy a malformed gate, and never
+perform a submodule checkout change without explicit authority.
+
 ## Before Mutation
 
 The Worker must:
@@ -122,7 +144,8 @@ The Worker must:
 - identify the assigned phase and the authority attached to it;
 - verify that required capabilities are available;
 - resolve the working directory and Git root when required;
-- verify repository identity, branch, remote, baseline, and cleanliness gates;
+- verify checkout topology, repository identity, applicable branch, remote,
+  baseline, synchronization, and cleanliness gates;
 - inspect relevant files and evidence;
 - confirm allowed paths, forbidden paths, command boundaries, and Git authority;
 - stop if any required precondition fails and correction is not authorized.
@@ -309,7 +332,8 @@ Before change:
 - read the task and relevant protocol files;
 - verify the Worker session target and, for current reuse, the continuity anchor
   and complete new authority grant;
-- verify root, branch, remote, baseline, and status;
+- verify checkout topology, root, applicable branch, remote, baseline, and
+  status;
 - confirm allowed paths, commands, Git authority, and stopping conditions.
 
 During change:

@@ -132,6 +132,12 @@ assert_not_contains() {
     ! grep -F "$text" "$file" >/dev/null
 }
 
+assert_text_contract() {
+    file=$1
+    text=$2
+    tr '\n' ' ' < "$file" | grep -F "$text" >/dev/null
+}
+
 hash_file() {
     cksum "$1"
 }
@@ -277,6 +283,24 @@ test_doctor_healthy_exact_block_and_read_only() {
     [ "$origin_before" = "$(git -C "$super/.ap" config --get remote.origin.url)" ]
 }
 
+test_doctor_accepts_detached_pinned_submodule() {
+    super=$(new_super doctor_detached_pin)
+    run_ok "$super/.ap/ap" init
+    commit_integration "$super"
+    recorded=$(git -C "$super" rev-parse HEAD:.ap)
+    git -C "$super/.ap" checkout --detach --quiet "$recorded"
+
+    [ -z "$(git -C "$super/.ap" branch --show-current)" ] || return 1
+    [ "$recorded" = "$(git -C "$super/.ap" rev-parse HEAD)" ] || return 1
+    [ -z "$(module_status "$super/.ap")" ] || return 1
+
+    run_ok "$super/.ap/ap" doctor || return 1
+    grep -F "superproject recorded AP commit: $recorded" "$OUT" >/dev/null || return 1
+    grep -F ".ap worktree AP commit: $recorded" "$OUT" >/dev/null || return 1
+    grep -F "OK strict pinned AP commit" "$OUT" >/dev/null || return 1
+    grep -F "ap doctor: PASS" "$OUT" >/dev/null
+}
+
 test_doctor_managed_block_defects() {
     super=$(new_super doctor_block_defects)
     run_ok "$super/.ap/ap" init
@@ -325,7 +349,8 @@ test_doctor_missing_dirty_wrong_remote_mismatch() {
     advance_source "advance source for mismatch" >/dev/null
     git -C "$super4/.ap" fetch origin refs/heads/main >/dev/null 2>&1
     git -C "$super4/.ap" checkout --detach --quiet FETCH_HEAD
-    run_fail "$super4/.ap/ap" doctor
+    run_fail "$super4/.ap/ap" doctor || return 1
+    grep -F "does not match gitlink" "$ERR" >/dev/null
 }
 
 test_legacy_detection_classifies_without_deleting() {
@@ -634,6 +659,18 @@ test_verification_evidence_contracts() {
     grep -F "GitHub is one provider-specific example" "$REPO/AP.md" >/dev/null || return 1
 }
 
+test_checkout_topology_repository_gate_contracts() {
+    assert_text_contract "$REPO/AP.md" "Repository gates must match the declared checkout topology" || return 1
+    assert_text_contract "$REPO/AP.md" "standalone checkout may require an exact active branch" || return 1
+    assert_text_contract "$REPO/AP.md" "pinned submodule checkout may correctly use detached HEAD" || return 1
+    assert_text_contract "$REPO/AP.md" "Public remote \`main\` equality is not required for a consumer pin" || return 1
+    assert_text_contract "$REPO/AP_WORKER.md" "containing repository's recorded gitlink with the submodule \`HEAD\`" || return 1
+    assert_text_contract "$REPO/AP_ORCHESTRATOR.md" "must not be attached to a moving branch" || return 1
+    assert_text_contract "$REPO/PROMPT_CONTRACTS.md" "Checkout attachment or update requires explicit authority" || return 1
+    assert_text_contract "$REPO/INTEGRATION.md" "containing-repository commit that changes" || return 1
+    assert_text_contract "$REPO/FAQ.md" "applicable public-ref commit and push protections" || return 1
+}
+
 test_acceptance_contracts() {
     grep -F "tested browser or engine" "$REPO/AP.md" >/dev/null || return 1
     grep -F "Chromium automation proves only" "$REPO/AP.md" >/dev/null || return 1
@@ -846,6 +883,7 @@ run_test "init rejects wrong path, wrong remote, and dirty submodule" test_init_
 run_test "init accepts cosmetic missing .git suffix" test_init_accepts_cosmetic_url
 run_test "init publication failure leaves original file intact" test_init_publication_failure_leaves_original
 run_test "doctor accepts exact healthy block and is project-read-only" test_doctor_healthy_exact_block_and_read_only
+run_test "doctor accepts detached pinned submodule at exact gitlink" test_doctor_accepts_detached_pinned_submodule
 run_test "doctor rejects managed block defects inside the block" test_doctor_managed_block_defects
 run_test "doctor rejects missing, dirty, wrong remote, and mismatched states" test_doctor_missing_dirty_wrong_remote_mismatch
 run_test "legacy detection classifies without deletion or false confirmation" test_legacy_detection_classifies_without_deleting
@@ -860,6 +898,7 @@ run_test "adaptive lifecycle contracts are present" test_adaptive_lifecycle_cont
 run_test "reasoning recommendation contracts are present" test_reasoning_recommendation_contracts
 run_test "prompt synthesis contracts are present" test_prompt_synthesis_contracts
 run_test "verification evidence contracts are present" test_verification_evidence_contracts
+run_test "checkout-topology repository gate contracts are present" test_checkout_topology_repository_gate_contracts
 run_test "acceptance contracts are present" test_acceptance_contracts
 run_test "preflight topology and transition contracts are present" test_preflight_topology_and_transition_contracts
 run_test "restoration contracts are present" test_restoration_contracts
