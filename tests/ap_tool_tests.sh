@@ -138,12 +138,11 @@ assert_text_contract() {
     tr '\n' ' ' < "$file" | grep -F "$text" >/dev/null
 }
 
-assert_section_contract() (
+extract_bounded_section() {
     file=$1
     start_heading=$2
     end_heading=$3
-    text=$4
-    section_text=$(awk -v start="$start_heading" -v end="$end_heading" '
+    awk -v start="$start_heading" -v end="$end_heading" '
         $0 == start {
             start_count++
             found_start = 1
@@ -162,9 +161,102 @@ assert_section_contract() (
                 exit 1
             }
         }
-    ' "$file") || return 1
+    ' "$file"
+}
+
+assert_section_contract() (
+    file=$1
+    start_heading=$2
+    end_heading=$3
+    text=$4
+    section_text=$(extract_bounded_section "$file" "$start_heading" "$end_heading") || return 1
     printf '%s\n' "$section_text" | tr '\n' ' ' | grep -F -- "$text" >/dev/null
 )
+
+semantic_contract_violation() {
+    rule_id=$1
+    detail=$2
+    printf 'semantic contract violation [%s]: %s\n' "$rule_id" "$detail" >&2
+    return 1
+}
+
+forbid_section_phrase() (
+    rule_id=$1
+    file=$2
+    start_heading=$3
+    end_heading=$4
+    phrase=$5
+    [ -f "$file" ] || {
+        semantic_contract_violation "$rule_id" "missing owner file: $file"
+        return 1
+    }
+    section_text=$(extract_bounded_section "$file" "$start_heading" "$end_heading") || {
+        semantic_contract_violation "$rule_id" "missing or duplicate section boundary in $file"
+        return 1
+    }
+    if printf '%s\n' "$section_text" | tr '\n' ' ' | grep -F -- "$phrase" >/dev/null; then
+        semantic_contract_violation "$rule_id" "forbidden contradiction in $file: $phrase"
+    fi
+)
+
+validate_semantic_negative_contracts() {
+    root=$1
+    contracts=$root/PROMPT_CONTRACTS.md
+    protocol=$root/AP.md
+    patterns=$root/PROMPT_ENGINEERING_PATTERNS.md
+    adr=$root/docs/adr/0009-capability-aware-worker-routing-and-execution-gates.md
+
+    forbid_section_phrase "authority-ui-approval" "$contracts" \
+        "## Plan-to-Execution Gate" "## Worker Capability Handshake Contract" \
+        "A UI approval grants implementation authority without a new prompt" || return 1
+    forbid_section_phrase "authority-plan-transition" "$contracts" \
+        "## Plan-to-Execution Gate" "## Worker Capability Handshake Contract" \
+        "An accepted Plan or automatic client transition grants execution authority" || return 1
+    forbid_section_phrase "routing-required-mode-unavailable" "$contracts" \
+        "## Session-And-Mode Routing Contract" "## Plan-to-Execution Gate" \
+        "A prompt requiring native Plan mode may be pasted when that mode is unavailable" || return 1
+    forbid_section_phrase "routing-metadata-inference" "$contracts" \
+        "## Session-And-Mode Routing Contract" "## Plan-to-Execution Gate" \
+        "Missing session or mode metadata may be inferred instead of stopping" || return 1
+    forbid_section_phrase "authority-capability-conflation" "$protocol" \
+        "## 5. Task Authority" "## 6. Adaptive Orchestration Lifecycle" \
+        "Capability, role, reasoning, permission, Full Access, containment, or approval grants task authority" || return 1
+    forbid_section_phrase "independence-same-worker" "$protocol" \
+        "### Plan-to-Execution Gate" "### Fresh Evidence Probe" \
+        "A current-session or same-Worker review qualifies as fresh independent audit" || return 1
+    forbid_section_phrase "rotation-authority-evidence" "$protocol" \
+        "## 14. Session Rotation and Dynamic Prompts" \
+        "## 15. Fresh-Slice Implementation and Diagnostic Closeout" \
+        "Model or client rotation transfers authority and makes old reports current evidence" || return 1
+    forbid_section_phrase "compaction-authority-evidence" "$protocol" \
+        "## 14. Session Rotation and Dynamic Prompts" \
+        "## 15. Fresh-Slice Implementation and Diagnostic Closeout" \
+        "A compacted summary is current evidence and authority" || return 1
+    forbid_section_phrase "refusal-bypass" "$protocol" \
+        "## 10. Security Boundaries" "## 11. Browser and Rendered Acceptance Automation" \
+        "A provider safety refusal may be bypassed through disguise, rephrasing, alternate tools or languages, or model shopping" || return 1
+    forbid_section_phrase "side-effect-technical-permission" "$protocol" \
+        "## 5. Task Authority" "## 6. Adaptive Orchestration Lifecycle" \
+        "Unlisted high-impact side effects are allowed whenever technical permission exists" || return 1
+    forbid_section_phrase "advisory-silent-normative" "$patterns" \
+        "## 1. Purpose, Authority, And Artifact Classification" "## 2. How To Use This Library" \
+        "Advisory pattern guidance becomes normative without promotion" || return 1
+    forbid_section_phrase "ownership-competing-protocol" "$patterns" \
+        "## 1. Purpose, Authority, And Artifact Classification" "## 2. How To Use This Library" \
+        "The pattern library is a competing live protocol" || return 1
+    forbid_section_phrase "adr-independent-audit-supersession" "$adr" \
+        "### Worker Topology" "### Rotation, Safety, And Trust" \
+        "ADR-0009 supersedes fresh sequential independent audit" || return 1
+    forbid_section_phrase "migration-historical-pinned" "$adr" \
+        "## Compatibility" "## Consequences" \
+        "Historical prompts and pinned consumers are automatically migrated" || return 1
+    forbid_section_phrase "trust-untrusted-equivalence" "$protocol" \
+        "## 4. Source of Truth and Evidence" "## 5. Task Authority" \
+        "Verified governance and arbitrary untrusted content have equivalent instruction authority" || return 1
+    forbid_section_phrase "sensitive-external-transmission" "$protocol" \
+        "## 10. Security Boundaries" "## 11. Browser and Rendered Acceptance Automation" \
+        "Sensitive local content may be transmitted externally without exact authority"
+}
 
 extract_pattern_section() {
     file=$1
@@ -181,6 +273,57 @@ extract_pattern_section() {
         in_pattern { print }
         END { if (start_count != 1) exit 1 }
     ' "$file"
+}
+
+validate_pattern_library_schema() {
+    library=$1
+    [ -f "$library" ] || {
+        semantic_contract_violation "pattern-schema-file" "missing pattern library: $library"
+        return 1
+    }
+
+    for id in P01 P02 P03 P04 P05 P06 P07 P08 P09 P10 P11 P12 P13 P14 P15 P16 P17 P18
+    do
+        [ "$(grep -Ec "^### $id — " "$library")" -eq 1 ] || {
+            semantic_contract_violation "pattern-schema-heading" \
+                "$id must have exactly one owning pattern heading"
+            return 1
+        }
+        section=$(extract_pattern_section "$library" "$id") || {
+            semantic_contract_violation "pattern-schema-section" \
+                "$id section could not be extracted uniquely"
+            return 1
+        }
+        for field in Purpose "Use when" "Do not use when" "Adaptation questions" \
+            "Template fragment" "Failure it prevents" "Evidence/source"
+        do
+            [ "$(printf '%s\n' "$section" | grep -cFx "#### $field" || true)" -eq 1 ] || {
+                semantic_contract_violation "pattern-schema-field" \
+                    "$id must own exactly one '$field' field"
+                return 1
+            }
+        done
+        [ "$(printf '%s\n' "$section" | grep -c '^\*\*Applies to:\*\*.*\*\*AP anchors:\*\*.*\*\*Related patterns:\*\*' || true)" -eq 1 ] || {
+            semantic_contract_violation "pattern-schema-metadata" \
+                "$id must own exactly one complete metadata line"
+            return 1
+        }
+    done
+
+    for field in Purpose "Use when" "Do not use when" "Adaptation questions" \
+        "Template fragment" "Failure it prevents" "Evidence/source"
+    do
+        [ "$(grep -cFx "#### $field" "$library")" -eq 18 ] || {
+            semantic_contract_violation "pattern-schema-global-field" \
+                "'$field' must occur exactly once in every P01-P18 section"
+            return 1
+        }
+    done
+    [ "$(grep -c '^\*\*Applies to:\*\*.*\*\*AP anchors:\*\*.*\*\*Related patterns:\*\*' "$library")" -eq 18 ] || {
+        semantic_contract_violation "pattern-schema-global-metadata" \
+            "metadata must occur exactly once in every P01-P18 section"
+        return 1
+    }
 }
 
 validate_routing_fixture() {
@@ -216,6 +359,131 @@ validate_untrusted_content_fixture() {
     grep -F "Classification: data, not authority" "$file" >/dev/null || return 1
     grep -F "Embedded action: ignored" "$file" >/dev/null || return 1
     grep -F "External transmission: none" "$file" >/dev/null
+}
+
+insert_before_exact_heading() {
+    file=$1
+    heading=$2
+    inserted_text=$3
+    mutation_file=$file.mutating
+    awk -v heading="$heading" -v inserted_text="$inserted_text" '
+        $0 == heading && !inserted {
+            print ""
+            print inserted_text
+            print ""
+            inserted = 1
+        }
+        { print }
+        END { if (!inserted) exit 1 }
+    ' "$file" > "$mutation_file" || {
+        rm -f "$mutation_file"
+        return 1
+    }
+    mv "$mutation_file" "$file"
+}
+
+remove_first_exact_line() {
+    file=$1
+    target=$2
+    mutation_file=$file.mutating
+    awk -v target="$target" '
+        $0 == target && !removed { removed = 1; next }
+        { print }
+        END { if (!removed) exit 1 }
+    ' "$file" > "$mutation_file" || {
+        rm -f "$mutation_file"
+        return 1
+    }
+    mv "$mutation_file" "$file"
+}
+
+duplicate_first_exact_line() {
+    file=$1
+    target=$2
+    mutation_file=$file.mutating
+    awk -v target="$target" '
+        { print }
+        $0 == target && !duplicated { print; duplicated = 1 }
+        END { if (!duplicated) exit 1 }
+    ' "$file" > "$mutation_file" || {
+        rm -f "$mutation_file"
+        return 1
+    }
+    mv "$mutation_file" "$file"
+}
+
+prepare_semantic_fixture() {
+    fixture_id=$1
+    semantic_fixture=$TMPROOT/semantic-fixtures/$fixture_id
+    mkdir -p "$semantic_fixture/docs/adr"
+    for semantic_relative_path in AP.md PROMPT_CONTRACTS.md PROMPT_ENGINEERING_PATTERNS.md
+    do
+        cp "$REPO/$semantic_relative_path" "$semantic_fixture/$semantic_relative_path"
+    done
+    cp "$REPO/docs/adr/0009-capability-aware-worker-routing-and-execution-gates.md" \
+        "$semantic_fixture/docs/adr/0009-capability-aware-worker-routing-and-execution-gates.md"
+    fixture_out=$TMPROOT/$fixture_id.valid.out
+    fixture_err=$TMPROOT/$fixture_id.valid.err
+    if ! validate_semantic_negative_contracts "$semantic_fixture" \
+        >"$fixture_out" 2>"$fixture_err"; then
+        printf 'known-valid semantic fixture failed [%s]\n' "$fixture_id" >&2
+        sed -n '1,20p' "$fixture_err" >&2
+        return 1
+    fi
+}
+
+assert_semantic_fixture_rejected() {
+    fixture_id=$1
+    relative_path=$2
+    end_heading=$3
+    contradiction=$4
+    prepare_semantic_fixture "$fixture_id" || return 1
+    insert_before_exact_heading "$semantic_fixture/$relative_path" \
+        "$end_heading" "$contradiction" || return 1
+    fixture_out=$TMPROOT/$fixture_id.rejected.out
+    fixture_err=$TMPROOT/$fixture_id.rejected.err
+    if validate_semantic_negative_contracts "$semantic_fixture" \
+        >"$fixture_out" 2>"$fixture_err"; then
+        printf 'malformed semantic fixture accepted [%s]\n' "$fixture_id" >&2
+        return 1
+    fi
+    grep -F "[$fixture_id]" "$fixture_err" >/dev/null || {
+        printf 'wrong semantic rejection diagnostic [%s]\n' "$fixture_id" >&2
+        sed -n '1,20p' "$fixture_err" >&2
+        return 1
+    }
+}
+
+prepare_pattern_schema_fixture() {
+    fixture_id=$1
+    schema_fixture=$TMPROOT/pattern-schema-fixtures/$fixture_id.md
+    mkdir -p "$TMPROOT/pattern-schema-fixtures"
+    cp "$REPO/PROMPT_ENGINEERING_PATTERNS.md" "$schema_fixture"
+    schema_out=$TMPROOT/$fixture_id.valid.out
+    schema_err=$TMPROOT/$fixture_id.valid.err
+    if ! validate_pattern_library_schema "$schema_fixture" \
+        >"$schema_out" 2>"$schema_err"; then
+        printf 'known-valid pattern schema fixture failed [%s]\n' "$fixture_id" >&2
+        sed -n '1,20p' "$schema_err" >&2
+        return 1
+    fi
+}
+
+assert_pattern_schema_fixture_rejected() {
+    fixture_id=$1
+    expected_diagnostic=$2
+    schema_out=$TMPROOT/$fixture_id.rejected.out
+    schema_err=$TMPROOT/$fixture_id.rejected.err
+    if validate_pattern_library_schema "$schema_fixture" \
+        >"$schema_out" 2>"$schema_err"; then
+        printf 'malformed pattern schema fixture accepted [%s]\n' "$fixture_id" >&2
+        return 1
+    fi
+    grep -F "[$expected_diagnostic]" "$schema_err" >/dev/null || {
+        printf 'wrong pattern schema diagnostic [%s]\n' "$fixture_id" >&2
+        sed -n '1,20p' "$schema_err" >&2
+        return 1
+    }
 }
 
 test_section_contract_helper_boundaries() {
@@ -1026,27 +1294,82 @@ test_vendor_and_secret_scans() {
 }
 
 test_pattern_library_schema_and_metadata() {
-    library=$REPO/PROMPT_ENGINEERING_PATTERNS.md
-    [ -f "$library" ] || return 1
+    validate_pattern_library_schema "$REPO/PROMPT_ENGINEERING_PATTERNS.md"
+}
 
-    for id in P01 P02 P03 P04 P05 P06 P07 P08 P09 P10 P11 P12 P13 P14 P15 P16 P17 P18
-    do
-        [ "$(grep -Ec "^### $id — " "$library")" -eq 1 ] || return 1
-        section=$(extract_pattern_section "$library" "$id") || return 1
-        for field in Purpose "Use when" "Do not use when" "Adaptation questions" \
-            "Template fragment" "Failure it prevents" "Evidence/source"
-        do
-            [ "$(printf '%s\n' "$section" | grep -cFx "#### $field" || true)" -eq 1 ] || return 1
-        done
-        [ "$(printf '%s\n' "$section" | grep -c '^\*\*Applies to:\*\*.*\*\*AP anchors:\*\*.*\*\*Related patterns:\*\*' || true)" -eq 1 ] || return 1
-    done
+test_pattern_library_schema_negative_fixtures() {
+    prepare_pattern_schema_fixture "pattern-schema-missing-field" || return 1
+    remove_first_exact_line "$schema_fixture" "#### Purpose" || return 1
+    assert_pattern_schema_fixture_rejected "pattern-schema-missing-field" \
+        "pattern-schema-field" || return 1
 
-    for field in Purpose "Use when" "Do not use when" "Adaptation questions" \
-        "Template fragment" "Failure it prevents" "Evidence/source"
-    do
-        [ "$(grep -cFx "#### $field" "$library")" -eq 18 ] || return 1
-    done
-    [ "$(grep -c '^\*\*Applies to:\*\*.*\*\*AP anchors:\*\*.*\*\*Related patterns:\*\*' "$library")" -eq 18 ]
+    prepare_pattern_schema_fixture "pattern-schema-duplicate-field" || return 1
+    duplicate_first_exact_line "$schema_fixture" "#### Use when" || return 1
+    assert_pattern_schema_fixture_rejected "pattern-schema-duplicate-field" \
+        "pattern-schema-field" || return 1
+
+    prepare_pattern_schema_fixture "pattern-schema-misplaced-field" || return 1
+    remove_first_exact_line "$schema_fixture" "#### Do not use when" || return 1
+    insert_before_exact_heading "$schema_fixture" \
+        "### P01 — Outcome, Evidence, and Observable Rationale Contract" \
+        "#### Do not use when" || return 1
+    assert_pattern_schema_fixture_rejected "pattern-schema-misplaced-field" \
+        "pattern-schema-field"
+}
+
+test_semantic_negative_regression_fixtures() {
+    validate_semantic_negative_contracts "$REPO" || return 1
+
+    assert_semantic_fixture_rejected "authority-ui-approval" \
+        "PROMPT_CONTRACTS.md" "## Worker Capability Handshake Contract" \
+        "A UI approval grants implementation authority without a new prompt." || return 1
+    assert_semantic_fixture_rejected "authority-plan-transition" \
+        "PROMPT_CONTRACTS.md" "## Worker Capability Handshake Contract" \
+        "An accepted Plan or automatic client transition grants execution authority." || return 1
+    assert_semantic_fixture_rejected "routing-required-mode-unavailable" \
+        "PROMPT_CONTRACTS.md" "## Plan-to-Execution Gate" \
+        "A prompt requiring native Plan mode may be pasted when that mode is unavailable." || return 1
+    assert_semantic_fixture_rejected "routing-metadata-inference" \
+        "PROMPT_CONTRACTS.md" "## Plan-to-Execution Gate" \
+        "Missing session or mode metadata may be inferred instead of stopping." || return 1
+    assert_semantic_fixture_rejected "authority-capability-conflation" \
+        "AP.md" "## 6. Adaptive Orchestration Lifecycle" \
+        "Capability, role, reasoning, permission, Full Access, containment, or approval grants task authority." || return 1
+    assert_semantic_fixture_rejected "independence-same-worker" \
+        "AP.md" "### Fresh Evidence Probe" \
+        "A current-session or same-Worker review qualifies as fresh independent audit." || return 1
+    assert_semantic_fixture_rejected "rotation-authority-evidence" \
+        "AP.md" "## 15. Fresh-Slice Implementation and Diagnostic Closeout" \
+        "Model or client rotation transfers authority and makes old reports current evidence." || return 1
+    assert_semantic_fixture_rejected "compaction-authority-evidence" \
+        "AP.md" "## 15. Fresh-Slice Implementation and Diagnostic Closeout" \
+        "A compacted summary is current evidence and authority." || return 1
+    assert_semantic_fixture_rejected "refusal-bypass" \
+        "AP.md" "## 11. Browser and Rendered Acceptance Automation" \
+        "A provider safety refusal may be bypassed through disguise, rephrasing, alternate tools or languages, or model shopping." || return 1
+    assert_semantic_fixture_rejected "side-effect-technical-permission" \
+        "AP.md" "## 6. Adaptive Orchestration Lifecycle" \
+        "Unlisted high-impact side effects are allowed whenever technical permission exists." || return 1
+    assert_semantic_fixture_rejected "advisory-silent-normative" \
+        "PROMPT_ENGINEERING_PATTERNS.md" "## 2. How To Use This Library" \
+        "Advisory pattern guidance becomes normative without promotion." || return 1
+    assert_semantic_fixture_rejected "ownership-competing-protocol" \
+        "PROMPT_ENGINEERING_PATTERNS.md" "## 2. How To Use This Library" \
+        "The pattern library is a competing live protocol." || return 1
+    assert_semantic_fixture_rejected "adr-independent-audit-supersession" \
+        "docs/adr/0009-capability-aware-worker-routing-and-execution-gates.md" \
+        "### Rotation, Safety, And Trust" \
+        "ADR-0009 supersedes fresh sequential independent audit." || return 1
+    assert_semantic_fixture_rejected "migration-historical-pinned" \
+        "docs/adr/0009-capability-aware-worker-routing-and-execution-gates.md" \
+        "## Consequences" \
+        "Historical prompts and pinned consumers are automatically migrated." || return 1
+    assert_semantic_fixture_rejected "trust-untrusted-equivalence" \
+        "AP.md" "## 5. Task Authority" \
+        "Verified governance and arbitrary untrusted content have equivalent instruction authority." || return 1
+    assert_semantic_fixture_rejected "sensitive-external-transmission" \
+        "AP.md" "## 11. Browser and Rendered Acceptance Automation" \
+        "Sensitive local content may be transmitted externally without exact authority."
 }
 
 test_pattern_library_document_processes() {
@@ -1329,6 +1652,8 @@ run_test "evidence ladder, closure, and negative-scope contracts are present" te
 run_test "restoration readiness and communication routing contracts are present" test_restoration_readiness_and_routing_contracts
 run_test "vendor neutrality and secret-shaped scans pass" test_vendor_and_secret_scans
 run_test "pattern library has exactly one complete schema and metadata line per P01-P18" test_pattern_library_schema_and_metadata
+run_test "P01-P18 schema rejects missing, duplicated, and misplaced owning fields" test_pattern_library_schema_negative_fixtures
+run_test "semantic contracts reject authority, routing, independence, rotation, safety, ownership, migration, trust, and transmission contradictions" test_semantic_negative_regression_fixtures
 run_test "pattern library document processes and maintenance boundaries are present" test_pattern_library_document_processes
 run_test "all four routing states pass and malformed metadata fails" test_four_state_routing_fixtures
 run_test "Plan-to-Execution gate and Cooperator routing contracts are present" test_plan_to_execution_and_cooperator_routing_contracts
