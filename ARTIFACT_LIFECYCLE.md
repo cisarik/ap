@@ -96,6 +96,26 @@ In the AP source repository:
   when unreconstructable state exists and an Orchestrator authorizes exact
   lifecycle handling.
 
+### Prompt-Engineering Pattern Library
+
+`PROMPT_ENGINEERING_PATTERNS.md` is a durable advisory protocol companion. It is
+not normative AP, generated output, transient evidence, a restoration handoff,
+a prompt scrapbook, or permanent provider telemetry. Its intended consumers are
+Orchestrators and maintainers; README and both handbooks provide discovery, and
+the library links back to normative owners.
+
+The AP source repository owns the library. Evolve it through observable failure
+classes, representative positive/negative/boundary/adversarial fixtures, source
+and link review, compatibility analysis, and regression validation. Advisory
+guidance must not become normative silently; promotion changes the exact
+normative owner and receives ADR treatment when architectural.
+
+Git history preserves replaced guidance. Explicit temporary deprecation is used
+only when compatibility needs a named replacement and removal trigger. Do not
+create generated variants, project copies, permanent telemetry records, or
+transient handoffs from the library. Consuming projects remain pinned until a
+separate update task adopts a newer AP commit.
+
 ## Worker Duties
 
 When creating, replacing, or deleting documentation artifacts, the Worker must:
@@ -124,3 +144,4 @@ The Orchestrator must:
 - [AP_ORCHESTRATOR.md](AP_ORCHESTRATOR.md)
 - [AP_WORKER.md](AP_WORKER.md)
 - [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md)
+- [PROMPT_ENGINEERING_PATTERNS.md](PROMPT_ENGINEERING_PATTERNS.md)

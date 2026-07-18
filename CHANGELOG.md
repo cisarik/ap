@@ -5,6 +5,12 @@ the authoritative archive for exact content.
 
 ## Unreleased
 
+- Added capability-aware four-state Worker routing, an explicit
+  Plan-to-Execution authority transition, permission/containment/authority and
+  side-effect separation, one-active topology with a bounded parallel exception,
+  rotation/refusal/untrusted/sensitive-context security boundaries, the advisory
+  source-grounded `PROMPT_ENGINEERING_PATTERNS.md` library, ADR-0009, and
+  structural regression coverage.
 - Consolidated the live protocol into one normative `AP.md`.
 - Removed parallel live protocol-generation files from the working tree.
 - Selected pinned `.ap/` Git submodule distribution for consuming projects.

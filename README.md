@@ -15,6 +15,8 @@ https://github.com/cisarik/ap
 
 - [FAQ.md](FAQ.md) gives the short human-oriented explanation.
 - [AP.md](AP.md) is the single live normative protocol.
+- [PROMPT_ENGINEERING_PATTERNS.md](PROMPT_ENGINEERING_PATTERNS.md) is the
+  source-grounded advisory pattern library.
 - [INTEGRATION.md](INTEGRATION.md) explains how to add AP to a Git project.
 - [UPDATING.md](UPDATING.md) explains explicit pinned updates and rollback.
 
@@ -35,6 +37,14 @@ needed for the current risk and evidence.
 
 AP is not a package manager, hosted service, model, framework, project
 generator, or replacement for human judgment.
+
+Every newly issued or renewed Worker prompt explicitly combines a fresh/current
+session target with native planning mode `required`/`not-used`. Native planning,
+UI approval, Full Access, reasoning, and technical capability do not grant
+execution authority. AP defaults to one active Worker workstream, permits only
+fully bounded disjoint parallel exceptions, and keeps fresh independent audit
+sequential. Detailed normative rules are in [AP.md](AP.md); exact prompt fields
+and execution transition are in [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md).
 
 ## Canonical Distribution
 
@@ -84,6 +94,7 @@ reviewed and committed by an explicit project task.
 | [AP_ORCHESTRATOR.md](AP_ORCHESTRATOR.md) | Universal Orchestrator handbook |
 | [AP_WORKER.md](AP_WORKER.md) | Universal Worker handbook |
 | [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md) | Structural contracts for prompts, reports, restoration, audits, and exceptional handoffs |
+| [PROMPT_ENGINEERING_PATTERNS.md](PROMPT_ENGINEERING_PATTERNS.md) | Advisory reusable prompt patterns, selection matrix, evidence, and maintenance rules |
 | [ARTIFACT_LIFECYCLE.md](ARTIFACT_LIFECYCLE.md) | Artifact classification, retention, and cleanup rules |
 | [FAQ.md](FAQ.md) | Plain-language guide for Cooperators and new users |
 | [GLOSSARY.md](GLOSSARY.md) | Shared terminology |

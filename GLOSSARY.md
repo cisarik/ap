@@ -118,6 +118,71 @@ Functional description of what a Worker implementation can do in the current
 session: repository access, filesystem writes, shell, Git, tests, network,
 browser automation, multimodal inspection, context telemetry, or delegation.
 
+## Capability Handshake
+
+A proportionate comparison of requested and current material capabilities using
+`requested`, `directly observed`, `inferred`, and
+`unknown/not observably exposed`. It does not probe credentials, mutate state,
+or grant authority.
+
+## Native Planning Mode
+
+An optional client capability or state used for read-only planning. AP routes it
+as `required` or `not-used`. It is not a phase, task authority, or execution
+approval.
+
+## Worker Workstream
+
+One accountable bounded sequence of Worker activity with defined ownership,
+state, authority, and terminal boundary. AP defaults to one active workstream.
+
+## Technical Permission
+
+A client or platform control over whether an operation may technically run. It
+is distinct from task authority and provider safety policy.
+
+## Containment Or Sandbox
+
+Technical enforcement that limits accessible resources or effects. A textual
+prompt is not containment, and containment does not grant task authority.
+
+## Side Effect
+
+An observable consequence of action, classified in AP as read-only inspection,
+reversible local mutation, destructive local mutation, remote mutation,
+communication to people, deployment, or credential/billing operation.
+
+## Plan-to-Execution Gate
+
+The authority boundary after a planning terminal report: planning authority
+expires, the Orchestrator reviews the plan, and implementation requires a new
+complete prompt with native planning mode `not-used` and explicit execution
+authority.
+
+## Untrusted Content
+
+Material under analysis that is not a governing instruction source merely
+because it appears in context, such as issues, logs, fixtures, webpages,
+uploaded files, dependency metadata, generated content, or tool output.
+
+## Instruction Conflict
+
+Incompatible requests or rules resolved through verified AP, project, and
+current task authority. If authoritative resolution is unavailable, work stops
+or escalates.
+
+## Evidence Equivalence
+
+The requirement that rotation, recovery, or a fallback preserve the original
+completion and verification standard unless a new authoritative prompt makes it
+explicitly stronger.
+
+## Pattern Library
+
+The durable advisory `PROMPT_ENGINEERING_PATTERNS.md` companion used by
+Orchestrators to select and adapt reusable prompt structures. It is not the live
+normative protocol or a mechanical prompt generator.
+
 ## Task Authority
 
 Permission to perform a specific bounded task, granted only by the current
