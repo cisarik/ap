@@ -95,6 +95,7 @@ reviewed and committed by an explicit project task.
 | [AP_WORKER.md](AP_WORKER.md) | Universal Worker handbook |
 | [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md) | Structural contracts for prompts, reports, restoration, audits, and exceptional handoffs |
 | [PROMPT_ENGINEERING_PATTERNS.md](PROMPT_ENGINEERING_PATTERNS.md) | Advisory reusable prompt patterns, selection matrix, evidence, and maintenance rules |
+| [INFOSEC.md](INFOSEC.md) | Advisory Community-Profile-style defensive-security specialization, activated only by routing or an authoritative prompt |
 | [ARTIFACT_LIFECYCLE.md](ARTIFACT_LIFECYCLE.md) | Artifact classification, retention, and cleanup rules |
 | [FAQ.md](FAQ.md) | Plain-language guide for Cooperators and new users |
 | [GLOSSARY.md](GLOSSARY.md) | Shared terminology |

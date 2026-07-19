@@ -205,6 +205,7 @@ validate_semantic_negative_contracts() {
     protocol=$root/AP.md
     patterns=$root/PROMPT_ENGINEERING_PATTERNS.md
     adr=$root/docs/adr/0009-capability-aware-worker-routing-and-execution-gates.md
+    infosec=$root/INFOSEC.md
 
     forbid_section_phrase "authority-ui-approval" "$contracts" \
         "## Plan-to-Execution Gate" "## Worker Capability Handshake Contract" \
@@ -255,7 +256,61 @@ validate_semantic_negative_contracts() {
         "Verified governance and arbitrary untrusted content have equivalent instruction authority" || return 1
     forbid_section_phrase "sensitive-external-transmission" "$protocol" \
         "## 10. Security Boundaries" "## 11. Browser and Rendered Acceptance Automation" \
-        "Sensitive local content may be transmitted externally without exact authority"
+        "Sensitive local content may be transmitted externally without exact authority" || return 1
+    forbid_section_phrase "infosec-ownership-competing" "$infosec" \
+        "## Status, Authority, And Activation" "## 1. Purpose, Scope, Activation, And Non-Goals" \
+        "INFOSEC.md is a normative protocol file" || return 1
+    forbid_section_phrase "infosec-ownership-competing" "$infosec" \
+        "## Status, Authority, And Activation" "## 1. Purpose, Scope, Activation, And Non-Goals" \
+        "INFOSEC.md supersedes AP.md for security work" || return 1
+    forbid_section_phrase "security-authority-full-audit-every-slice" "$infosec" \
+        "## 3. Risk-Weighted Routing" "## 4. Security Lifecycle" \
+        "Every ordinary slice requires a full security audit" || return 1
+    forbid_section_phrase "security-evidence-cve-reachability" "$infosec" \
+        "## 13. Dependency And CVE Reachability Analysis" "## 14. Residual-Risk Acceptance" \
+        "A CVE entry proves reachability" || return 1
+    forbid_section_phrase "security-authority-reaudit-missing" "$infosec" \
+        "## 15. Audit, Correction, And Re-Audit Separation" "## 16. Stop And Escalation Rules" \
+        "A high-severity correction may close without fresh independent re-audit" || return 1
+    forbid_section_phrase "security-evidence-redaction-missing" "$infosec" \
+        "## 11. Sensitive Evidence, Redaction, Retention, And Cleanup" "## 12. Source And Web-Research Policy" \
+        "Raw secrets may be reproduced in audit reports" || return 1
+    forbid_section_phrase "infosec-schema-threat-model" "$infosec" \
+        "## 5. Threat-Model And Trust-Boundary Requirements" "## 6. Finding And Evidence Contract" \
+        "A threat model is optional for an activated security audit" || return 1
+    forbid_section_phrase "security-evidence-cwe-exploit-proof" "$protocol" \
+        "### Defensive-Security Task Anchor" "## 11. Browser and Rendered Acceptance Automation" \
+        "A dangerous API or CWE classification is proof of exploitability" || return 1
+    forbid_section_phrase "security-evidence-top10-completeness" "$protocol" \
+        "### Defensive-Security Task Anchor" "## 11. Browser and Rendered Acceptance Automation" \
+        "An awareness list is security completeness proof" || return 1
+    forbid_section_phrase "security-evidence-exploitability-overclaim" "$contracts" \
+        "### Security Finding Record Contract" "### Threat-Model Fields" \
+        "An exploitability conclusion may exceed what the evidence class establishes" || return 1
+    forbid_section_phrase "security-evidence-class" "$contracts" \
+        "### Security Finding Record Contract" "### Threat-Model Fields" \
+        "The evidence class field may be omitted from a finding" || return 1
+    forbid_section_phrase "infosec-schema-field" "$contracts" \
+        "### Security Finding Record Contract" "### Threat-Model Fields" \
+        "Findings may omit reachability and preconditions" || return 1
+    forbid_section_phrase "security-containment-wildcard-cleanup" "$contracts" \
+        "### Containment Ledger Contract" "### Source Version Record Contract" \
+        "Wildcard cleanup is allowed for temporary audit roots" || return 1
+    forbid_section_phrase "source-policy-version-status" "$contracts" \
+        "### Source Version Record Contract" "### Residual-Risk Decision Contract" \
+        "A standard may be cited without version, status, or retrieval date" || return 1
+    forbid_section_phrase "security-authority-audit-correction-merge" "$contracts" \
+        "### Security Audit Prompt Contract" "### Accepted-Finding Correction Prompt Contract" \
+        "The auditor may correct urgent findings under audit authority" || return 1
+    forbid_section_phrase "security-containment-canonical-mutation" "$contracts" \
+        "### Security Audit Prompt Contract" "### Accepted-Finding Correction Prompt Contract" \
+        "An audit may mutate the canonical repository" || return 1
+    forbid_section_phrase "security-authority-correction-allowlist" "$contracts" \
+        "### Accepted-Finding Correction Prompt Contract" "### Fresh Independent Re-Audit Prompt Contract" \
+        "A correction prompt may omit the exact path allowlist" || return 1
+    forbid_section_phrase "security-authority-plan-approval" "$contracts" \
+        "## Security Finding And Audit Contracts" "## Adaptive Phase Contracts" \
+        "Plan approval grants implementation authority without a new prompt"
 }
 
 extract_pattern_section() {
@@ -361,6 +416,291 @@ validate_untrusted_content_fixture() {
     grep -F "External transmission: none" "$file" >/dev/null
 }
 
+validate_infosec_profile_schema() {
+    file=$1
+    [ -f "$file" ] || {
+        semantic_contract_violation "infosec-ownership-file" "missing profile: $file"
+        return 1
+    }
+    for required in \
+        "advisory" \
+        "sole live normative protocol" \
+        "activates only" \
+        "never replaces, redefines, or competes with it" \
+        "no independent authority" \
+        "owned or explicitly authorized targets"
+    do
+        grep -F "$required" "$file" >/dev/null || {
+            semantic_contract_violation "infosec-ownership-header" \
+                "profile header missing ownership statement: $required"
+            return 1
+        }
+    done
+    for phrase in \
+        "INFOSEC.md is a normative protocol" \
+        "INFOSEC.md supersedes AP.md" \
+        "INFOSEC.md replaces AP.md" \
+        "INFOSEC.md grants task authority"
+    do
+        if grep -F "$phrase" "$file" >/dev/null; then
+            semantic_contract_violation "infosec-ownership-competing" \
+                "forbidden ownership claim in $file: $phrase"
+            return 1
+        fi
+    done
+}
+
+validate_security_finding_fixture() {
+    file=$1
+    [ "$(grep -Ec '^Evidence class: (reproduced-dynamic|established-static|inferred|hypothesis-unverified)$' "$file")" -eq 1 ] || {
+        semantic_contract_violation "security-evidence-class" \
+            "finding requires exactly one valid evidence class"
+        return 1
+    }
+    [ "$(grep -Ec '^Exploitability conclusion: (demonstrated|probable|plausible but unproven|not demonstrated|not applicable)$' "$file")" -eq 1 ] || {
+        semantic_contract_violation "security-evidence-class" \
+            "finding requires exactly one valid exploitability conclusion"
+        return 1
+    }
+    for field in \
+        "Finding ID:" "Title:" "Status:" "Severity:" "Confidence:" \
+        "Affected commit:" "Affected component and exact location:" \
+        "Security property:" "Asset at risk:" "Trust boundary:" \
+        "Attacker-controlled input or local actor:" "Reachability:" "Preconditions:" \
+        "Required privileges:" "Observed or potential impact:" "C/I/A effect:" \
+        "CWE mapping:" "ASVS mapping:" "Source-standard references:" \
+        "Dynamic reproduction evidence:" "Static evidence:" "Synthetic containment:" \
+        "False-positive analysis:" \
+        "Smallest safe correction direction:" "Regression-test requirement:" \
+        "Residual risk:" "Acceptance-blocking decision:" "Redaction requirements:"
+    do
+        grep -F "$field" "$file" >/dev/null || {
+            semantic_contract_violation "infosec-schema-field" "missing finding field: $field"
+            return 1
+        }
+    done
+    class=$(sed -n 's/^Evidence class: //p' "$file" | head -1)
+    conclusion=$(sed -n 's/^Exploitability conclusion: //p' "$file" | head -1)
+    case "$conclusion" in
+        demonstrated)
+            [ "$class" = "reproduced-dynamic" ] || {
+                semantic_contract_violation "security-evidence-exploitability-overclaim" \
+                    "demonstrated requires reproduced-dynamic evidence, found: $class"
+                return 1
+            }
+            ;;
+        probable)
+            case "$class" in
+                reproduced-dynamic|established-static) ;;
+                *)
+                    semantic_contract_violation "security-evidence-exploitability-overclaim" \
+                        "probable requires established-static or better, found: $class"
+                    return 1
+                    ;;
+            esac
+            ;;
+    esac
+    for phrase in \
+        "CWE classification proves exploitability" \
+        "dangerous API proves exploitability"
+    do
+        if grep -F "$phrase" "$file" >/dev/null; then
+            semantic_contract_violation "security-evidence-cwe-exploit-proof" \
+                "forbidden implication: $phrase"
+            return 1
+        fi
+    done
+    if grep -F "CVE entry proves reachability" "$file" >/dev/null; then
+        semantic_contract_violation "security-evidence-cve-reachability" \
+            "a CVE entry is a risk signal, not reachability proof"
+        return 1
+    fi
+    if grep -F "Top 10 coverage proves the application secure" "$file" >/dev/null; then
+        semantic_contract_violation "security-evidence-top10-completeness" \
+            "an awareness list is not completeness proof"
+        return 1
+    fi
+    if grep -Fx "Contains sensitive evidence: yes" "$file" >/dev/null; then
+        redaction=$(sed -n 's/^Redaction requirements: //p' "$file" | head -1)
+        case "$redaction" in
+            *none*|*"raw values"*)
+                semantic_contract_violation "security-evidence-redaction-missing" \
+                    "sensitive evidence requires redaction discipline"
+                return 1
+                ;;
+        esac
+    fi
+}
+
+validate_security_audit_prompt_fixture() {
+    file=$1
+    for field in "Assets:" "Trust boundaries:" "Attacker-controlled inputs:"
+    do
+        grep -F "$field" "$file" >/dev/null || {
+            semantic_contract_violation "infosec-schema-threat-model" \
+                "audit prompt missing threat-model field: $field"
+            return 1
+        }
+    done
+    for field in "Security task class:" "Owned/authorized target:" "Scope:" \
+        "Containment:" "Reporting:"
+    do
+        grep -F "$field" "$file" >/dev/null || {
+            semantic_contract_violation "infosec-schema-field" "audit prompt missing field: $field"
+            return 1
+        }
+    done
+    [ "$(grep -cFx 'Canonical repository mutation: none' "$file")" -eq 1 ] || {
+        semantic_contract_violation "security-containment-canonical-mutation" \
+            "audit prompt must state exactly: Canonical repository mutation: none"
+        return 1
+    }
+    [ "$(grep -cFx 'Correction authority: none' "$file")" -eq 1 ] || {
+        semantic_contract_violation "security-authority-audit-correction-merge" \
+            "audit prompt must state exactly: Correction authority: none"
+        return 1
+    }
+    if grep -F "Plan approval grants implementation authority" "$file" >/dev/null; then
+        semantic_contract_violation "security-authority-plan-approval" \
+            "Plan approval treated as implementation authority"
+        return 1
+    fi
+    if grep -F "Every ordinary slice requires a full security audit" "$file" >/dev/null; then
+        semantic_contract_violation "security-authority-full-audit-every-slice" \
+            "full audit mandated for every ordinary slice"
+        return 1
+    fi
+}
+
+validate_security_correction_prompt_fixture() {
+    file=$1
+    grep -F "Exact path allowlist:" "$file" >/dev/null || {
+        semantic_contract_violation "security-authority-correction-allowlist" \
+            "correction prompt missing exact path allowlist"
+        return 1
+    }
+    for field in "Security task class:" "Accepted finding IDs:" "Regression test:" \
+        "Re-audit routing:"
+    do
+        grep -F "$field" "$file" >/dev/null || {
+            semantic_contract_violation "infosec-schema-field" \
+                "correction prompt missing field: $field"
+            return 1
+        }
+    done
+    [ "$(grep -cFx 'Audit authority: none' "$file")" -eq 1 ] || {
+        semantic_contract_violation "security-authority-audit-correction-merge" \
+            "correction prompt must state exactly: Audit authority: none"
+        return 1
+    }
+    severity=$(sed -n 's/^Corrected severity: //p' "$file" | head -1)
+    case "$severity" in
+        critical|high|blocking)
+            grep -Fx "Re-audit routing: fresh independent re-audit required" "$file" >/dev/null || {
+                semantic_contract_violation "security-authority-reaudit-missing" \
+                    "high-impact correction missing fresh independent re-audit routing"
+                return 1
+            }
+            ;;
+    esac
+}
+
+validate_security_reaudit_prompt_fixture() {
+    file=$1
+    for field in "Security task class:" "Independent of the correction: yes" "Verdicts:"
+    do
+        grep -F "$field" "$file" >/dev/null || {
+            semantic_contract_violation "infosec-schema-field" \
+                "re-audit prompt missing field: $field"
+            return 1
+        }
+    done
+    [ "$(grep -cFx 'Worker session target: fresh-worker-session' "$file")" -eq 1 ] || {
+        semantic_contract_violation "security-authority-reaudit-independence" \
+            "re-audit requires fresh-worker-session"
+        return 1
+    }
+    [ "$(grep -cFx 'Correction authority: none' "$file")" -eq 1 ] || {
+        semantic_contract_violation "security-authority-audit-correction-merge" \
+            "re-audit prompt must state exactly: Correction authority: none"
+        return 1
+    }
+}
+
+validate_containment_ledger_fixture() {
+    file=$1
+    for field in "Temporary root:" "Owner:" "Mode:" "Contents class:" \
+        "Cleanup owner:" "Cleanup outcome:"
+    do
+        grep -F "$field" "$file" >/dev/null || {
+            semantic_contract_violation "infosec-schema-field" \
+                "containment ledger missing field: $field"
+            return 1
+        }
+    done
+    if grep -E "^Cleanup outcome:.*\*" "$file" >/dev/null; then
+        semantic_contract_violation "security-containment-wildcard-cleanup" \
+            "wildcard cleanup is forbidden"
+        return 1
+    fi
+}
+
+validate_source_record_fixture() {
+    file=$1
+    for field in "Version:" "Status:"
+    do
+        grep -F "$field" "$file" >/dev/null || {
+            semantic_contract_violation "source-policy-version-status" \
+                "source record missing $field"
+            return 1
+        }
+    done
+    for field in "Title:" "Owner:" "Retrieval date:" "AP concept supported:"
+    do
+        grep -F "$field" "$file" >/dev/null || {
+            semantic_contract_violation "infosec-schema-field" \
+                "source record missing field: $field"
+            return 1
+        }
+    done
+    [ "$(grep -Ec '^Status: (final|draft|awareness|taxonomy|maturity-model|tooling)' "$file")" -eq 1 ] || {
+        semantic_contract_violation "source-policy-version-status" \
+            "source record requires exactly one valid status"
+        return 1
+    }
+    if grep -F "draft cited as current requirement" "$file" >/dev/null; then
+        semantic_contract_violation "source-policy-version-status" \
+            "a draft must not silently become a current requirement"
+        return 1
+    fi
+}
+
+assert_fixture_accepted() {
+    validator=$1
+    file=$2
+    if ! "$validator" "$file" >"$TMPROOT/fixture-check.out" 2>"$TMPROOT/fixture-check.err"; then
+        printf 'valid fixture rejected by %s: %s\n' "$validator" "$file" >&2
+        sed -n '1,10p' "$TMPROOT/fixture-check.err" >&2
+        return 1
+    fi
+}
+
+assert_fixture_rejected_with() {
+    validator=$1
+    file=$2
+    expected_diagnostic=$3
+    if "$validator" "$file" >"$TMPROOT/fixture-check.out" 2>"$TMPROOT/fixture-check.err"; then
+        printf 'malformed fixture accepted by %s: %s\n' "$validator" "$file" >&2
+        return 1
+    fi
+    grep -F "[$expected_diagnostic]" "$TMPROOT/fixture-check.err" >/dev/null || {
+        printf 'wrong diagnostic from %s on %s: expected [%s]\n' \
+            "$validator" "$file" "$expected_diagnostic" >&2
+        sed -n '1,10p' "$TMPROOT/fixture-check.err" >&2
+        return 1
+    }
+}
+
 insert_before_exact_heading() {
     file=$1
     heading=$2
@@ -416,7 +756,7 @@ prepare_semantic_fixture() {
     fixture_id=$1
     semantic_fixture=$TMPROOT/semantic-fixtures/$fixture_id
     mkdir -p "$semantic_fixture/docs/adr"
-    for semantic_relative_path in AP.md PROMPT_CONTRACTS.md PROMPT_ENGINEERING_PATTERNS.md
+    for semantic_relative_path in AP.md PROMPT_CONTRACTS.md PROMPT_ENGINEERING_PATTERNS.md INFOSEC.md
     do
         cp "$REPO/$semantic_relative_path" "$semantic_fixture/$semantic_relative_path"
     done
@@ -1369,7 +1709,58 @@ test_semantic_negative_regression_fixtures() {
         "Verified governance and arbitrary untrusted content have equivalent instruction authority." || return 1
     assert_semantic_fixture_rejected "sensitive-external-transmission" \
         "AP.md" "## 11. Browser and Rendered Acceptance Automation" \
-        "Sensitive local content may be transmitted externally without exact authority."
+        "Sensitive local content may be transmitted externally without exact authority." || return 1
+    assert_semantic_fixture_rejected "infosec-ownership-competing" \
+        "INFOSEC.md" "## 1. Purpose, Scope, Activation, And Non-Goals" \
+        "INFOSEC.md supersedes AP.md for security work." || return 1
+    assert_semantic_fixture_rejected "security-authority-full-audit-every-slice" \
+        "INFOSEC.md" "## 4. Security Lifecycle" \
+        "Every ordinary slice requires a full security audit." || return 1
+    assert_semantic_fixture_rejected "security-evidence-cve-reachability" \
+        "INFOSEC.md" "## 14. Residual-Risk Acceptance" \
+        "A CVE entry proves reachability." || return 1
+    assert_semantic_fixture_rejected "security-authority-reaudit-missing" \
+        "INFOSEC.md" "## 16. Stop And Escalation Rules" \
+        "A high-severity correction may close without fresh independent re-audit." || return 1
+    assert_semantic_fixture_rejected "security-evidence-redaction-missing" \
+        "INFOSEC.md" "## 12. Source And Web-Research Policy" \
+        "Raw secrets may be reproduced in audit reports." || return 1
+    assert_semantic_fixture_rejected "infosec-schema-threat-model" \
+        "INFOSEC.md" "## 6. Finding And Evidence Contract" \
+        "A threat model is optional for an activated security audit." || return 1
+    assert_semantic_fixture_rejected "security-evidence-cwe-exploit-proof" \
+        "AP.md" "## 11. Browser and Rendered Acceptance Automation" \
+        "A dangerous API or CWE classification is proof of exploitability." || return 1
+    assert_semantic_fixture_rejected "security-evidence-top10-completeness" \
+        "AP.md" "## 11. Browser and Rendered Acceptance Automation" \
+        "An awareness list is security completeness proof." || return 1
+    assert_semantic_fixture_rejected "security-evidence-exploitability-overclaim" \
+        "PROMPT_CONTRACTS.md" "### Threat-Model Fields" \
+        "An exploitability conclusion may exceed what the evidence class establishes." || return 1
+    assert_semantic_fixture_rejected "security-evidence-class" \
+        "PROMPT_CONTRACTS.md" "### Threat-Model Fields" \
+        "The evidence class field may be omitted from a finding." || return 1
+    assert_semantic_fixture_rejected "infosec-schema-field" \
+        "PROMPT_CONTRACTS.md" "### Threat-Model Fields" \
+        "Findings may omit reachability and preconditions." || return 1
+    assert_semantic_fixture_rejected "security-containment-wildcard-cleanup" \
+        "PROMPT_CONTRACTS.md" "### Source Version Record Contract" \
+        "Wildcard cleanup is allowed for temporary audit roots." || return 1
+    assert_semantic_fixture_rejected "source-policy-version-status" \
+        "PROMPT_CONTRACTS.md" "### Residual-Risk Decision Contract" \
+        "A standard may be cited without version, status, or retrieval date." || return 1
+    assert_semantic_fixture_rejected "security-authority-audit-correction-merge" \
+        "PROMPT_CONTRACTS.md" "### Accepted-Finding Correction Prompt Contract" \
+        "The auditor may correct urgent findings under audit authority." || return 1
+    assert_semantic_fixture_rejected "security-containment-canonical-mutation" \
+        "PROMPT_CONTRACTS.md" "### Accepted-Finding Correction Prompt Contract" \
+        "An audit may mutate the canonical repository." || return 1
+    assert_semantic_fixture_rejected "security-authority-correction-allowlist" \
+        "PROMPT_CONTRACTS.md" "### Fresh Independent Re-Audit Prompt Contract" \
+        "A correction prompt may omit the exact path allowlist." || return 1
+    assert_semantic_fixture_rejected "security-authority-plan-approval" \
+        "PROMPT_CONTRACTS.md" "## Adaptive Phase Contracts" \
+        "Plan approval grants implementation authority without a new prompt."
 }
 
 test_pattern_library_document_processes() {
@@ -1613,6 +2004,271 @@ test_no_external_test_artifacts() {
     [ -z "$(find "${TMPDIR:-/tmp}" -maxdepth 1 \( -name 'ap-test-out-*' -o -name 'ap-test-err-*' \) -print 2>/dev/null)" ]
 }
 
+test_security_profile_positive_contracts() {
+    grep -F "### Defensive-Security Task Anchor" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "evidence class, reachability, preconditions" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "never replaces or competes with this protocol" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "[INFOSEC.md](INFOSEC.md)" "$REPO/AP.md" >/dev/null || return 1
+    for heading in \
+        "## Security Finding And Audit Contracts" \
+        "### Security Finding Record Contract" \
+        "### Threat-Model Fields" \
+        "### Containment Ledger Contract" \
+        "### Source Version Record Contract" \
+        "### Residual-Risk Decision Contract" \
+        "### Security Audit Report Contract" \
+        "### Security Audit Prompt Contract" \
+        "### Accepted-Finding Correction Prompt Contract" \
+        "### Fresh Independent Re-Audit Prompt Contract" \
+        "### Security Workflow Profile Outlines"
+    do
+        grep -Fx "$heading" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
+    done
+    grep -F "reproduced-dynamic | established-static | inferred | hypothesis-unverified" \
+        "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
+    grep -F "demonstrated | probable | plausible but unproven | not demonstrated | not applicable" \
+        "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
+    grep -F "wildcard cleanup is forbidden" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
+    grep -Fx "## Status, Authority, And Activation" "$REPO/INFOSEC.md" >/dev/null || return 1
+    grep -Fx "## 19. Source Registry" "$REPO/INFOSEC.md" >/dev/null || return 1
+    grep -F "retrieved 2026-07-19" "$REPO/INFOSEC.md" >/dev/null || return 1
+    [ -f "$REPO/docs/adr/0010-defensive-security-profile.md" ] || return 1
+    grep -F "0010-defensive-security-profile.md" "$REPO/docs/adr/README.md" >/dev/null || return 1
+    grep -F "INFOSEC.md" "$REPO/README.md" >/dev/null || return 1
+    grep -F "Why is INFOSEC.md advisory?" "$REPO/FAQ.md" >/dev/null || return 1
+    grep -F "full security audit" "$REPO/FAQ.md" >/dev/null || return 1
+    grep -F "INFOSEC.md" "$REPO/CHANGELOG.md" >/dev/null || return 1
+    grep -Fx "## Exploitability Conclusion" "$REPO/GLOSSARY.md" >/dev/null || return 1
+    grep -Fx "## Containment Ledger" "$REPO/GLOSSARY.md" >/dev/null || return 1
+    grep -F "sensitive-security-evidence" "$REPO/ARTIFACT_LIFECYCLE.md" >/dev/null || return 1
+    grep -Fx "### Defensive-Security Profile" "$REPO/ARTIFACT_LIFECYCLE.md" >/dev/null
+}
+
+test_infosec_profile_ownership_schema() {
+    assert_fixture_accepted validate_infosec_profile_schema "$REPO/INFOSEC.md" || return 1
+
+    fixture=$TMPROOT/infosec-competing.md
+    cp "$REPO/INFOSEC.md" "$fixture"
+    printf '%s\n' "INFOSEC.md supersedes AP.md for security work." >> "$fixture"
+    assert_fixture_rejected_with validate_infosec_profile_schema "$fixture" \
+        "infosec-ownership-competing" || return 1
+
+    fixture2=$TMPROOT/infosec-no-subordination.md
+    sed '/sole live normative protocol/d' "$REPO/INFOSEC.md" > "$fixture2"
+    assert_fixture_rejected_with validate_infosec_profile_schema "$fixture2" \
+        "infosec-ownership-header"
+}
+
+test_security_finding_fixture_contracts() {
+    fixtures=$TMPROOT/security-finding-fixtures
+    mkdir -p "$fixtures"
+    cat > "$fixtures/finding-valid" <<'EOF'
+Finding ID: SEC-01-F01
+Title: Cross-tenant session read
+Status: confirmed
+Severity: high
+Confidence: medium
+Evidence class: established-static
+Affected commit: 944cef2f93b896fdec5e80beaea1b74dc7c21f25
+Affected component and exact location: src/auth/session.py:88
+Security property: authorization
+Asset at risk: tenant session records
+Trust boundary: tenant isolation
+Attacker-controlled input or local actor: authenticated ordinary user session id parameter
+Reachability: POST /session/read -> session.load, enabled in production
+Preconditions: valid ordinary-user session
+Required privileges: ordinary user
+Observed or potential impact: another tenant's synthetic session record readable
+C/I/A effect: confidentiality high; integrity none; availability none
+CWE mapping: CWE-639 against CWE v4.18
+ASVS mapping: ASVS 5.0 V4.1
+Source-standard references: OWASP ASVS 5.0, OWASP, final, retrieved 2026-07-19
+Dynamic reproduction evidence: none
+Static evidence: src/auth/session.py:88 missing tenant check (synthetic excerpt)
+Synthetic containment: none required; static only
+False-positive analysis: a framework-level tenant filter would disprove this; none found
+Exploitability conclusion: probable
+Smallest safe correction direction: enforce tenant scoping in session.load
+Regression-test requirement: cross-tenant read rejected test
+Residual risk: low after scoping
+Acceptance-blocking decision: blocking — tenant isolation boundary
+Redaction requirements: session token values replaced with <redacted> in every excerpt
+Contains sensitive evidence: yes
+EOF
+    assert_fixture_accepted validate_security_finding_fixture "$fixtures/finding-valid" || return 1
+
+    sed '/^Evidence class: /d' "$fixtures/finding-valid" > "$fixtures/finding-no-class"
+    assert_fixture_rejected_with validate_security_finding_fixture "$fixtures/finding-no-class" \
+        "security-evidence-class" || return 1
+
+    sed '/^Preconditions: /d' "$fixtures/finding-valid" > "$fixtures/finding-no-field"
+    assert_fixture_rejected_with validate_security_finding_fixture "$fixtures/finding-no-field" \
+        "infosec-schema-field" || return 1
+
+    sed 's/^Evidence class: established-static$/Evidence class: inferred/' \
+        "$fixtures/finding-valid" > "$fixtures/finding-overclaim-inferred"
+    assert_fixture_rejected_with validate_security_finding_fixture \
+        "$fixtures/finding-overclaim-inferred" \
+        "security-evidence-exploitability-overclaim" || return 1
+
+    sed 's/^Exploitability conclusion: probable$/Exploitability conclusion: demonstrated/' \
+        "$fixtures/finding-valid" > "$fixtures/finding-overclaim-demonstrated"
+    assert_fixture_rejected_with validate_security_finding_fixture \
+        "$fixtures/finding-overclaim-demonstrated" \
+        "security-evidence-exploitability-overclaim" || return 1
+
+    cp "$fixtures/finding-valid" "$fixtures/finding-cwe-proof"
+    printf '%s\n' "The CWE classification proves exploitability without dynamic evidence." \
+        >> "$fixtures/finding-cwe-proof"
+    assert_fixture_rejected_with validate_security_finding_fixture "$fixtures/finding-cwe-proof" \
+        "security-evidence-cwe-exploit-proof" || return 1
+
+    cp "$fixtures/finding-valid" "$fixtures/finding-cve-proof"
+    printf '%s\n' "The CVE entry proves reachability and exploitability." \
+        >> "$fixtures/finding-cve-proof"
+    assert_fixture_rejected_with validate_security_finding_fixture "$fixtures/finding-cve-proof" \
+        "security-evidence-cve-reachability" || return 1
+
+    cp "$fixtures/finding-valid" "$fixtures/finding-top10"
+    printf '%s\n' "OWASP Top 10 coverage proves the application secure." \
+        >> "$fixtures/finding-top10"
+    assert_fixture_rejected_with validate_security_finding_fixture "$fixtures/finding-top10" \
+        "security-evidence-top10-completeness" || return 1
+
+    sed 's/^Redaction requirements: .*$/Redaction requirements: none; raw values reproduced/' \
+        "$fixtures/finding-valid" > "$fixtures/finding-raw-secret"
+    assert_fixture_rejected_with validate_security_finding_fixture "$fixtures/finding-raw-secret" \
+        "security-evidence-redaction-missing"
+}
+
+test_security_prompt_fixture_contracts() {
+    fixtures=$TMPROOT/security-prompt-fixtures
+    mkdir -p "$fixtures"
+    cat > "$fixtures/audit-valid" <<'EOF'
+Security task class: focused defensive audit
+Owned/authorized target: host project repository at commit 944cef2f93b896fdec5e80beaea1b74dc7c21f25
+Scope: session handling subsystem only
+Assets: tenant session records
+Trust boundaries: tenant isolation, anonymous to authenticated
+Attacker-controlled inputs: session id parameter
+Containment: declared temporary audit roots; synthetic accounts only
+Canonical repository mutation: none
+Correction authority: none
+Reporting: security audit report contract
+EOF
+    assert_fixture_accepted validate_security_audit_prompt_fixture "$fixtures/audit-valid" || return 1
+
+    sed '/^Assets: /d; /^Trust boundaries: /d; /^Attacker-controlled inputs: /d' \
+        "$fixtures/audit-valid" > "$fixtures/audit-no-threat-model"
+    assert_fixture_rejected_with validate_security_audit_prompt_fixture \
+        "$fixtures/audit-no-threat-model" "infosec-schema-threat-model" || return 1
+
+    sed 's/^Canonical repository mutation: none$/Canonical repository mutation: allowed for audit notes/' \
+        "$fixtures/audit-valid" > "$fixtures/audit-canonical-mutation"
+    assert_fixture_rejected_with validate_security_audit_prompt_fixture \
+        "$fixtures/audit-canonical-mutation" "security-containment-canonical-mutation" || return 1
+
+    sed 's/^Correction authority: none$/Correction authority: the auditor may fix urgent findings/' \
+        "$fixtures/audit-valid" > "$fixtures/audit-correction-merge"
+    assert_fixture_rejected_with validate_security_audit_prompt_fixture \
+        "$fixtures/audit-correction-merge" "security-authority-audit-correction-merge" || return 1
+
+    cp "$fixtures/audit-valid" "$fixtures/audit-plan-approval"
+    printf '%s\n' "Plan approval grants implementation authority for this audit." \
+        >> "$fixtures/audit-plan-approval"
+    assert_fixture_rejected_with validate_security_audit_prompt_fixture \
+        "$fixtures/audit-plan-approval" "security-authority-plan-approval" || return 1
+
+    cp "$fixtures/audit-valid" "$fixtures/audit-every-slice"
+    printf '%s\n' "Every ordinary slice requires a full security audit." \
+        >> "$fixtures/audit-every-slice"
+    assert_fixture_rejected_with validate_security_audit_prompt_fixture \
+        "$fixtures/audit-every-slice" "security-authority-full-audit-every-slice" || return 1
+
+    cat > "$fixtures/correction-valid" <<'EOF'
+Security task class: accepted-finding correction
+Accepted finding IDs: SEC-01-F01
+Corrected severity: high
+Exact path allowlist: src/auth/session.py, tests/auth/test_session.py
+Regression test: tests/auth/test_session.py cross-tenant read rejected
+Audit authority: none
+Re-audit routing: fresh independent re-audit required
+EOF
+    assert_fixture_accepted validate_security_correction_prompt_fixture \
+        "$fixtures/correction-valid" || return 1
+
+    sed '/^Exact path allowlist: /d' "$fixtures/correction-valid" > "$fixtures/correction-no-allowlist"
+    assert_fixture_rejected_with validate_security_correction_prompt_fixture \
+        "$fixtures/correction-no-allowlist" "security-authority-correction-allowlist" || return 1
+
+    sed 's/^Re-audit routing: fresh independent re-audit required$/Re-audit routing: none; the corrector self-verified/' \
+        "$fixtures/correction-valid" > "$fixtures/correction-no-reaudit"
+    assert_fixture_rejected_with validate_security_correction_prompt_fixture \
+        "$fixtures/correction-no-reaudit" "security-authority-reaudit-missing" || return 1
+
+    cat > "$fixtures/reaudit-valid" <<'EOF'
+Security task class: fresh independent re-audit
+Worker session target: fresh-worker-session
+Independent of the correction: yes
+Correction authority: none
+Verdicts: verified-closed | not accepted
+EOF
+    assert_fixture_accepted validate_security_reaudit_prompt_fixture \
+        "$fixtures/reaudit-valid" || return 1
+
+    sed 's/^Worker session target: fresh-worker-session$/Worker session target: current-worker-session/' \
+        "$fixtures/reaudit-valid" > "$fixtures/reaudit-current"
+    assert_fixture_rejected_with validate_security_reaudit_prompt_fixture \
+        "$fixtures/reaudit-current" "security-authority-reaudit-independence" || return 1
+
+    sed 's/^Correction authority: none$/Correction authority: the re-auditor may correct small issues/' \
+        "$fixtures/reaudit-valid" > "$fixtures/reaudit-correction"
+    assert_fixture_rejected_with validate_security_reaudit_prompt_fixture \
+        "$fixtures/reaudit-correction" "security-authority-audit-correction-merge"
+}
+
+test_containment_ledger_and_source_record_fixtures() {
+    fixtures=$TMPROOT/security-containment-fixtures
+    mkdir -p "$fixtures"
+    cat > "$fixtures/ledger-valid" <<'EOF'
+Temporary root: /tmp/sec-audit-01
+Owner: audit Worker
+Mode: 0700
+Contents class: synthetic fixtures only
+Cleanup owner: audit Worker
+Cleanup outcome: removed exact path /tmp/sec-audit-01
+EOF
+    assert_fixture_accepted validate_containment_ledger_fixture "$fixtures/ledger-valid" || return 1
+
+    sed 's|^Cleanup outcome: .*$|Cleanup outcome: removed via rm -rf /tmp/sec-audit-01/*|' \
+        "$fixtures/ledger-valid" > "$fixtures/ledger-wildcard"
+    assert_fixture_rejected_with validate_containment_ledger_fixture \
+        "$fixtures/ledger-wildcard" "security-containment-wildcard-cleanup" || return 1
+
+    sed '/^Cleanup outcome: /d' "$fixtures/ledger-valid" > "$fixtures/ledger-no-outcome"
+    assert_fixture_rejected_with validate_containment_ledger_fixture \
+        "$fixtures/ledger-no-outcome" "infosec-schema-field" || return 1
+
+    cat > "$fixtures/source-valid" <<'EOF'
+Title: OWASP Application Security Verification Standard
+Owner: OWASP
+Version: 5.0
+Status: final
+Retrieval date: 2026-07-19
+AP concept supported: version-qualified verification-requirement mapping
+EOF
+    assert_fixture_accepted validate_source_record_fixture "$fixtures/source-valid" || return 1
+
+    sed '/^Version: /d' "$fixtures/source-valid" > "$fixtures/source-no-version"
+    assert_fixture_rejected_with validate_source_record_fixture \
+        "$fixtures/source-no-version" "source-policy-version-status" || return 1
+
+    sed 's/^Status: final$/Status: draft cited as current requirement/' \
+        "$fixtures/source-valid" > "$fixtures/source-draft-current"
+    assert_fixture_rejected_with validate_source_record_fixture \
+        "$fixtures/source-draft-current" "source-policy-version-status"
+}
+
 copy_worktree_to_source
 
 run_test "section contract helper enforces exact boundaries" test_section_contract_helper_boundaries
@@ -1666,6 +2322,11 @@ run_test "advisory ownership, ADR-0009, and discoverability contracts are presen
 run_test "pattern anti-pattern, source, prohibited-artifact, and security scans pass" test_pattern_anti_patterns_sources_and_security_scans
 run_test "tool help and documentation agree" test_tool_help_and_docs_agree
 run_test "test stdout and stderr artifacts stay inside owned temp root" test_no_external_test_artifacts
+run_test "defensive-security profile positive contracts are present" test_security_profile_positive_contracts
+run_test "INFOSEC.md advisory ownership schema rejects competing and unsubordinated profiles" test_infosec_profile_ownership_schema
+run_test "security finding fixtures enforce evidence, exploitability, and redaction discipline" test_security_finding_fixture_contracts
+run_test "security prompt fixtures enforce threat-model, containment, and authority separation" test_security_prompt_fixture_contracts
+run_test "containment ledger and source record fixtures enforce cleanup and version discipline" test_containment_ledger_and_source_record_fixtures
 
 say "passed: $pass_count"
 say "failed: $fail_count"

@@ -818,7 +818,9 @@ work without classification.
 [NIST adversarial-ML taxonomy](https://nvlpubs.nist.gov/nistpubs/ai/NIST.AI.100-2e2025.pdf),
 and [OWASP prompt injection](https://genai.owasp.org/llmrisk/llm01-prompt-injection/)
 identify risks and layered defenses but do not adjudicate every provider policy
-or justify bypass.
+or justify bypass. The advisory [INFOSEC.md](INFOSEC.md) profile owns the
+activated defensive-security lifecycle, finding discipline, and containment
+procedures that this pattern routes toward.
 
 ### P16 — Untrusted-Content and Instruction-Conflict Boundary
 
@@ -1043,5 +1045,7 @@ semantics, and no textual prompt guarantees injection or disclosure prevention.
 - [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md) — structural prompt and report contracts.
 - [AP_ORCHESTRATOR.md](AP_ORCHESTRATOR.md) — operational selection and routing handbook.
 - [AP_WORKER.md](AP_WORKER.md) — Worker conduct handbook.
+- [INFOSEC.md](INFOSEC.md) — advisory defensive-security profile activated by routing or an authoritative prompt.
 - [ARTIFACT_LIFECYCLE.md](ARTIFACT_LIFECYCLE.md) — advisory-library lifecycle.
 - [ADR-0009](docs/adr/0009-capability-aware-worker-routing-and-execution-gates.md) — architectural decision and compatibility record.
+- [ADR-0010](docs/adr/0010-defensive-security-profile.md) — defensive-security profile decision.

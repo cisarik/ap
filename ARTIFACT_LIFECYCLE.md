@@ -116,6 +116,40 @@ create generated variants, project copies, permanent telemetry records, or
 transient handoffs from the library. Consuming projects remain pinned until a
 separate update task adopts a newer AP commit.
 
+### Defensive-Security Profile
+
+`INFOSEC.md` is a durable advisory protocol companion: a Community-Profile-style
+specialization for defensive security work. It is not normative AP, not task
+authority, and not a competitor to `AP.md`. Its intended consumers are
+Orchestrators routing security work and Workers executing activated security
+tasks; README and both handbooks provide discovery, and the profile links back
+to its normative owners. It activates only through an authoritative prompt,
+project rule, or risk-routing decision, and its dated source registry must be
+refreshed before time-sensitive audits. Advisory guidance must not become
+normative silently; promotion changes the exact normative owner and receives
+ADR treatment when architectural.
+
+## Sensitive Security Evidence
+
+Security audit reports, containment ledgers, and proof artifacts that may carry
+sensitive material form the sensitive-security-evidence artifact class:
+
+| Attribute | Rule |
+|---|---|
+| Classification | sensitive security evidence |
+| Authority | evidence only; never task authority |
+| Intended consumer | the Orchestrator, the correction Worker, the re-auditor, and the Cooperator |
+| Discoverability | named in the audit task and report |
+| Retention trigger | until the finding is closed or the residual-risk decision is recorded |
+| Cleanup trigger | finding closure or recorded residual acceptance |
+| Cleanup owner | the Orchestrator, under explicit lifecycle authority |
+
+Redaction is the default: paths and structure may be reported, while secrets,
+credentials, personal data, and raw payloads are never reproduced in prompts,
+reports, tests, logs, public documents, external tools, or public web searches.
+Synthetic fixtures carry proofs where possible. Raw sensitive evidence stays
+inside the declared containment boundary and is cleaned with exact paths only.
+
 ## Worker Duties
 
 When creating, replacing, or deleting documentation artifacts, the Worker must:
@@ -145,3 +179,4 @@ The Orchestrator must:
 - [AP_WORKER.md](AP_WORKER.md)
 - [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md)
 - [PROMPT_ENGINEERING_PATTERNS.md](PROMPT_ENGINEERING_PATTERNS.md)
+- [INFOSEC.md](INFOSEC.md)

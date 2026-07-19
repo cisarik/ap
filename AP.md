@@ -657,6 +657,45 @@ does not imply offensive deployment authority. Prompt wording and delimiters
 may reduce ambiguity but do not constitute complete prompt-injection or
 disclosure prevention; use layered technical and human controls.
 
+### Defensive-Security Task Anchor
+
+When a security task is authorized, the prompt must name its security task
+class, explicit scope, and the owned or explicitly authorized target. Assets
+and trust boundaries are identified proportionately to the task's risk.
+Security work is risk-weighted; an ordinary low-risk slice does not receive a
+full security audit merely because a change occurred.
+
+Findings distinguish a candidate weakness from a reachable vulnerability and
+from demonstrated exploitability:
+
+- every finding records its evidence class, reachability, preconditions,
+  required privileges, and observed or potential impact;
+- a dangerous API, CWE classification, or CVE entry is a risk signal, never by
+  itself proof of reachability or exploitability, and tool output is evidence
+  requiring interpretation rather than an automatic finding;
+- an exploitability claim is capped by the finding's evidence class and must
+  not be overstated;
+- severity derives from reachability, preconditions, required privilege,
+  trust-boundary crossing, reversibility, blast radius, and
+  confidentiality, integrity, and availability impact, never from dramatic
+  wording;
+- dynamic confirmation uses safe containment and synthetic credentials,
+  accounts, media, data, and targets; real secrets or private data must not be
+  exposed merely to prove a finding; and
+- external security standards are referenced by exact version or edition,
+  status, and retrieval date; awareness lists are prioritization material, not
+  completeness proof.
+
+Read-only audit authority does not authorize correction, and an auditor must
+not silently repair a finding. Correction requires a separate bounded prompt.
+A fresh independent re-audit may be mandatory for security-sensitive
+corrections under the profile's rules.
+
+[INFOSEC.md](INFOSEC.md) is the advisory Community-Profile-style
+specialization that supplies detailed defensive-security procedures when an
+authoritative prompt, project rule, or risk-routing decision activates it. It
+never replaces or competes with this protocol.
+
 ## 11. Browser and Rendered Acceptance Automation
 
 Browser automation is an optional Worker capability, not an inherent protocol
@@ -1058,6 +1097,12 @@ AP rejects:
 - permanent empty session handoff files as ceremony;
 - manual Cooperator handoff commits as the default rotation mechanism;
 - using a diagnostic pass as a hidden second feature task;
+- treating a dangerous API, CWE classification, or CVE entry as proof of a
+  reachable, exploitable vulnerability;
+- treating a security awareness list as completeness proof;
+- an auditor silently repairing its own finding, or a read-only audit mutating
+  the canonical repository;
+- a full security audit mandated for every ordinary low-risk slice;
 - intentional context exhaustion;
 - mandatory maximum reasoning;
 - committing every brainstorming exchange;
@@ -1071,6 +1116,7 @@ AP rejects:
 - [AP_WORKER.md](AP_WORKER.md)
 - [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md)
 - [PROMPT_ENGINEERING_PATTERNS.md](PROMPT_ENGINEERING_PATTERNS.md)
+- [INFOSEC.md](INFOSEC.md)
 - [ARTIFACT_LIFECYCLE.md](ARTIFACT_LIFECYCLE.md)
 - [GLOSSARY.md](GLOSSARY.md)
 - [INTEGRATION.md](INTEGRATION.md)

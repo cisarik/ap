@@ -368,6 +368,208 @@ are not persistent roles and are not AP phases.
 - **Stopping rule**: stop when audit evidence is complete or correction would
   require new authority.
 
+## Security Finding And Audit Contracts
+
+These structures are the machine-testable security contract family. The
+normative anchor is the Defensive-Security Task Anchor in [AP.md](AP.md); the
+advisory procedures live in [INFOSEC.md](INFOSEC.md). These contracts bind only
+when a security task class is activated.
+
+### Security Finding Record Contract
+
+Every reported finding uses exactly these fields:
+
+```text
+Finding ID: <audit-id>-F<nn>
+Title: <short name>
+Status: open | confirmed | rejected-false-positive | accepted-residual | corrected | verified-closed
+Severity: critical | high | medium | low | info
+Confidence: high | medium | low
+Evidence class: reproduced-dynamic | established-static | inferred | hypothesis-unverified
+Affected commit: <exact SHA under audit>
+Affected component and exact location: <path:line or exact config/API surface>
+Security property: <property violated>
+Asset at risk: <asset>
+Trust boundary: <boundary crossed>
+Attacker-controlled input or local actor: <exact input/channel or local-actor assumption>
+Reachability: <entry point, call path, deployed/enabled state, or not established>
+Preconditions: <configuration, state, race, environment>
+Required privileges: none | unauthenticated | ordinary user | admin | local
+Observed or potential impact: <what happens>
+C/I/A effect: <confidentiality, integrity, availability effects>
+CWE mapping: <version-qualified CWE ID or none>
+ASVS mapping: <version-qualified ASVS 5.0 requirement or none>
+Source-standard references: <title, owner, version/status, retrieval date>
+Dynamic reproduction evidence: <what was run, where, with what synthetic inputs, or none>
+Static evidence: <exact code/config excerpt reference, never sensitive payloads>
+Synthetic containment: <root path, ownership, mode, cleanup outcome>
+False-positive analysis: <why this could be wrong; what would disprove it>
+Exploitability conclusion: demonstrated | probable | plausible but unproven | not demonstrated | not applicable
+Smallest safe correction direction: <bounded direction, not an implementation>
+Regression-test requirement: <the negative-path test that must exist>
+Residual risk: <risk remaining after the proposed correction>
+Acceptance-blocking decision: blocking | non-blocking, with rationale
+Redaction requirements: <what must never leave the audit boundary>
+```
+
+The evidence class caps the exploitability conclusion: `demonstrated` requires
+`reproduced-dynamic`; `probable` requires at least `established-static` plus
+established reachability; `inferred` or `hypothesis-unverified` caps the
+conclusion at `plausible but unproven`. Severity is derived from reachability,
+preconditions, required privilege, trust-boundary crossing, reversibility,
+blast radius, and confidentiality, integrity, and availability impact; dramatic
+wording is not an input. CVSS is optional and supplementary only. A
+`rejected-false-positive` status with disproving evidence is a valid positive
+audit result.
+
+### Threat-Model Fields
+
+Every activated security task records:
+
+```text
+Assets: <assets at risk>
+Trust boundaries: <boundaries crossed>
+Attacker-controlled inputs: <inputs or local-actor assumption>
+Security properties: <properties relied on>
+Abuse cases: <proportionate abuse cases>
+```
+
+A missing threat model is a stopping condition for an audit.
+
+### Containment Ledger Contract
+
+Every temporary audit root, fixture, account, and network target is declared
+before use:
+
+```text
+Temporary root: <exact absolute path or identity>
+Owner: <who created it>
+Mode: <permission mode>
+Contents class: <synthetic fixtures only, or exact class>
+Cleanup owner: <who removes it>
+Cleanup outcome: <removed | retained-with-reason, reported after use>
+```
+
+Cleanup removes exact declared paths only; wildcard cleanup is forbidden.
+Uncleaned artifacts are reported with location and reason.
+
+### Source Version Record Contract
+
+Every external security standard cited in an audit carries:
+
+```text
+Title: <exact title>
+Owner: <issuing organization>
+Version: <exact version or edition>
+Status: final | draft | awareness | taxonomy | maturity-model | tooling
+Retrieval date: <date>
+AP concept supported: <concept>
+Refresh: recheck before time-sensitive audits
+```
+
+Drafts never silently become current requirements. External requirement
+catalogs are referenced by exact version, never bulk-copied.
+
+### Residual-Risk Decision Contract
+
+```text
+Finding ID: <id>
+Decision: accepted-residual | correction-required
+Severity: <derived severity>
+Approver: Orchestrator | Cooperator
+Regression test: <test reference or not applicable>
+Rationale: <why acceptance is proportionate>
+Recorded in: <closure evidence location>
+```
+
+`low` or `info` residual risk may be Orchestrator-accepted; `medium` or higher
+requires explicit Cooperator sign-off. Nothing is accepted silently.
+
+### Security Audit Report Contract
+
+```text
+Security task class: <activated class>
+Owned/authorized target: <repository or system and exact authorization>
+Commit under audit: <exact SHA>
+Scope: <included>
+Exclusions: <excluded and why>
+Threat model: <fields above>
+Source records: <versioned records above>
+Findings: <finding records, including rejected-false-positive results>
+Containment ledger: <entries above with cleanup outcomes>
+Limitations: <unverifiable items and reasons>
+Residual-risk summary: <for acceptance decisions>
+```
+
+### Security Audit Prompt Contract
+
+A focused or broad defensive audit prompt carries:
+
+```text
+Security task class: focused defensive audit | broad milestone application audit | <specialization>
+Owned/authorized target: <exact target and authorization basis>
+Scope: <bounded subsystem, boundary, hypothesis, or approved attack-surface map>
+Threat model: <assets, trust boundaries, attacker-controlled inputs, properties>
+Canonical repository mutation: none
+Correction authority: none
+Containment: temporary audit roots per the ledger contract; synthetic evidence only
+Evidence classes: reproduced-dynamic | established-static | inferred | hypothesis-unverified
+Exploitability cap: evidence class caps the conclusion
+Reporting: security audit report contract
+```
+
+An audit prompt never authorizes correction, never authorizes canonical
+repository mutation, and never requires a full-repository audit for an ordinary
+slice.
+
+### Accepted-Finding Correction Prompt Contract
+
+```text
+Security task class: accepted-finding correction
+Accepted finding IDs: <ids the Orchestrator accepted for correction>
+Exact path allowlist: <exact paths>
+Regression test: <negative-path test that fails before and passes after>
+Audit authority: none
+Re-audit routing: <fresh independent re-audit requirement or documented rationale>
+Commits: one corrective commit only when explicitly authorized
+```
+
+A correction prompt without an exact path allowlist is invalid. The corrector
+never audits or certifies its own correction.
+
+### Fresh Independent Re-Audit Prompt Contract
+
+```text
+Security task class: fresh independent re-audit
+Worker session target: fresh-worker-session
+Independent of the correction: yes
+Correction authority: none
+Targets: <correction commit plus original risk claim>
+Verdicts: verified-closed | not accepted, per finding, with evidence
+Reporting: security audit report contract
+```
+
+A re-audit prompt never grants correction authority and never targets the
+session that implemented the correction.
+
+### Security Workflow Profile Outlines
+
+Decision-ready outlines for the ten security workflow profiles; the full
+advisory procedures live in [INFOSEC.md](INFOSEC.md):
+
+| Profile | Session target | Independence | Core contract |
+|---|---|---|---|
+| P-1 Slice-level secure implementation review | shared with the implementation session | non-independent evidence; `low` ceiling; named stop triggers | slice threat model on the Worker's own diff |
+| P-2 Focused defensive audit | fresh session | independent | audit prompt contract; containment ledger; finding records |
+| P-3 Broad milestone application audit | fresh session | mandatory independent | approved attack-surface map; coverage and exclusion statement |
+| P-4 Dependency and supply-chain audit | fresh for milestone scope | independent at milestones | CVE signals with reachability verdicts; tool output as evidence |
+| P-5 Authentication and authorization audit | specialization of P-2/P-3 | independent; re-audit mandatory for corrections | server-side enforcement evidence; synthetic roles only |
+| P-6 File, upload, media, and filesystem audit | specialization of P-2/P-3 | independent for pipeline-critical changes | synthetic files in declared roots; exact-path cleanup |
+| P-7 AI and provider-boundary audit | specialization of P-2/P-3 | independent; re-audit mandatory for boundary changes | boundary map; refusal narrowed, never bypassed |
+| P-8 Host and infrastructure hardening audit | separate read-only class | independent when gating deployment | read-only host inspection; no host mutation |
+| P-9 Accepted-finding correction | Bounded Correction Worker | corrector is never the auditor | correction prompt contract with exact allowlist |
+| P-10 Fresh independent re-audit | `fresh-worker-session` | definitional | re-audit prompt contract; verdicts only, no correction |
+
 ## Adaptive Phase Contracts
 
 Each Worker prompt must name its Worker session target, Worker session profile,
@@ -607,5 +809,6 @@ task.
 - [AP_ORCHESTRATOR.md](AP_ORCHESTRATOR.md)
 - [AP_WORKER.md](AP_WORKER.md)
 - [PROMPT_ENGINEERING_PATTERNS.md](PROMPT_ENGINEERING_PATTERNS.md)
+- [INFOSEC.md](INFOSEC.md)
 - [INTEGRATION.md](INTEGRATION.md)
 - [UPDATING.md](UPDATING.md)

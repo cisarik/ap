@@ -20,10 +20,15 @@ Programming.
 | [0007](0007-worker-session-evidence-and-restoration-lifecycle.md) | Worker session evidence and restoration lifecycle | Accepted | Absolute sequential wording partially superseded by ADR-0009; evidence and restoration decisions retained |
 | [0008](0008-worker-session-target-and-authority-renewal.md) | Worker session target and authority renewal | Accepted | Extended prospectively by ADR-0009 session-and-mode routing |
 | [0009](0009-capability-aware-worker-routing-and-execution-gates.md) | Capability-aware Worker routing and execution gates | Accepted | Current routing, execution-transition, topology-exception, and trust-boundary decision |
+| [0010](0010-defensive-security-profile.md) | Defensive-security profile and finding contract | Accepted | Advisory INFOSEC.md profile with a small normative AP.md anchor; no existing ADR superseded |
 
 ADR-0009 permits only an explicit bounded parallel exception. It does not
 supersede fresh sequential independent audit or the remaining decisions in
 ADR-0004 and ADR-0007. Their bodies remain unchanged historical decisions.
+
+ADR-0010 adds an advisory defensive-security profile. It does not supersede
+ADR-0009 or make the profile normative; `AP.md` remains the sole live
+normative protocol.
 
 ## Lifecycle Rule
 

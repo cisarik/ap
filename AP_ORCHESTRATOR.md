@@ -102,6 +102,47 @@ Worker-observed evidence as direct Orchestrator observation. If one network or
 DNS path fails, record that capability and use another authorized method rather
 than repeating the same failure.
 
+## Security Risk Routing
+
+When a task may carry security risk, the Orchestrator selects exactly one
+primary route from the risk-weighted matrix in
+[INFOSEC.md](INFOSEC.md#3-risk-weighted-routing): R0 through R6. The assessment
+considers change type, attack-surface delta, data sensitivity, authorization
+impact, boundary impact, dependency or build change, deployment exposure,
+uncertainty, reversibility, and blast radius. An ordinary low-risk slice is
+never given a full security audit, and a small but boundary-crossing change is
+never given a free pass.
+
+For each activated security task, the Orchestrator:
+
+- activates the advisory [INFOSEC.md](INFOSEC.md) profile explicitly in the
+  Worker prompt and names the security task class; the profile never activates
+  itself;
+- requires a proportionate threat model: assets, trust boundaries,
+  attacker-controlled inputs or local-actor assumptions, security properties,
+  and abuse cases;
+- checks model and capability suitability for the required evidence, including
+  whether adversarial review justifies a higher reasoning profile, without
+  treating any capability as authority;
+- evaluates findings against the finding record contract in
+  [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md#security-finding-record-contract):
+  evidence class, reachability, preconditions, required privileges, impact,
+  false-positive analysis, and the exploitability conclusion capped by the
+  evidence class;
+- treats a well-evidenced false-positive rejection as a positive audit result;
+- authorizes correction only through a separate bounded prompt with an exact
+  path allowlist, accepted finding IDs, and a regression-test requirement; the
+  auditor never corrects and the corrector never self-certifies;
+- decides residual-risk acceptance: `low` or `info` with a complete record may
+  be Orchestrator-accepted and recorded; `medium` or higher requires explicit
+  Cooperator sign-off;
+- routes security-sensitive corrections — acceptance-blocking, `high`, or
+  `critical` findings, and any authentication, authorization, cryptography, or
+  secret-handling correction — to a Fresh Independent Re-Audit; and
+- requires sensitive evidence to be redacted, contained, and lifecycle-bound
+  per [ARTIFACT_LIFECYCLE.md](ARTIFACT_LIFECYCLE.md), and never submitted to
+  public web search or external tools.
+
 ## Evidence Profile Selection
 
 Select the lowest sufficient evidence profile. The adaptive evidence ladder is
@@ -703,5 +744,6 @@ security artifacts.
 - [AP_WORKER.md](AP_WORKER.md)
 - [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md)
 - [PROMPT_ENGINEERING_PATTERNS.md](PROMPT_ENGINEERING_PATTERNS.md)
+- [INFOSEC.md](INFOSEC.md)
 - [ARTIFACT_LIFECYCLE.md](ARTIFACT_LIFECYCLE.md)
 - [GLOSSARY.md](GLOSSARY.md)

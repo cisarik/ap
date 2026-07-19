@@ -486,6 +486,27 @@ patterns must not all be pasted into every prompt. Normative rules remain in
 [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md). Advisory guidance becomes normative
 only through an explicit change to its canonical owner.
 
+## Why is INFOSEC.md advisory?
+
+[INFOSEC.md](INFOSEC.md) is a Community-Profile-style specialization: it
+supplies detailed defensive-security procedures only when an authoritative
+prompt, project rule, or risk-routing decision activates a security task
+class. Making it advisory keeps [AP.md](AP.md) the sole normative protocol,
+keeps ordinary projects free of security ceremony, and prevents profile drift
+from silently changing universal rules. The small normative anchor in `AP.md`
+is what binds the finding, evidence, and containment discipline once a
+security task is authorized.
+
+## Why does not every change get a full security audit?
+
+Security effort is risk-weighted, not ceremonial. A documentation-only change
+needs no security action, an ordinary reversible slice gets inline secure
+checks, and only boundary-crossing, high-uncertainty, milestone, or deployment
+work routes to focused or broad audits. A one-line change to an authorization
+check is still routed like any authorization touch: size is not an input, but
+reachability and trust boundaries are. Full-repository audits belong to
+milestones and deployment gates, never to ordinary slices.
+
 ## Do older prompts and pinned consumers become invalid?
 
 No. Historical prompts remain interpretable under the AP commit that governed

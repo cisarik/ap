@@ -278,6 +278,43 @@ Before any authorized commit, review the changed paths and staged diff. Before
 any authorized push, verify that the remote still matches the required baseline
 when the task requires a remote gate.
 
+## Defensive-Security Audit Duties
+
+When the task activates the advisory [INFOSEC.md](INFOSEC.md) profile, the
+Worker must:
+
+- stay inside the named security task class, scope, and owned or explicitly
+  authorized target; never probe unrelated or third-party systems;
+- classify every finding's evidence as exactly one of `reproduced-dynamic`,
+  `established-static`, `inferred`, or `hypothesis-unverified`;
+- establish reachability, preconditions, and required privileges before any
+  vulnerability claim, and never treat a dangerous API, CWE classification,
+  CVE entry, or tool output as proof of a reachable, exploitable vulnerability;
+- keep the exploitability conclusion within the cap of the evidence class and
+  never overstate it;
+- use safe synthetic reproduction only: isolated clones, fixtures, test
+  accounts, disposable databases, containers, or declared temporary roots, with
+  synthetic credentials, media, accounts, data, and targets, stopping at the
+  smallest decision-quality proof;
+- declare every temporary root, fixture, account, and network target in the
+  containment ledger before use, clean exact declared paths only, never use
+  wildcard cleanup, and report cleanup outcomes and failures;
+- never mutate the canonical repository during a read-only audit;
+- never correct a finding without a separate bounded correction prompt, even
+  when the finding looks urgent;
+- never expose real secrets or private data merely to prove a finding;
+- never bypass a provider or environment refusal by rewording, tool changes,
+  or model switching; narrow to a safe authorized subset or report; and
+- report findings and the audit report in the exact schemas in
+  [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md#security-finding-and-audit-contracts),
+  including false-positive analysis, redaction, limitations, and
+  `rejected-false-positive` results.
+
+A slice-level secure review on route R1 or R2 applies the slice threat model to
+the Worker's own diff, labels the evidence non-independent, closes nothing
+above `low` severity, and stops for a focused audit when any named trigger
+fires.
+
 ## Validation
 
 Run validation proportional to risk and within the allowed command set.
@@ -442,5 +479,6 @@ After change:
 - [AP_ORCHESTRATOR.md](AP_ORCHESTRATOR.md)
 - [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md)
 - [PROMPT_ENGINEERING_PATTERNS.md](PROMPT_ENGINEERING_PATTERNS.md)
+- [INFOSEC.md](INFOSEC.md)
 - [ARTIFACT_LIFECYCLE.md](ARTIFACT_LIFECYCLE.md)
 - [GLOSSARY.md](GLOSSARY.md)

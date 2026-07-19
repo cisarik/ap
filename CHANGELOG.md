@@ -5,6 +5,12 @@ the authoritative archive for exact content.
 
 ## Unreleased
 
+- Added the advisory Community-Profile-style `INFOSEC.md` defensive-security
+  specialization with a small normative Defensive-Security Task Anchor in
+  `AP.md`, the machine-testable security finding and audit contract family in
+  `PROMPT_CONTRACTS.md`, risk-weighted routing, containment and sensitive
+  evidence rules, a dated source registry, ADR-0010, and stable semantic
+  diagnostics with mutation-checked fixtures.
 - Added capability-aware four-state Worker routing, an explicit
   Plan-to-Execution authority transition, permission/containment/authority and
   side-effect separation, one-active topology with a bounded parallel exception,

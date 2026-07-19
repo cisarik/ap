@@ -357,6 +357,87 @@ promoted or retired when accepted conclusions move to durable documents.
 Degradation of session quality from context limits, rate limits, duration, or
 lost constraints. It belongs to concrete sessions, not persistent roles.
 
+## Security Task Class
+
+A named class of defensive-security work selected by risk-weighted routing,
+such as a slice-level secure review, focused defensive audit, broad milestone
+audit, specialized audit, accepted-finding correction, or fresh independent
+re-audit. A class never grants authority by itself.
+
+## Defensive-Security Profile
+
+The advisory Community-Profile-style specialization in `INFOSEC.md`. It
+augments `AP.md` for defensive security work on owned or explicitly authorized
+targets, activates only through an authoritative prompt, project rule, or
+risk-routing decision, and never replaces or competes with `AP.md`.
+
+## Threat Model
+
+The proportionate record of assets, trust boundaries, attacker-controlled
+inputs or local-actor assumptions, security properties, and abuse cases for an
+activated security task. A missing threat model is a stopping condition for an
+audit.
+
+## Candidate Weakness
+
+A suspicious pattern, dangerous API, or CWE-class weakness that is not yet a
+vulnerability claim because reachability and preconditions are not established.
+
+## Evidence Class
+
+The classification of finding evidence as exactly one of `reproduced-dynamic`,
+`established-static`, `inferred`, or `hypothesis-unverified`. The evidence
+class caps the exploitability conclusion.
+
+## Exploitability Conclusion
+
+The bounded claim about exploitation: `demonstrated`, `probable`,
+`plausible but unproven`, `not demonstrated`, or `not applicable`. It is capped
+by the evidence class and never asserted from a CWE classification, dangerous
+API, or CVE entry alone.
+
+## Reachability
+
+The established entry point, call path, and deployed or enabled state through
+which an attacker-controlled input or local actor can reach the weakness, or
+`not established`. A CVE or CWE never implies reachability by itself.
+
+## Synthetic Containment
+
+The isolated environment for defensive dynamic confirmation: isolated clones,
+fixtures, test accounts, disposable databases, containers, or declared
+temporary roots with synthetic credentials, media, accounts, data, and targets.
+
+## Temporary Audit Root
+
+A declared temporary directory or environment used by a security audit,
+recorded with exact path, owner, permission mode, contents class, cleanup
+owner, and cleanup outcome. Cleanup removes exact declared paths only.
+
+## Containment Ledger
+
+The audit report section listing every temporary root, fixture, account, and
+network target touched, each with its cleanup outcome. Wildcard cleanup is
+forbidden.
+
+## Residual Risk
+
+The risk that remains after a correction or acceptance decision. `low` or
+`info` residual risk may be Orchestrator-accepted with a complete record;
+`medium` or higher requires explicit Cooperator sign-off.
+
+## False-Positive Rejection
+
+A valid positive audit result in which a candidate finding is disproven and
+reported as `rejected-false-positive` with the disproving evidence.
+
+## Source Version Record
+
+The audit record for a cited external security standard: title, owner, exact
+version or edition, status (final, draft, awareness, taxonomy, maturity model,
+or tooling), retrieval date, and the AP concept supported. Drafts never
+silently become current requirements.
+
 ## Compact Communication
 
 A mode that keeps prompts and reports concise by referencing authoritative
