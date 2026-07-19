@@ -265,6 +265,102 @@ containment, authority, approval, policy, credentials, verified gates, and
 evidence. Stop after the capability report; it grants no later authority.
 ```
 
+## Worker Surface And Model Routing Contract
+
+Every material routing value uses the evidence classes from the Worker
+Capability Handshake Contract: `requested`, `directly observed`, `inferred`,
+or `unknown/not observably exposed`. No provider-specific telemetry is
+required beyond what the client exposes.
+
+A routing decision records the material rows only:
+
+| Routing row | Required shape |
+|---|---|
+| Client and Worker surface | requested value; observed value or unknown |
+| Model | requested value; observed value or unknown; never verified from selection alone |
+| Reasoning effort | requested value; observed value or unknown |
+| Permission mode | requested value; observed value or unknown |
+| Context capacity and usage | exposed values or unknown; qualitative pressure |
+| Quota and cost constraints | announced constraints and their routing effect |
+| Native planning mode | requested state; observed state or unknown |
+| Worker session target | fresh-worker-session or current-worker-session decision |
+| Independence requirement | required independence and its basis |
+| Required tools | material tool requirements and availability |
+| Unavailable capabilities | what cannot be produced and the consequence |
+| Fallback or escalation decision | route change, escalation, or none, with reason |
+
+The Cooperator announcement states intended or available client, surface,
+model, quota, cost, and material environment constraints:
+
+```text
+Client/surface announcement: <available client, surface, model, quota, cost, material constraints>
+```
+
+The Orchestrator recommendation names the recommended surface and its basis:
+
+```text
+Recommended client/surface: <surface>
+Recommended model: <model>
+Recommended reasoning: <lowest sufficient profile and rationale>
+Independence requirement: <none | fresh independent evidence and basis>
+Required tools: <material requirements>
+Quota/cost routing note: <constraint acknowledged; evidence unchanged>
+```
+
+The Worker observation reports only directly exposed facts:
+
+```text
+Observed client/surface: <directly observed | inferred | unknown/not observably exposed>
+Observed model: <directly observed | inferred | unknown/not observably exposed>
+Observed reasoning: <directly observed | inferred | unknown/not observably exposed>
+Observed permission mode: <directly observed | inferred | unknown/not observably exposed>
+Context capacity/usage: <exposed values | unknown/not observably exposed>
+Unavailable capabilities: <list or none>
+```
+
+Routing invariants:
+
+- requested values are never treated as verified effective values;
+- capability, reasoning effort, context size, and permission mode never
+  expand task authority, and no permission mode authorizes credential
+  inspection;
+- provider marketing, context-window claims, and benchmark results are
+  advisory routing inputs, never repository or acceptance evidence;
+- a material model, provider, client, role, or cache and context assumption
+  change normally routes to a fresh Worker session; current-session reuse
+  requires unchanged model and role, healthy context integrity, no phase
+  independence requirement, explicitly renewed authority, and a proportionate
+  route;
+- quota, cost, subscription, and rate limits never silently weaken required
+  acceptance evidence, and security-audit independence overrides token-saving
+  preference;
+- a weaker or different model is never substituted silently when required
+  evidence depends on capabilities that may be lost; report or explicitly
+  reroute; and
+- a provider refusal is narrowed to a safe authorized subset or reported,
+  never bypassed by rewording, tool changes, or model switching; a model
+  switch after a refusal is permitted only for a genuinely different safe
+  task.
+
+### Model-Suitability Evidence Records
+
+Project-owned model-suitability observations are advisory records:
+
+```text
+Model-suitability record: <provider/model identifier>
+Observation date: <date>
+Observation class: anecdote | repeatable evidence
+Observed behavior: <what was observed, including quota or context behavior>
+Routing consequence: <advisory only; normative routing unchanged>
+Refresh: re-observe before important reuse
+```
+
+Such records are not universal benchmarks, must distinguish anecdote from
+repeatable evidence, must not guarantee future capability, must not silently
+change normative routing, and must be refreshed before important reuse.
+Provider-specific mappings live in project-owned advisory material, not in
+the universal normative core.
+
 ## Authority, Side-Effect, And Context-Recovery Fields
 
 For consequential tasks, prompts identify technical permission and containment

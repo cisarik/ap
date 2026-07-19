@@ -438,6 +438,30 @@ version or edition, status (final, draft, awareness, taxonomy, maturity model,
 or tooling), retrieval date, and the AP concept supported. Drafts never
 silently become current requirements.
 
+## Worker Surface
+
+The combination of client, provider, model, and reasoning configuration on
+which a Worker session runs. A requested surface is not a verified surface;
+only directly observed values are evidence.
+
+## Model-Suitability Evidence
+
+A dated, project-owned advisory record of how a model behaved for a class of
+work. It distinguishes anecdote from repeatable evidence, never guarantees
+future capability, and never silently changes normative routing.
+
+## Silent Fallback
+
+Substituting a weaker or different model without reporting it when the
+required evidence depends on capabilities that may be lost. Forbidden; the
+route must be reported or explicitly rerouted.
+
+## Routing Escalation
+
+The route taken when quota, cost, capability, or refusal prevents the
+required evidence: escalate to a route that can produce the evidence, or
+report the limitation. The evidence requirement itself never moves.
+
 ## Compact Communication
 
 A mode that keeps prompts and reports concise by referencing authoritative

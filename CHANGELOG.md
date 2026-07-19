@@ -11,6 +11,12 @@ the authoritative archive for exact content.
   `PROMPT_CONTRACTS.md`, risk-weighted routing, containment and sensitive
   evidence rules, a dated source registry, ADR-0010, and stable semantic
   diagnostics with mutation-checked fixtures.
+- Added provider-neutral Worker surface and model routing: Cooperator
+  announcement, Orchestrator recommendation, and Worker observation rules,
+  requested-versus-observed evidence classes, quota and independence
+  discipline, lowest-sufficient reasoning, no silent fallback, refusal
+  non-bypass, dated model-suitability evidence records, and stable routing
+  diagnostics with mutation-checked fixtures.
 - Added capability-aware four-state Worker routing, an explicit
   Plan-to-Execution authority transition, permission/containment/authority and
   side-effect separation, one-active topology with a bounded parallel exception,

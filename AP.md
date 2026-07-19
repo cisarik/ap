@@ -490,6 +490,55 @@ and the Cooperator routing sequence. Missing topology fields, overlapping
 writes, or unresolved shared dependencies prohibit parallel mutation.
 Coordinated parallel activity is not independent verification.
 
+### Provider-Neutral Model and Surface Routing
+
+Worker routing is provider-neutral. Universal AP defines routing rules and
+evidence classes; it never names a vendor, client, or model as a requirement.
+
+- **Announce, recommend, observe.** The Cooperator may announce the intended
+  or available client, Worker surface, model, quota, cost, and material
+  environment constraints. The Orchestrator recommends the client or surface,
+  model, reasoning effort, session freshness, native planning state,
+  permissions, independence, and tool requirements. The Worker reports only
+  what is directly observable.
+- **Requested is not verified.** A requested client, model, or reasoning
+  value is not evidence of the effective value. Unobservable facts remain
+  `unknown/not observably exposed`; effective model identity is never
+  inferred from a user selection alone.
+- **Capability is not authority.** Model intelligence, reasoning effort,
+  context size, permission mode, shell or write access, Plan approval, or
+  available credentials never expands task authority. No permission mode
+  authorizes credential inspection.
+- **Marketing is not evidence.** Provider claims, context-window claims,
+  benchmark results, and marketing statements are advisory routing inputs,
+  never repository evidence or acceptance evidence.
+- **Model or material surface switch.** A material model, provider, client,
+  role, or cache and context assumption change normally routes to a fresh
+  Worker session. Current-session reuse remains allowed only when the model
+  and role are unchanged, context integrity is healthy, phase independence is
+  not required, authority is explicitly renewed, and the route remains
+  proportionate.
+- **Quota and independence.** Quota, cost, subscription, and rate limits are
+  legitimate routing inputs. They never silently weaken required acceptance
+  evidence, and security-audit independence overrides token-saving
+  preference. When the required evidence cannot be produced, escalate the
+  route or report the limitation.
+- **Lowest sufficient reasoning.** The Orchestrator recommends the lowest
+  sufficient reasoning profile from the table above. Higher or maximum effort
+  is proportionate for protocol evolution, architecture, adversarial security
+  review, ambiguous high-impact findings, and other justified high-risk
+  tasks. Reasoning effort is never authority.
+- **No silent fallback.** A weaker or different model is never substituted
+  silently when the required evidence depends on capabilities that may be
+  lost; report or explicitly reroute. A provider refusal is narrowed to a
+  safe authorized subset or reported, never bypassed by switching models.
+  Switching models after a refusal is permitted only for a genuinely
+  different safe task.
+
+Model-suitability observations are dated, project-owned, advisory records.
+They are not universal benchmarks, do not guarantee future capability, and
+never silently change this routing contract.
+
 ## 7. Orchestrator Responsibilities
 
 The Orchestrator should:
@@ -1103,6 +1152,14 @@ AP rejects:
 - an auditor silently repairing its own finding, or a read-only audit mutating
   the canonical repository;
 - a full security audit mandated for every ordinary low-risk slice;
+- treating a requested or user-selected model as verified effective identity;
+- treating reasoning effort, context size, or permission mode as expanded
+  task authority;
+- treating provider marketing or benchmark claims as acceptance evidence;
+- silently falling back to a weaker or different model when required evidence
+  depends on capabilities that may be lost;
+- letting quota or cost silently weaken required acceptance evidence or
+  security-audit independence;
 - intentional context exhaustion;
 - mandatory maximum reasoning;
 - committing every brainstorming exchange;

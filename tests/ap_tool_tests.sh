@@ -310,7 +310,39 @@ validate_semantic_negative_contracts() {
         "A correction prompt may omit the exact path allowlist" || return 1
     forbid_section_phrase "security-authority-plan-approval" "$contracts" \
         "## Security Finding And Audit Contracts" "## Adaptive Phase Contracts" \
-        "Plan approval grants implementation authority without a new prompt"
+        "Plan approval grants implementation authority without a new prompt" || return 1
+    forbid_section_phrase "routing-model-identity-verified" "$contracts" \
+        "## Worker Surface And Model Routing Contract" \
+        "## Authority, Side-Effect, And Context-Recovery Fields" \
+        "A requested model is verified effective identity" || return 1
+    forbid_section_phrase "routing-model-marketing-evidence" "$contracts" \
+        "## Worker Surface And Model Routing Contract" \
+        "## Authority, Side-Effect, And Context-Recovery Fields" \
+        "Provider marketing is acceptance evidence" || return 1
+    forbid_section_phrase "routing-quota-evidence-weakening" "$contracts" \
+        "## Worker Surface And Model Routing Contract" \
+        "## Authority, Side-Effect, And Context-Recovery Fields" \
+        "Quota may silently weaken required acceptance evidence" || return 1
+    forbid_section_phrase "routing-model-silent-fallback" "$contracts" \
+        "## Worker Surface And Model Routing Contract" \
+        "## Authority, Side-Effect, And Context-Recovery Fields" \
+        "A weaker model may be substituted silently" || return 1
+    forbid_section_phrase "routing-model-refusal-switch" "$contracts" \
+        "## Worker Surface And Model Routing Contract" \
+        "## Authority, Side-Effect, And Context-Recovery Fields" \
+        "A refusal may be bypassed by switching models" || return 1
+    forbid_section_phrase "routing-capability-reasoning-authority" "$protocol" \
+        "### Provider-Neutral Model and Surface Routing" "## 7. Orchestrator Responsibilities" \
+        "Maximum reasoning grants broader filesystem authority" || return 1
+    forbid_section_phrase "routing-capability-permission-credential" "$protocol" \
+        "### Provider-Neutral Model and Surface Routing" "## 7. Orchestrator Responsibilities" \
+        "Full Access authorizes credential inspection" || return 1
+    forbid_section_phrase "routing-quota-independence-waived" "$protocol" \
+        "### Provider-Neutral Model and Surface Routing" "## 7. Orchestrator Responsibilities" \
+        "Security-audit independence may be waived to save tokens" || return 1
+    forbid_section_phrase "routing-model-session-reuse-unjustified" "$protocol" \
+        "### Provider-Neutral Model and Surface Routing" "## 7. Orchestrator Responsibilities" \
+        "A material model change may reuse the current session without renewed authority"
 }
 
 extract_pattern_section() {
@@ -671,6 +703,116 @@ validate_source_record_fixture() {
     if grep -F "draft cited as current requirement" "$file" >/dev/null; then
         semantic_contract_violation "source-policy-version-status" \
             "a draft must not silently become a current requirement"
+        return 1
+    fi
+}
+
+validate_model_routing_fixture() {
+    file=$1
+    for field in "Routing record:" "Record type:" \
+        "Requested client/surface:" "Observed client/surface:" \
+        "Requested model:" "Observed model:" \
+        "Requested reasoning:" "Observed reasoning:" \
+        "Worker session target:" "Model change:" \
+        "Fallback/escalation decision:"
+    do
+        grep -F "$field" "$file" >/dev/null || {
+            semantic_contract_violation "routing-model-field" \
+                "routing record missing field: $field"
+            return 1
+        }
+    done
+    [ "$(grep -Ec '^Record type: (cooperator-announcement|orchestrator-recommendation|worker-observation|routing-decision)$' "$file")" -eq 1 ] || {
+        semantic_contract_violation "routing-model-field" \
+            "routing record requires exactly one valid record type"
+        return 1
+    }
+    [ "$(grep -Ec '^Worker session target: (fresh-worker-session|current-worker-session|unrouted)$' "$file")" -eq 1 ] || {
+        semantic_contract_violation "routing-model-field" \
+            "routing record requires exactly one valid session target"
+        return 1
+    }
+    [ "$(grep -Ec '^Model change: (yes|no|unknown)$' "$file")" -eq 1 ] || {
+        semantic_contract_violation "routing-model-field" \
+            "routing record requires exactly one valid model-change value"
+        return 1
+    }
+    for observed in "Observed client/surface" "Observed model" "Observed reasoning"
+    do
+        grep -E "^$observed: (directly observed|inferred|unknown/not observably exposed)" \
+            "$file" >/dev/null || {
+            semantic_contract_violation "routing-model-identity-verified" \
+                "$observed must carry an evidence classification; requested is not verified"
+            return 1
+        }
+    done
+    target=$(sed -n 's/^Worker session target: //p' "$file" | head -1)
+    change=$(sed -n 's/^Model change: //p' "$file" | head -1)
+    if [ "$target" = "current-worker-session" ]; then
+        [ "$change" = "no" ] || {
+            semantic_contract_violation "routing-model-session-reuse-unjustified" \
+                "a material model change must route to a fresh Worker session"
+            return 1
+        }
+        grep -F "Reuse justification:" "$file" >/dev/null || {
+            semantic_contract_violation "routing-model-session-reuse-unjustified" \
+                "current-session reuse requires a recorded justification"
+            return 1
+        }
+    fi
+    for phrase in \
+        "Maximum reasoning grants broader filesystem authority" \
+        "Reasoning effort grants task authority"
+    do
+        if grep -F "$phrase" "$file" >/dev/null; then
+            semantic_contract_violation "routing-capability-reasoning-authority" \
+                "forbidden implication: $phrase"
+            return 1
+        fi
+    done
+    for phrase in \
+        "Full Access authorizes credential inspection" \
+        "Auto permission authorizes credential inspection"
+    do
+        if grep -F "$phrase" "$file" >/dev/null; then
+            semantic_contract_violation "routing-capability-permission-credential" \
+                "forbidden implication: $phrase"
+            return 1
+        fi
+    done
+    for phrase in \
+        "Quota allows skipping required evidence" \
+        "Skip the required evidence to save tokens"
+    do
+        if grep -F "$phrase" "$file" >/dev/null; then
+            semantic_contract_violation "routing-quota-evidence-weakening" \
+                "forbidden implication: $phrase"
+            return 1
+        fi
+    done
+    if grep -F "Security-audit independence is waived to save tokens" "$file" >/dev/null; then
+        semantic_contract_violation "routing-quota-independence-waived" \
+            "security-audit independence overrides token-saving preference"
+        return 1
+    fi
+    for phrase in \
+        "Provider marketing is acceptance evidence" \
+        "Provider benchmark results are acceptance evidence"
+    do
+        if grep -F "$phrase" "$file" >/dev/null; then
+            semantic_contract_violation "routing-model-marketing-evidence" \
+                "forbidden implication: $phrase"
+            return 1
+        fi
+    done
+    if grep -F "Silently fall back to a weaker model" "$file" >/dev/null; then
+        semantic_contract_violation "routing-model-silent-fallback" \
+            "silent weaker-model fallback is forbidden"
+        return 1
+    fi
+    if grep -F "Switch models to bypass the refusal" "$file" >/dev/null; then
+        semantic_contract_violation "routing-model-refusal-switch" \
+            "a refusal is never bypassed by switching models"
         return 1
     fi
 }
@@ -1760,7 +1902,34 @@ test_semantic_negative_regression_fixtures() {
         "A correction prompt may omit the exact path allowlist." || return 1
     assert_semantic_fixture_rejected "security-authority-plan-approval" \
         "PROMPT_CONTRACTS.md" "## Adaptive Phase Contracts" \
-        "Plan approval grants implementation authority without a new prompt."
+        "Plan approval grants implementation authority without a new prompt." || return 1
+    assert_semantic_fixture_rejected "routing-model-identity-verified" \
+        "PROMPT_CONTRACTS.md" "## Authority, Side-Effect, And Context-Recovery Fields" \
+        "A requested model is verified effective identity." || return 1
+    assert_semantic_fixture_rejected "routing-model-marketing-evidence" \
+        "PROMPT_CONTRACTS.md" "## Authority, Side-Effect, And Context-Recovery Fields" \
+        "Provider marketing is acceptance evidence." || return 1
+    assert_semantic_fixture_rejected "routing-quota-evidence-weakening" \
+        "PROMPT_CONTRACTS.md" "## Authority, Side-Effect, And Context-Recovery Fields" \
+        "Quota may silently weaken required acceptance evidence." || return 1
+    assert_semantic_fixture_rejected "routing-model-silent-fallback" \
+        "PROMPT_CONTRACTS.md" "## Authority, Side-Effect, And Context-Recovery Fields" \
+        "A weaker model may be substituted silently." || return 1
+    assert_semantic_fixture_rejected "routing-model-refusal-switch" \
+        "PROMPT_CONTRACTS.md" "## Authority, Side-Effect, And Context-Recovery Fields" \
+        "A refusal may be bypassed by switching models." || return 1
+    assert_semantic_fixture_rejected "routing-capability-reasoning-authority" \
+        "AP.md" "## 7. Orchestrator Responsibilities" \
+        "Maximum reasoning grants broader filesystem authority." || return 1
+    assert_semantic_fixture_rejected "routing-capability-permission-credential" \
+        "AP.md" "## 7. Orchestrator Responsibilities" \
+        "Full Access authorizes credential inspection." || return 1
+    assert_semantic_fixture_rejected "routing-quota-independence-waived" \
+        "AP.md" "## 7. Orchestrator Responsibilities" \
+        "Security-audit independence may be waived to save tokens." || return 1
+    assert_semantic_fixture_rejected "routing-model-session-reuse-unjustified" \
+        "AP.md" "## 7. Orchestrator Responsibilities" \
+        "A material model change may reuse the current session without renewed authority."
 }
 
 test_pattern_library_document_processes() {
@@ -2269,6 +2438,202 @@ EOF
         "$fixtures/source-draft-current" "source-policy-version-status"
 }
 
+test_model_routing_positive_contracts() {
+    grep -Fx "### Provider-Neutral Model and Surface Routing" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "Requested is not verified" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "security-audit independence overrides token-saving" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "never bypassed by switching models" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "treating a requested or user-selected model as verified effective identity" \
+        "$REPO/AP.md" >/dev/null || return 1
+    grep -F "silently falling back to a weaker or different model" "$REPO/AP.md" >/dev/null || return 1
+    grep -Fx "## Worker Surface And Model Routing Contract" \
+        "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
+    grep -Fx "### Model-Suitability Evidence Records" \
+        "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
+    grep -F "Fallback or escalation decision" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
+    grep -F "Observation class: anecdote | repeatable evidence" \
+        "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
+    grep -F "never verified from selection alone" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
+    grep -Fx "## Model And Surface Routing" "$REPO/AP_ORCHESTRATOR.md" >/dev/null || return 1
+    grep -F "never as silent evidence reducers" "$REPO/AP_ORCHESTRATOR.md" >/dev/null || return 1
+    grep -F "requested or user-selected model is never" "$REPO/AP_WORKER.md" >/dev/null || return 1
+    grep -F "self-verified identity" "$REPO/AP_WORKER.md" >/dev/null || return 1
+    grep -Fx "## Worker Surface" "$REPO/GLOSSARY.md" >/dev/null || return 1
+    grep -Fx "## Model-Suitability Evidence" "$REPO/GLOSSARY.md" >/dev/null || return 1
+    grep -Fx "## Silent Fallback" "$REPO/GLOSSARY.md" >/dev/null || return 1
+    grep -Fx "## Routing Escalation" "$REPO/GLOSSARY.md" >/dev/null || return 1
+    grep -F "Is a requested model the same as a verified model?" "$REPO/FAQ.md" >/dev/null || return 1
+    grep -F "Can quota or cost justify skipping required evidence?" "$REPO/FAQ.md" >/dev/null || return 1
+    grep -F "provider-neutral Worker surface and model routing" "$REPO/CHANGELOG.md" >/dev/null || return 1
+    grep -F "worker-surface-and-model-routing-contract" \
+        "$REPO/PROMPT_ENGINEERING_PATTERNS.md" >/dev/null
+}
+
+test_model_routing_fixture_contracts() {
+    fixtures=$TMPROOT/model-routing-fixtures
+    mkdir -p "$fixtures"
+    cat > "$fixtures/announcement-valid" <<'EOF'
+Routing record: RR-01
+Record type: cooperator-announcement
+Requested client/surface: terminal CLI client
+Observed client/surface: unknown/not observably exposed
+Requested model: Cooperator-selected model
+Observed model: unknown/not observably exposed
+Requested reasoning: standard
+Observed reasoning: unknown/not observably exposed
+Worker session target: unrouted
+Model change: unknown
+Quota/cost constraints: limited monthly quota announced
+Fallback/escalation decision: none
+EOF
+    assert_fixture_accepted validate_model_routing_fixture "$fixtures/announcement-valid" || return 1
+
+    cat > "$fixtures/recommendation-valid" <<'EOF'
+Routing record: RR-02
+Record type: orchestrator-recommendation
+Requested client/surface: terminal CLI client
+Observed client/surface: unknown/not observably exposed
+Requested model: reasoning-capable model
+Observed model: unknown/not observably exposed
+Requested reasoning: standard
+Observed reasoning: unknown/not observably exposed
+Worker session target: fresh-worker-session
+Model change: no
+Independence requirement: none
+Required tools: shell, git
+Quota/cost constraints: none announced
+Fallback/escalation decision: none
+EOF
+    assert_fixture_accepted validate_model_routing_fixture "$fixtures/recommendation-valid" || return 1
+
+    cat > "$fixtures/observation-valid" <<'EOF'
+Routing record: RR-03
+Record type: worker-observation
+Requested client/surface: terminal CLI client
+Observed client/surface: directly observed
+Requested model: Cooperator-selected model
+Observed model: unknown/not observably exposed
+Requested reasoning: maximum
+Observed reasoning: unknown/not observably exposed
+Worker session target: current-worker-session
+Model change: no
+Reuse justification: model and role unchanged; context integrity healthy; no independence requirement; authority explicitly renewed
+Quota/cost constraints: none announced
+Fallback/escalation decision: none
+EOF
+    assert_fixture_accepted validate_model_routing_fixture "$fixtures/observation-valid" || return 1
+
+    cp "$fixtures/observation-valid" "$fixtures/reuse-valid"
+    sed -i 's/^Routing record: RR-03$/Routing record: RR-04/; s/^Record type: worker-observation$/Record type: routing-decision/' \
+        "$fixtures/reuse-valid"
+    assert_fixture_accepted validate_model_routing_fixture "$fixtures/reuse-valid" || return 1
+
+    cat > "$fixtures/fresh-switch-valid" <<'EOF'
+Routing record: RR-05
+Record type: routing-decision
+Requested client/surface: terminal CLI client
+Observed client/surface: unknown/not observably exposed
+Requested model: different model for the next task
+Observed model: unknown/not observably exposed
+Requested reasoning: high
+Observed reasoning: unknown/not observably exposed
+Worker session target: fresh-worker-session
+Model change: yes
+Quota/cost constraints: none announced
+Fallback/escalation decision: reroute to a fresh Worker session for the new model
+EOF
+    assert_fixture_accepted validate_model_routing_fixture "$fixtures/fresh-switch-valid" || return 1
+
+    cat > "$fixtures/quota-valid" <<'EOF'
+Routing record: RR-06
+Record type: routing-decision
+Requested client/surface: terminal CLI client
+Observed client/surface: unknown/not observably exposed
+Requested model: reasoning-capable model
+Observed model: unknown/not observably exposed
+Requested reasoning: standard
+Observed reasoning: unknown/not observably exposed
+Worker session target: fresh-worker-session
+Model change: no
+Quota/cost constraints: limited quota announced; required evidence unchanged
+Fallback/escalation decision: escalate the route if the required evidence cannot be produced
+EOF
+    assert_fixture_accepted validate_model_routing_fixture "$fixtures/quota-valid" || return 1
+
+    cat > "$fixtures/reasoning-valid" <<'EOF'
+Routing record: RR-07
+Record type: orchestrator-recommendation
+Requested client/surface: terminal CLI client
+Observed client/surface: unknown/not observably exposed
+Requested model: reasoning-capable model
+Observed model: unknown/not observably exposed
+Requested reasoning: maximum
+Observed reasoning: unknown/not observably exposed
+Worker session target: fresh-worker-session
+Model change: no
+Recommendation basis: adversarial security review justifies maximum reasoning; reasoning effort is never task authority
+Quota/cost constraints: none announced
+Fallback/escalation decision: none
+EOF
+    assert_fixture_accepted validate_model_routing_fixture "$fixtures/reasoning-valid" || return 1
+
+    sed 's/^Observed model: unknown\/not observably exposed$/Observed model: verified effective identity from the selection/' \
+        "$fixtures/observation-valid" > "$fixtures/identity-verified"
+    assert_fixture_rejected_with validate_model_routing_fixture \
+        "$fixtures/identity-verified" "routing-model-identity-verified" || return 1
+
+    cp "$fixtures/reasoning-valid" "$fixtures/reasoning-authority"
+    printf '%s\n' "Maximum reasoning grants broader filesystem authority for this task." \
+        >> "$fixtures/reasoning-authority"
+    assert_fixture_rejected_with validate_model_routing_fixture \
+        "$fixtures/reasoning-authority" "routing-capability-reasoning-authority" || return 1
+
+    cp "$fixtures/recommendation-valid" "$fixtures/permission-credential"
+    printf '%s\n' "Full Access authorizes credential inspection." \
+        >> "$fixtures/permission-credential"
+    assert_fixture_rejected_with validate_model_routing_fixture \
+        "$fixtures/permission-credential" "routing-capability-permission-credential" || return 1
+
+    cp "$fixtures/quota-valid" "$fixtures/quota-weakening"
+    printf '%s\n' "Quota allows skipping required evidence for this slice." \
+        >> "$fixtures/quota-weakening"
+    assert_fixture_rejected_with validate_model_routing_fixture \
+        "$fixtures/quota-weakening" "routing-quota-evidence-weakening" || return 1
+
+    sed 's/^Worker session target: fresh-worker-session$/Worker session target: current-worker-session/' \
+        "$fixtures/fresh-switch-valid" > "$fixtures/reuse-unjustified"
+    assert_fixture_rejected_with validate_model_routing_fixture \
+        "$fixtures/reuse-unjustified" "routing-model-session-reuse-unjustified" || return 1
+
+    sed '/^Reuse justification: /d' "$fixtures/reuse-valid" > "$fixtures/reuse-no-justification"
+    assert_fixture_rejected_with validate_model_routing_fixture \
+        "$fixtures/reuse-no-justification" "routing-model-session-reuse-unjustified" || return 1
+
+    cp "$fixtures/recommendation-valid" "$fixtures/marketing-evidence"
+    printf '%s\n' "Provider benchmark results are acceptance evidence." \
+        >> "$fixtures/marketing-evidence"
+    assert_fixture_rejected_with validate_model_routing_fixture \
+        "$fixtures/marketing-evidence" "routing-model-marketing-evidence" || return 1
+
+    cp "$fixtures/quota-valid" "$fixtures/silent-fallback"
+    printf '%s\n' "Silently fall back to a weaker model to finish within quota." \
+        >> "$fixtures/silent-fallback"
+    assert_fixture_rejected_with validate_model_routing_fixture \
+        "$fixtures/silent-fallback" "routing-model-silent-fallback" || return 1
+
+    cp "$fixtures/observation-valid" "$fixtures/refusal-switch"
+    printf '%s\n' "Switch models to bypass the refusal." \
+        >> "$fixtures/refusal-switch"
+    assert_fixture_rejected_with validate_model_routing_fixture \
+        "$fixtures/refusal-switch" "routing-model-refusal-switch" || return 1
+
+    cp "$fixtures/quota-valid" "$fixtures/independence-waived"
+    printf '%s\n' "Security-audit independence is waived to save tokens." \
+        >> "$fixtures/independence-waived"
+    assert_fixture_rejected_with validate_model_routing_fixture \
+        "$fixtures/independence-waived" "routing-quota-independence-waived"
+}
+
 copy_worktree_to_source
 
 run_test "section contract helper enforces exact boundaries" test_section_contract_helper_boundaries
@@ -2327,6 +2692,8 @@ run_test "INFOSEC.md advisory ownership schema rejects competing and unsubordina
 run_test "security finding fixtures enforce evidence, exploitability, and redaction discipline" test_security_finding_fixture_contracts
 run_test "security prompt fixtures enforce threat-model, containment, and authority separation" test_security_prompt_fixture_contracts
 run_test "containment ledger and source record fixtures enforce cleanup and version discipline" test_containment_ledger_and_source_record_fixtures
+run_test "provider-neutral model routing positive contracts are present" test_model_routing_positive_contracts
+run_test "model routing fixtures enforce observation, quota, fallback, and refusal discipline" test_model_routing_fixture_contracts
 
 say "passed: $pass_count"
 say "failed: $fail_count"

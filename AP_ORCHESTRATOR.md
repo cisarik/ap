@@ -337,6 +337,41 @@ approval mode, containment, filesystem, network, tools, edit/test/Git/public-ref
 capabilities, and material safety limits. It must not probe credentials, create
 side effects, or expand task authority.
 
+## Model And Surface Routing
+
+Worker routing is provider-neutral: recommend surfaces and models, never
+hard-code a vendor into task authority. For each Worker prompt, record the
+material routing rows from
+[PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md#worker-surface-and-model-routing-contract):
+
+- the Cooperator-announced client, surface, model, quota, cost, and material
+  environment constraints;
+- the recommended client or surface, model, reasoning profile, session
+  freshness, native planning state, permission mode, independence
+  requirement, and tool requirements, each with a brief basis; and
+- the Worker's observed values once reported, kept distinct from the
+  requested values.
+
+Treat quota, cost, subscription, and rate limits as legitimate routing
+inputs, never as silent evidence reducers: required acceptance evidence stays
+fixed, and security-audit independence overrides token-saving preference.
+When a constraint prevents the required evidence, escalate the route or
+report the limitation instead of weakening the evidence.
+
+A material model, provider, client, role, or cache and context assumption
+change normally routes to a fresh Worker session. Reuse the current session
+only when the model and role are unchanged, context integrity is healthy,
+phase independence is not required, authority is explicitly renewed, and the
+route remains proportionate. Never substitute a weaker or different model
+silently when required evidence depends on capabilities that may be lost;
+report or explicitly reroute. A provider refusal is narrowed to a safe
+authorized subset or reported; a model switch after a refusal is permitted
+only for a genuinely different safe task, never to evade the refusal.
+
+Model-suitability evidence is a dated, project-owned advisory record. It
+informs routing recommendations, never changes normative routing by itself,
+and is refreshed before important reuse.
+
 ## Preflight Selection
 
 Every implementation task includes embedded preflight: repository gates,

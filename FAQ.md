@@ -507,6 +507,24 @@ check is still routed like any authorization touch: size is not an input, but
 reachability and trust boundaries are. Full-repository audits belong to
 milestones and deployment gates, never to ordinary slices.
 
+## Is a requested model the same as a verified model?
+
+No. A Cooperator may request or select a client, model, or reasoning effort,
+but the Worker can only report what is directly observable. Whatever the
+client does not expose stays `unknown/not observably exposed`, and effective
+model identity is never inferred from a selection alone. This keeps routing
+honest across providers without requiring telemetry that clients cannot
+expose.
+
+## Can quota or cost justify skipping required evidence?
+
+No. Quota, cost, subscription, and rate limits are legitimate routing inputs:
+the Orchestrator may choose a cheaper surface or the lowest sufficient
+reasoning profile. They never silently weaken required acceptance evidence,
+and security-audit independence overrides token-saving preference. When a
+constraint makes the required evidence impossible, the route is escalated or
+the limitation is reported; the evidence requirement itself does not move.
+
 ## Do older prompts and pinned consumers become invalid?
 
 No. Historical prompts remain interpretable under the AP commit that governed

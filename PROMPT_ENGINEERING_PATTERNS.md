@@ -307,7 +307,9 @@ and provider-assumption lock-in.
 [SWE-agent](https://arxiv.org/abs/2405.15793), and
 [OWASP excessive agency](https://genai.owasp.org/llmrisk/llm062025-excessive-agency/)
 show that exposed capability and interface shape vary. They do not justify
-inventing unobservable client facts.
+inventing unobservable client facts. The provider-neutral routing rows and
+evidence classes for this handshake are owned by
+[PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md#worker-surface-and-model-routing-contract).
 
 ### P11 — Session-and-Mode Routing and Plan-to-Execution Gate
 
@@ -498,7 +500,10 @@ independence.
 [OpenAI reasoning guidance](https://developers.openai.com/api/docs/guides/reasoning-best-practices)
 and [Google prompt design](https://ai.google.dev/gemini-api/docs/prompting-strategies)
 illustrate provider differences but do not define AP rotation policy. The
-authority and evidence rule comes from [AP.md](AP.md) and ADR-0009.
+authority and evidence rule comes from [AP.md](AP.md) and ADR-0009. The
+model-switch, silent-fallback, and quota rules are owned by
+[PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md#worker-surface-and-model-routing-contract)
+and the Provider-Neutral Model and Surface Routing anchor in [AP.md](AP.md).
 
 ## 9. Execution And Context Patterns
 

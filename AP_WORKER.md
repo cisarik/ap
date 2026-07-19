@@ -107,6 +107,16 @@ not interchangeable. Full Access, an unrestricted filesystem, automatic
 approval, available shell tools, or high reasoning does not expand authority.
 Do not probe credentials or create state merely to prove capability.
 
+Report Worker-surface facts only as directly observed, inferred, or
+`unknown/not observably exposed`; a requested or user-selected model is never
+self-verified identity. Never silently continue on a weaker or different model
+when the task's required evidence depends on capabilities that may be lost;
+report the change and continue only on an explicit route. Never bypass a
+provider or environment refusal by rewording, tool changes, or model
+switching; after a refusal, a different model is acceptable only for a
+genuinely different safe task. Quota or cost pressure never reduces the
+required evidence: produce it, escalate the route, or report the limitation.
+
 ## Session Profile Awareness
 
 A Worker session profile describes the bounded authority and evidence posture
