@@ -590,6 +590,7 @@ validate_evidence_authority_scenario() {
     tier=$(sed -n 's/^Evidence tier: //p' "$file")
     basis=$(sed -n 's/^Evidence tier basis: //p' "$file")
     stages=$(sed -n 's/^Authorized implementation stages: //p' "$file")
+    general_combined=$(sed -n 's/^General combined implementation permission: //p' "$file")
     combined=$(sed -n 's/^Combined implementation envelope: //p' "$file")
     acceptance=$(sed -n 's/^Independent acceptance: //p' "$file")
     acceptance_worker=$(sed -n 's/^Independent acceptance Worker: //p' "$file")
@@ -602,7 +603,11 @@ validate_evidence_authority_scenario() {
     repository_branch=$(sed -n 's/^Repository and branch: //p' "$file")
     changed_paths=$(sed -n 's/^Changed paths: //p' "$file")
     public_equality=$(sed -n 's/^Public equality verification: //p' "$file")
-    basis_and_stages=$(printf '%s\n%s\n' "$basis" "$stages" | tr '[:upper:]' '[:lower:]')
+    # Tier-trigger matching is intentionally bounded to the canonical phrases
+    # below. Normalize separators only in the basis/stages input; this is not
+    # general natural-language interpretation.
+    normalized_tier_trigger_text=$(printf '%s\n%s\n' "$basis" "$stages" |
+        tr '[:upper:]' '[:lower:]' | sed 's/[-_]/ /g')
 
     if [ "$publication" = "normal-non-force-push" ]; then
         [ "$repository_branch" != "not-applicable" ] || return 1
@@ -610,10 +615,14 @@ validate_evidence_authority_scenario() {
         [ "$public_equality" = "required" ] || return 1
     fi
 
+    if [ "$general_combined" = "prohibited" ] && [ "$combined" = "allowed" ]; then
+        return 1
+    fi
+
     case "$tier" in
         E1|E2)
-            if printf '%s\n' "$basis_and_stages" | grep -Eq \
-                'destructive|irreversible|credential|access[- ]control|broad production|material production deployment|material remote host|security[- ]boundary|durable migration|material privilege|production restart|difficult recovery'; then
+            if printf '%s\n' "$normalized_tier_trigger_text" | grep -Eq \
+                'destructive|irreversible|credential|access control|broad production|material production deployment|material remote host|security boundary|durable migration|material privilege|production restart|difficult recovery'; then
                 return 1
             fi
             ;;
@@ -622,8 +631,8 @@ validate_evidence_authority_scenario() {
             [ "$acceptance_worker" = "fresh-independent-worker" ] || return 1
             [ "$self_acceptance" = "no" ] || return 1
             case "$rollback" in missing|not-applicable) return 1 ;; esac
-            if printf '%s\n' "$basis_and_stages" | grep -Eq \
-                'destructive|irreversible|credential|access[- ]control|broad production|unbounded recovery'; then
+            if printf '%s\n' "$normalized_tier_trigger_text" | grep -Eq \
+                'destructive|irreversible|credential|access control|broad production|unbounded recovery'; then
                 return 1
             fi
             ;;
@@ -3168,6 +3177,10 @@ EOF
         "$fixtures/e3-combined-separate-acceptance" > "$fixtures/e3-separated"
     validate_evidence_authority_scenario "$fixtures/e3-separated" || return 1
 
+    sed 's/^General combined implementation permission: allowed$/General combined implementation permission: prohibited/' \
+        "$fixtures/e3-combined-separate-acceptance" > "$fixtures/e3-general-prohibited-combined"
+    ! validate_evidence_authority_scenario "$fixtures/e3-general-prohibited-combined" || return 1
+
     cat > "$fixtures/e4-strict-separation" <<'EOF'
 Scenario: E4 irreversible access-control mutation
 Evidence tier: E4
@@ -3234,6 +3247,11 @@ EOF
             "$fixtures/e2-reversible-publication" > "$fixtures/e2-$trigger"
         ! validate_evidence_authority_scenario "$fixtures/e2-$trigger" || return 1
     done
+
+    sed -e 's#^Evidence tier basis:.*#Evidence tier basis: material remote-host mutation#' \
+        -e 's#^Authorized implementation stages:.*#Authorized implementation stages: material remote-host mutation#' \
+        "$fixtures/e2-reversible-publication" > "$fixtures/e2-material-remote-host-mutation"
+    ! validate_evidence_authority_scenario "$fixtures/e2-material-remote-host-mutation" || return 1
 
     sed -e 's/^Independent acceptance Worker: fresh-independent-worker$/Independent acceptance Worker: current-implementation-worker/' \
         -e 's/^Implementation Worker performs independent acceptance: no$/Implementation Worker performs independent acceptance: yes/' \
