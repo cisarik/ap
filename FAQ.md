@@ -161,10 +161,12 @@ the WORKER role.
 
 ## Must every Worker task use a fresh session?
 
-No. Fresh Worker is the safe default and is required for independent
-certification, but a current session may be reused for a direct continuation,
-missing evidence, bounded self-correction, interrupted-task resumption after
-re-gating, or report repair.
+No. Freshness is selected from independence, context integrity, risk, and
+continuity. A fresh session is required for independent certification and
+compromised or uncertain context. A healthy current session is normally better
+for approved implementation after repository-grounded planning, focused
+correction, bounded operational continuation, or narrow closure because it
+retains useful repository understanding under renewed authority.
 
 ## When may the current Worker be reused?
 
@@ -179,11 +181,57 @@ authority expired, grant complete new bounded authority, require re-gating, and
 classify the result as non-independent. Retained context is convenience, not
 authority.
 
+Freshness alone is not independent evidence. A fresh auditor must also not have
+materially implemented the target.
+
 ## What happens if the Worker session target is missing?
 
-A missing, invalid, or ambiguous target never authorizes current-session reuse.
-The task must be routed to a fresh Worker session or corrected before work
-continues.
+A missing, invalid, or ambiguous target authorizes neither current reuse nor
+automatic fresh routing. It must be corrected before work continues.
+
+## When should native Plan mode be used?
+
+Use it for repository-grounded implementation planning when materially
+different technical paths, architecture, migration, security, rollback, or
+cross-layer impact remain unresolved, or reconnaissance is needed to define
+safe implementation authority. Do not use it merely because a task is large or
+called complex, and do not ask a Worker to repeat a decision-complete
+Orchestrator prompt. Product uncertainty remains Orchestrator-owned Discovery.
+
+One plan-only cycle is the default maximum. Another requires new evidence,
+material risk, rejected assumptions, or a changed objective. A healthy planning
+Worker normally receives approved implementation in the same session through a
+new complete authority grant.
+
+## How does AP prevent report and audit loops?
+
+A formal report must carry new mutation, evidence, material risk, changed
+external state, final acceptance, or explicit closure. Informal progress does
+not consume that budget. The second equivalent `PARTIAL` or `BLOCKED` report
+must escalate the exact blocker and direct closure path; a third equivalent
+cycle needs material change. One logical whole normally receives one primary
+audit, one proportionate re-audit after correction, and one context-only fresh
+handoff unless an explicit exception appears.
+
+## What are evidence tiers E0 through E4?
+
+E0 covers informational work, E1 bounded reversible work, E2 cross-cutting but
+reversible work, E3 high-impact work, and E4 critical or irreversible work.
+Evidence scales with consequence, reversibility, uncertainty, and trust
+boundaries. E3/E4 require fresh independent acceptance, while E0/E1 avoid
+production-grade ceremony. Activated `INFOSEC.md` rules remain stricter.
+
+## Is AP an autonomous agent-to-agent workflow?
+
+No. AP is human-governed collaboration among the Cooperator, Orchestrator, and
+Worker. The Cooperator stays informed about objective, routing, material
+authority, risks, acceptance, and closure and retains product, value, cost,
+privacy, risk, irreversible-operation, and acceptance decisions. Routine
+deterministic steps can stay inside a bounded envelope without microapproval.
+Brainstorming is classified as a blocker, risk, backlog item, future logical
+whole, or protocol observation when useful, but never becomes mutation
+authority automatically. Internal delegation remains one accountable WORKER
+and is not independent audit.
 
 ## Why is preflight sometimes separate?
 

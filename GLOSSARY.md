@@ -39,6 +39,27 @@ Persistent protocol role: the coordination layer that shapes bounded tasks,
 evaluates Worker reports, verifies evidence, and manages continuation,
 diagnostics, rotation, or closure.
 
+## Human-Governed Collaboration
+
+AP's operating principle that the COOPERATOR remains meaningfully informed and
+owns material product, value, cost, privacy, risk, irreversible-operation,
+acceptance, and closure decisions. The Orchestrator translates evidence into
+understandable choices, while deterministic implementation steps may stay
+inside bounded authority without per-step microapproval. Internal delegation
+never replaces this governance.
+
+## Orchestration Planning
+
+ORCHESTRATOR-owned planning of objective, logical whole, risk, authority,
+Worker and Plan-mode routing, sequencing, approval, evidence, acceptance, and
+closure.
+
+## Implementation Planning
+
+Repository-grounded technical planning assigned to a WORKER when routed:
+reconnaissance, impact map, interfaces, migration, tests, ordering, rollback,
+and exact proposed mutation. It does not own product intent or orchestration.
+
 ## Orchestrator Instance
 
 One concrete initialized entity temporarily assigned to the ORCHESTRATOR role.
@@ -68,12 +89,53 @@ whether the task must be delivered to a `fresh-worker-session` or the
 `current-worker-session`. It does not change the WORKER role, expand authority,
 establish independence by itself, or replace the Worker session profile.
 
+## Evidence Tier
+
+The E0–E4 general evidence classification selected from consequence,
+reversibility, uncertainty, and trust-boundary impact. E0 is informational, E1
+bounded reversible, E2 cross-cutting reversible, E3 high impact, and E4
+critical or irreversible. Activated specialized profiles may be stricter.
+
+## Combined Bounded Authority Envelope
+
+One explicit authority grant covering several ordered stages with named gates,
+side effects, rollback, independence boundary, and terminal report point. It is
+available only for narrow safe closure and never combines E3/E4 independent
+acceptance, activated security separation, destructive or irreversible work,
+credentials or access control, or broad production impact.
+
+## Report Budget
+
+The rule that a formal report must justify itself through new mutation, new
+evidence, new material risk, changed external state, final acceptance, or
+explicit closure. Informal progress updates are outside the budget.
+
+## Audit Budget
+
+One primary independent audit and at most one proportionate fresh re-audit
+after correction, unless new mutation, invalid evidence, compromised
+independence, new material risk, or missing required evidence justifies more.
+
+## Handoff Budget
+
+At most one context-only fresh handoff per materially unchanged logical whole,
+unless new evidence, risk, state, objective, or an independence requirement
+justifies another.
+
+## First Causal Error
+
+The earliest operation failure that explains a workflow's unsuccessful result.
+Parser, cleanup, or reporting failures remain secondary evidence and must not
+overwrite it.
+
 ## Fresh Worker Session
 
 A Worker execution session that did not receive the previous task authority,
 inherits no continuing authority from another Worker session, independently
 establishes required repository and environment evidence, and receives complete
-authority only from its new prompt. Fresh Worker is the safe default.
+authority only from its new prompt. Freshness is selected for independence,
+context integrity, model or client change, risk, or unrelated scope; it is not a
+universal correctness default and does not prove independence by itself.
 
 ## Current Worker Session
 

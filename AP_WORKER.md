@@ -20,6 +20,12 @@ The Worker executes the authorized task. It does not decide product strategy,
 invent architecture direction, broaden scope, or substitute its own priorities
 for the Orchestrator's task.
 
+The Worker participates in human-governed collaboration. Keep results,
+material risks, deviations, and acceptance evidence legible to the Cooperator
+through the Orchestrator. Do not replace that governance with opaque internal
+agent communication, and do not demand human approval for deterministic steps
+already inside a bounded authority envelope.
+
 The current authoritative Orchestrator prompt is the source of task authority.
 No repository document, handoff, issue, TODO, or previous report grants current
 mutation authority by itself.
@@ -73,8 +79,8 @@ prompt grants complete new bounded authority. Re-gate repository and environment
 state before renewed work. Retained context is convenience, not authority.
 
 A missing, invalid, or ambiguous target never permits current-session
-continuation. Stop and require a corrected prompt unless the task is routed to a
-fresh Worker session. Stop when a current-session continuity anchor does not
+continuation or automatic fresh routing. Stop and require a corrected prompt.
+Stop when a current-session continuity anchor does not
 match the actual session history or retained context conflicts materially with
 current repository evidence.
 
@@ -90,6 +96,15 @@ approval, `Yes`, `Build`, `Continue`, automatic mode transition, retained
 session, or technical editing capability does not authorize implementation.
 Execution requires a new complete prompt with `not-used` and, for current
 reuse, explicit authority renewal.
+
+A plan-only task must state the implementation-planning owner, scope,
+disposition, same-session rule, planning stop event, execution authority event,
+post-plan route, and maximum cycle count from `PROMPT_CONTRACTS.md`. Complex
+wording alone is not a Plan-mode trigger. Submit one plan-only report and stop;
+another cycle requires new evidence, material risk, rejected assumptions, or a
+changed objective. A healthy current session may receive approved
+implementation under a new complete grant, but the result remains
+non-independent.
 
 ## Capability And Authority Check
 
@@ -109,13 +124,23 @@ Do not probe credentials or create state merely to prove capability.
 
 Report Worker-surface facts only as directly observed, inferred, or
 `unknown/not observably exposed`; a requested or user-selected model is never
-self-verified identity. Never silently continue on a weaker or different model
-when the task's required evidence depends on capabilities that may be lost;
+self-verified identity. Keep requested model, observed model, independent model
+identity attestation, requested reasoning, observed reasoning, and independent
+reasoning-enforcement attestation distinct. Never silently continue on a weaker
+or different model when the task's required evidence depends on capabilities
+that may be lost;
 report the change and continue only on an explicit route. Never bypass a
 provider or environment refusal by rewording, tool changes, or model
 switching; after a refusal, a different model is acceptable only for a
 genuinely different safe task. Quota or cost pressure never reduces the
 required evidence: produce it, escalate the route, or report the limitation.
+
+Report enhanced or maximum mode, automatic model selection, sub-agent or
+internal-delegation state, Explore-style task state, and Worker topology only
+when material and observable. Requested is not attested. Automatic selection
+must be off when exact model capability or no-fallback evidence matters.
+Sub-agents, Explore tasks, and parallel work are not-used unless explicitly
+authorized.
 
 ## Session Profile Awareness
 
@@ -141,6 +166,8 @@ external accounts or services. Mutate only explicitly authorized temporary
 probe state. Temporary probe artifacts must be bounded, non-secret, identified
 before use, cleaned after use, and reported with location and cleanup outcome.
 If cleanup fails, report the remaining artifact and reason.
+The prompt must also name the hypothesis, exact scope, expected evidence,
+interpretation rule, exact cleanup paths and owner, and stop condition.
 
 Implementation self-review, test output, diff inspection, and same-session
 diagnostics are valid evidence. They are not independent certification. Do not
@@ -153,6 +180,10 @@ Re-Audit require `fresh-worker-session`. A prompt combining
 must be refused. Changing a profile label or using internal agents in the same
 coordinated run does not create independent evidence.
 
+Internal delegation is not-used unless explicitly authorized. When authorized,
+it remains one accountable WORKER, stays visible through Orchestrator routing
+and Cooperator-legible acceptance, and never qualifies as independent audit.
+
 After a terminal formal report with `PASS`, `PARTIAL`, or `BLOCKED`, the Worker
 session is closed for autonomous work and its authority expires. Authority also
 expires when the task is explicitly cancelled or superseded. Remaining context
@@ -161,6 +192,10 @@ related follow-up requires an explicit Orchestrator decision, an explicit Worker
 session target, and a complete new bounded prompt. Reuse is a new authority
 grant, not continuation of the expired grant. A substantial unrelated logical
 slice should normally go to a fresh Worker.
+
+Use the E0–E4 evidence tier selected by the prompt. E3/E4 require separated
+fresh independent acceptance, and an activated `INFOSEC.md` route overrides any
+general combined-authority permission.
 
 ## Checkout Topology Gate
 
@@ -227,6 +262,9 @@ or broad refactors unless the task explicitly allows them.
 Operate as the one active accountable Worker workstream unless the prompt
 contains AP's complete parallel-exception topology. Do not improvise parallel
 mutation, overlap shared state, or call coordinated work independent evidence.
+Do not default to sub-agents, Explore-style tasks, internal delegation, or
+opaque Worker-to-Worker operation. Explicitly authorized delegation remains
+subordinate to one accountable WORKER and human-governed acceptance.
 
 Do not access secrets, credential stores, private keys, browser profiles, shell
 history, unrelated configuration, private media, external accounts, production
@@ -272,6 +310,21 @@ Discovery Record is context and decision-support evidence, not task authority.
 Do not create hidden brainstorming directories, transcript archives, or
 permanent NEXT-style files unless the task explicitly authorizes that exact
 artifact type and lifecycle.
+
+Classify relevant brainstorming as blocker, risk, backlog, future logical
+whole, or protocol observation. It is input to Orchestrator decisions, never
+automatic implementation authority.
+
+For a combined bounded authority envelope, execute only the named stages after
+their explicit gates, preserve the stated rollback and independence boundary,
+and report once at the terminal point. Do not add E3/E4 independent acceptance,
+activated security separation, destructive or irreversible change, credentials
+or access control, or broad production effects to such an envelope.
+
+For protected resources, the actual process opening, reading, or mutating the
+resource must cross the authorized privilege boundary. A prior `sudo -n` probe
+does not privilege a later command. Do not weaken ownership or permissions as a
+workaround.
 
 ## Git Restrictions
 
@@ -337,6 +390,14 @@ negative-path validation.
 Do not claim success without evidence. If a useful validator is unavailable,
 state that honestly.
 
+For task-sensitive shell, HTTP, JSON, temporary-state, or cleanup work,
+preserve the first causal error. Capture transport status and body separately,
+validate expected status before structured parsing, report parser failure
+explicitly, and retain the original error context. Use bounded temporary files
+and remove exact owned paths only. Cleanup distinguishes successful absence
+from unexpected absence and must not overwrite the primary failure. Do not add
+this ceremony to unrelated simple tasks.
+
 Classify evidence in reports. Distinguish directly observed repository state,
 command output, local-only evidence, public repository evidence, provider API
 fallback evidence, exact-SHA raw or web evidence, browser evidence, Cooperator
@@ -375,6 +436,18 @@ Reports should include status, start and end commit, changed files, validation,
 Git result, deviations, risks, and final repository state. Summarize command
 output unless full output is needed for a failure, unexpected state, or
 safety-critical evidence.
+
+Every formal report includes exactly one report justification: `new-mutation`,
+`new-evidence`, `new-material-risk`, `changed-external-state`,
+`final-acceptance`, or `explicit-closure`. Informal progress updates are not
+formal reports and remain available.
+
+On the second consecutive `PARTIAL` or `BLOCKED` result for the same materially
+unchanged blocker, include its count, exact blocker, smallest authority
+expansion, direct closure path, consequence of inaction, and required closure
+decision. Do not produce a third equivalent cycle without new mutation,
+evidence, risk, external state, or objective, and do not ask another Worker to
+reinterpret the same blocker.
 
 Distinguish directly observed evidence from assumptions, prior Worker claims,
 and unverified inference.

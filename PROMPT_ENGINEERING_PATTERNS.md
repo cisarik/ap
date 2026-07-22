@@ -96,13 +96,13 @@ Reject these constructions:
 | ID | Pattern | Primary trigger |
 |---|---|---|
 | P01 | Outcome, Evidence, and Observable Rationale Contract | every authoritative task |
-| P02 | Closure and Handoff Check | logical boundary or transfer |
+| P02 | Closure, Report, and Handoff Budget | logical boundary, report, or transfer |
 | P03 | Authority Capsule, Renewal, and Stop Conditions | every Worker assignment |
 | P04 | Risk-Weighted Effort, Verification, and Independence | nontrivial risk/evidence choice |
 | P05 | Incremental Clean Slice | multi-action implementation/correction |
 | P06 | High-Signal Context, Compaction, and Session Rotation | long, resumed, or pressured context |
 | P07 | Canonical Few-Shot Example | demonstrated format/boundary ambiguity |
-| P08 | Stable Tool and Environment Contract | material interface/environment dependency |
+| P08 | Stable Tool, Failure, and Cleanup Contract | material interface, parser, or cleanup dependency |
 | P09 | Human Acceptance Boundary | subjective, rendered, or physical outcome |
 | P10 | Worker Capability Handshake | uncertain material capability |
 | P11 | Session-and-Mode Routing and Plan-to-Execution Gate | every Worker prompt |
@@ -167,43 +167,49 @@ observations, and success criteria. These are product guidance and bounded
 research; AP adopts the common structure, not provider wording or disclosed
 reasoning traces.
 
-### P02 — Closure and Handoff Check
+### P02 — Closure, Report, and Handoff Budget
 
 **Applies to:** closure, restoration, handoff | **AP anchors:** AP §§7, 14, 15, 18 | **Related patterns:** P06, P14
 
 #### Purpose
 
 Distinguish task completion from logical-block closure, authority expiry,
-rotation, and handoff readiness.
+report justification, rotation, and handoff readiness without creating cycles.
 
 #### Use when
 
-Use when closing a phase, rotating a session/model, restoring work, or
-transferring the next bounded action.
+Use when closing a phase, issuing a formal report, rotating a session/model,
+restoring work, or transferring the next bounded action.
 
 #### Do not use when
 
 Do not use while mutation or verification remains active, evidence is
-unresolved, or closure would suppress contradictory evidence.
+unresolved, or closure would suppress contradictory evidence. Do not issue a
+formal report merely because an internal stage ended.
 
 #### Adaptation questions
 
-Is active mutation finished? What is publicly verified? What remains open? Who
-owns the next action? Has prior authority expired?
+Is active mutation finished? What new mutation, evidence, risk, state,
+acceptance, or closure justifies a report? Is this a repeated blocker or
+context-only handoff? Who owns the direct closure decision?
 
 #### Template fragment
 
 ```text
 Closure candidate: <logical boundary>.
+Report justification: <allowed value>.
 Verified state: <evidence>. Active mutation: <none or exact state>.
 Residual risks/open decisions: <list>.
 Next owner and bounded next action: <owner/action>.
+Repeated blocker: <count; escalation capsule when count is 2>.
+Audit/handoff budget: <remaining justified action or none>.
 This handoff grants no new mutation authority.
 ```
 
 #### Failure it prevents
 
-Orphaned work, false closure, stale authority, and transcript-like handoffs.
+Orphaned work, report inflation, audit recursion, repeated blockers, false
+closure, stale authority, and transcript-like handoffs.
 
 #### Evidence/source
 
@@ -236,23 +242,28 @@ capability, or evidence grants authority.
 
 #### Adaptation questions
 
-Which paths and actions are allowed or forbidden? What prior grant expired?
-Which continuity anchor must match? Which mismatches are terminal?
+Which paths, stages, and actions are allowed or forbidden? What prior grant
+expired? Is a combined envelope safe? Which continuity anchor and stage gates
+must match? Which decisions require human attention rather than microapproval?
 
 #### Template fragment
 
 ```text
 Authority: <allowed reads/writes/actions>. Forbidden: <negative scope>.
+Authority envelope: <single-stage|combined-bounded>; stages/gates: <list>.
+Rollback and independence boundary: <contract>.
 Prior authority: <expired/not applicable>.
 Current-session anchor, if applicable: <exact boundary>.
+Cooperator visibility and material decision points: <contract>.
 Stop without mutation on identity, baseline, scope, capability, evidence,
 continuity, secret, or side-effect mismatch.
 ```
 
 #### Failure it prevents
 
-Scope drift, assumed continuation, action on wrong state, and silent recovery
-outside authority.
+Scope drift, authority fragmentation, assumed continuation, action on wrong
+state, opaque agent-only operation, microapproval, and silent recovery outside
+authority.
 
 #### Evidence/source
 
@@ -317,24 +328,26 @@ evidence classes for this handshake are owned by
 
 #### Purpose
 
-Route fresh/current sessions and with/without native planning mode while
-preventing plan approval from becoming implementation authority.
+Separate Orchestrator planning from Worker implementation planning, route
+fresh/current sessions and native Plan mode by uncertainty, and prevent plan
+approval from becoming implementation authority or a plan-only loop.
 
 #### Use when
 
-Use for every Orchestrator-to-Worker prompt; include transition language when
-planning precedes implementation.
+Use for every Orchestrator-to-Worker prompt; include the full planning contract
+only when repository-grounded implementation planning is actually needed.
 
 #### Do not use when
 
-Do not use a UI button, profile name, retained chat, requested mode, or proposed
-plan as authority.
+Do not use task complexity, a UI button, profile name, retained chat, requested
+mode, or proposed plan as authority. Do not duplicate a decision-complete
+Orchestrator prompt in Plan mode.
 
 #### Adaptation questions
 
-Which exact session receives the task? Is native planning mode available and
-required? Is the task plan-only or executable? What new prompt authorizes the
-transition?
+Which planning layer owns the unresolved decision? Which exact session receives
+the task? Is Plan mode materially useful? May the healthy current Worker
+implement after approval? What ends planning and authorizes execution?
 
 #### Template fragment
 
@@ -342,14 +355,16 @@ transition?
 Worker session target: <fresh-worker-session|current-worker-session>.
 Native planning mode: <required|not-used>.
 Task phase: <plan-only|execution>.
+Planning owner/scope/disposition: <exact contract when plan-only>.
+Post-plan session: <current|fresh|none>. Maximum plan-only cycles: 1.
 A UI approval or accepted plan grants no implementation authority.
 Execution requires a separate complete Orchestrator prompt with not-used.
 ```
 
 #### Failure it prevents
 
-Wrong-session routing, wrong client-mode delivery, accidental implementation,
-and UI-authority confusion.
+Plan duplication, plan-only stall, context churn, wrong-session routing, wrong
+client-mode delivery, accidental implementation, and UI-authority confusion.
 
 #### Evidence/source
 
@@ -383,8 +398,9 @@ authorization, and do not assume Full Access authorizes every effect.
 #### Adaptation questions
 
 Is the effect read-only, reversible local, destructive local, remote,
-communicative, deployment-related, or credential/billing-related? Which
-technical control and human confirmation apply?
+communicative, deployment-related, privileged, or credential/billing-related?
+Which actual process opens a protected resource? Which material human
+confirmation applies without microapproving deterministic steps?
 
 #### Template fragment
 
@@ -392,13 +408,16 @@ technical control and human confirmation apply?
 Technical capability/containment: <observed boundary>.
 Authorized side effects: <exact class, target, and operation>.
 Separately confirmed actions: <destructive/remote/communication/deployment/etc.>.
+Privileged resource access: <actual privileged command; a probe grants nothing>.
+Do not weaken ownership or permissions as a workaround.
 Permission or Full Access is not authority. Stop before any unlisted effect.
 ```
 
 #### Failure it prevents
 
-Excessive agency, destructive ambiguity, unauthorized communication or
-deployment, and conflation of access with approval.
+Excessive agency, destructive ambiguity, privilege-probe fallacy, permission
+weakening, unauthorized communication or deployment, and conflation of access
+with approval.
 
 #### Evidence/source
 
@@ -528,16 +547,19 @@ same-session review independent.
 
 #### Adaptation questions
 
-What can fail? How reversible is it? Which deterministic evidence exists? What
-uncertainty remains? Did the verifier materially shape the result?
+What can fail? How reversible is it? Which E0–E4 tier is triggered? Which
+deterministic evidence exists? What uncertainty remains? Did the verifier
+materially shape the result? Is the audit budget already consumed?
 
 #### Template fragment
 
 ```text
 Reasoning profile: <lowest sufficient level>, because <risk/ambiguity>.
+Evidence tier: <E0|E1|E2|E3|E4>, because <consequence/reversibility/uncertainty/boundary>.
 Required evidence: <deterministic checks and observations>.
 Self-review may establish: <bounded claims>.
-Fresh independent audit is required only if <risk/evidence trigger>.
+Fresh independent audit: <unnecessary|recommended|mandatory>.
+Audit budget: one primary audit plus one proportionate re-audit; exceptions: <if any>.
 ```
 
 #### Failure it prevents
@@ -688,43 +710,49 @@ and [Google prompt design](https://ai.google.dev/gemini-api/docs/prompting-strat
 offer differing provider defaults. AP therefore makes examples conditional and
 evaluation-backed.
 
-### P08 — Stable Tool and Environment Contract
+### P08 — Stable Tool, Failure, and Cleanup Contract
 
 **Applies to:** implementation, operations, Git, browser/runtime evidence | **AP anchors:** AP §§8, 10, 12 | **Related patterns:** P05, P10, P12
 
 #### Purpose
 
-Bound tools, interfaces, environment assumptions, output shapes, and fallback
-behavior material to execution.
+Bound tools, interfaces, environment assumptions, output shapes, failure
+precedence, temporary state, cleanup, and fallback behavior material to
+execution.
 
 #### Use when
 
-Use when success depends on particular commands, tools, schemas, runtimes,
-adapters, versions, or reproducible environment state.
+Use when success depends on commands, tools, schemas, runtimes, adapters,
+versions, HTTP/JSON parsing, temporary files, cleanup, or reproducible state.
 
 #### Do not use when
 
 Do not use when tool choice is incidental or the fragment would silently
 authorize installation, upgrade, generation, dependency, or lockfile changes.
+Do not impose structured-output ceremony on unrelated simple commands.
 
 #### Adaptation questions
 
-Which interface and property are required? What output is expected? What
-fallback is safe and authorized? When must the Worker stop?
+Which interface and property are required? What is the first causal operation?
+How are status, body, and parsing separated? Which exact paths are owned for
+cleanup? What fallback is safe and authorized?
 
 #### Template fragment
 
 ```text
 Required interface: <tool/capability and material property>.
 Permitted use: <bounded operations>. Environment changes: <forbidden/authorized>.
-Expected observation/output: <shape>.
+Expected observation/output: <shape>; preserve first causal error.
+Transport status/body/parser: <separate evidence and explicit parser failure>.
+Temporary paths/cleanup: <exact owned paths, owner, and outcomes; no globs>.
+Cleanup or reporting failure must not overwrite the primary result.
 If unavailable or incompatible, use <approved fallback> or stop; do not install.
 ```
 
 #### Failure it prevents
 
-Tool drift, hidden dependency mutation, ambiguous output, and invented
-capability.
+Tool drift, hidden dependency mutation, brittle structured parsing, cleanup
+collateral, masked root cause, ambiguous output, and invented capability.
 
 #### Evidence/source
 

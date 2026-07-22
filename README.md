@@ -5,6 +5,11 @@ software work. It defines how a human owner, an Orchestrator, and a Worker use
 repository evidence, bounded task authority, validation, and public verification
 to make progress without relying on fragile chat memory.
 
+AP is human-governed collaboration: the Cooperator remains informed and owns
+material product, value, cost, privacy, risk, irreversible-operation,
+acceptance, and closure decisions, while deterministic implementation steps can
+run inside bounded authority without microapproval.
+
 The canonical public repository is:
 
 ```text
@@ -45,6 +50,13 @@ execution authority. AP defaults to one active Worker workstream, permits only
 fully bounded disjoint parallel exceptions, and keeps fresh independent audit
 sequential. Detailed normative rules are in [AP.md](AP.md); exact prompt fields
 and execution transition are in [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md).
+
+Plan mode is routed by unresolved implementation uncertainty rather than task
+size. Healthy current Workers normally continue approved repository-grounded
+plans under renewed authority; fresh sessions remain required for independence
+or degraded context. Evidence tiers E0–E4, bounded report/audit/handoff budgets,
+and safe combined authority favor direct closure without weakening high-impact
+independence.
 
 ## Canonical Distribution
 

@@ -205,6 +205,7 @@ validate_semantic_negative_contracts() {
     protocol=$root/AP.md
     patterns=$root/PROMPT_ENGINEERING_PATTERNS.md
     adr=$root/docs/adr/0009-capability-aware-worker-routing-and-execution-gates.md
+    adr11=$root/docs/adr/0011-risk-routed-planning-and-bounded-closure.md
     infosec=$root/INFOSEC.md
 
     forbid_section_phrase "authority-ui-approval" "$contracts" \
@@ -219,12 +220,31 @@ validate_semantic_negative_contracts() {
     forbid_section_phrase "routing-metadata-inference" "$contracts" \
         "## Session-And-Mode Routing Contract" "## Plan-to-Execution Gate" \
         "Missing session or mode metadata may be inferred instead of stopping" || return 1
+    forbid_section_phrase "planning-complexity-only" "$contracts" \
+        "## Plan-to-Execution Gate" "## Worker Capability Handshake Contract" \
+        "Complex tasks always require Plan mode" || return 1
+    forbid_section_phrase "report-justification-omitted" "$contracts" \
+        "## Worker Report Header" "## Common Worker Task Fields" \
+        "A formal report needs no justification" || return 1
     forbid_section_phrase "authority-capability-conflation" "$protocol" \
         "## 5. Task Authority" "## 6. Adaptive Orchestration Lifecycle" \
         "Capability, role, reasoning, permission, Full Access, containment, or approval grants task authority" || return 1
     forbid_section_phrase "independence-same-worker" "$protocol" \
         "### Plan-to-Execution Gate" "### Fresh Evidence Probe" \
         "A current-session or same-Worker review qualifies as fresh independent audit" || return 1
+    forbid_section_phrase "human-agent-only-default" "$protocol" \
+        "## 2. Roles" "## 3. Instances, Sessions, and Worker Session Profiles" \
+        "AP defaults to an opaque agent-to-agent workflow that bypasses the Cooperator" || return 1
+    forbid_section_phrase "human-deterministic-microapproval" "$protocol" \
+        "## 2. Roles" "## 3. Instances, Sessions, and Worker Session Profiles" \
+        "The Cooperator must approve every deterministic internal step" || return 1
+    forbid_section_phrase "human-brainstorm-authority" "$protocol" \
+        "### Communication Routing" "## 4. Source of Truth and Evidence" \
+        "Brainstorming automatically grants mutation authority" || return 1
+    forbid_section_phrase "human-delegation-independent-audit" "$protocol" \
+        "## 3. Instances, Sessions, and Worker Session Profiles" \
+        "## 4. Source of Truth and Evidence" \
+        "Internal delegation is independent external audit" || return 1
     forbid_section_phrase "rotation-authority-evidence" "$protocol" \
         "## 14. Session Rotation and Dynamic Prompts" \
         "## 15. Fresh-Slice Implementation and Diagnostic Closeout" \
@@ -249,6 +269,9 @@ validate_semantic_negative_contracts() {
         "### Worker Topology" "### Rotation, Safety, And Trust" \
         "ADR-0009 supersedes fresh sequential independent audit" || return 1
     forbid_section_phrase "migration-historical-pinned" "$adr" \
+        "## Compatibility" "## Consequences" \
+        "Historical prompts and pinned consumers are automatically migrated" || return 1
+    forbid_section_phrase "migration-historical-pinned" "$adr11" \
         "## Compatibility" "## Consequences" \
         "Historical prompts and pinned consumers are automatically migrated" || return 1
     forbid_section_phrase "trust-untrusted-equivalence" "$protocol" \
@@ -342,7 +365,11 @@ validate_semantic_negative_contracts() {
         "Security-audit independence may be waived to save tokens" || return 1
     forbid_section_phrase "routing-model-session-reuse-unjustified" "$protocol" \
         "### Provider-Neutral Model and Surface Routing" "## 7. Orchestrator Responsibilities" \
-        "A material model change may reuse the current session without renewed authority"
+        "A material model change may reuse the current session without renewed authority" || return 1
+    forbid_section_phrase "privilege-probe-transfer" "$contracts" \
+        "## Authority, Side-Effect, And Context-Recovery Fields" \
+        "## Communication Routing Fields" \
+        "A successful sudo -n probe grants privilege to later unprivileged commands"
 }
 
 extract_pattern_section() {
@@ -419,6 +446,128 @@ validate_routing_fixture() {
     [ "$(grep -Ec '^Worker session target: (fresh-worker-session|current-worker-session)$' "$file")" -eq 1 ] || return 1
     [ "$(grep -c '^Native planning mode:' "$file")" -eq 1 ] || return 1
     [ "$(grep -Ec '^Native planning mode: (required|not-used)$' "$file")" -eq 1 ]
+}
+
+validate_plan_mode_fixture() {
+    file=$1
+    for field in \
+        "Worker planning scope:" \
+        "Planning stop event: terminal planning report submitted" \
+        "Execution authority event: explicit ORCHESTRATOR prompt with Native planning mode: not-used"
+    do
+        [ "$(grep -cF "$field" "$file")" -eq 1 ] || return 1
+    done
+    [ "$(grep -cFx 'Planning layer: implementation-planning' "$file")" -eq 1 ] || return 1
+    [ "$(grep -cFx 'Orchestration planning owner: ORCHESTRATOR' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Plan disposition: (advisory|approval-gated)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Implementation in same Worker session: (allowed|prohibited)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Post-plan implementation session: (current-worker-session|fresh-worker-session|none)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -cFx 'Maximum plan-only cycles: 1' "$file")" -eq 1 ] || return 1
+    ! grep -F 'Plan trigger: complexity-only' "$file" >/dev/null || return 1
+
+    same_session=$(sed -n 's/^Implementation in same Worker session: //p' "$file")
+    post_plan=$(sed -n 's/^Post-plan implementation session: //p' "$file")
+    if [ "$post_plan" = "current-worker-session" ]; then
+        [ "$same_session" = "allowed" ] || return 1
+    fi
+}
+
+validate_report_authority_fixture() {
+    file=$1
+    [ "$(grep -Ec '^Status: (PASS|PARTIAL|BLOCKED)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Report justification: (new-mutation|new-evidence|new-material-risk|changed-external-state|final-acceptance|explicit-closure)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Authority envelope: (single-stage|combined-bounded)$' "$file")" -eq 1 ] || return 1
+    for field in "Authorized stages:" "Stage gates:" "Rollback:" "Terminal report point:"
+    do
+        grep -F "$field" "$file" >/dev/null || return 1
+    done
+    [ "$(grep -Ec '^Independent acceptance required: (yes|no)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -cFx 'Primary audit budget: 1' "$file")" -eq 1 ] || return 1
+    [ "$(grep -cFx 'Proportionate re-audit budget: 1' "$file")" -eq 1 ] || return 1
+    [ "$(grep -cFx 'Context-only handoff budget: 1' "$file")" -eq 1 ] || return 1
+    [ "$(grep -cFx 'Second equivalent PARTIAL or BLOCKED escalation: required' "$file")" -eq 1 ] || return 1
+    [ "$(grep -cFx 'Third equivalent cycle without new basis: prohibited' "$file")" -eq 1 ] || return 1
+
+    envelope=$(sed -n 's/^Authority envelope: //p' "$file")
+    independent=$(sed -n 's/^Independent acceptance required: //p' "$file")
+    if [ "$envelope" = "combined-bounded" ] && [ "$independent" = "yes" ]; then
+        return 1
+    fi
+}
+
+validate_human_governance_fixture() {
+    file=$1
+    for field in \
+        "Cooperator visibility:" \
+        "Human decision points:" \
+        "Deterministic steps inside bounded authority:" \
+        "Orchestrator visibility and Cooperator-legible closure:"
+    do
+        grep -F "$field" "$file" >/dev/null || return 1
+    done
+    [ "$(grep -Ec '^Brainstorming classification: (blocker|risk|backlog|future-logical-whole|protocol-observation)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Internal delegation posture: (not-used|authorized-bounded)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -cFx 'Accountable Worker: WORKER' "$file")" -eq 1 ] || return 1
+    for contradiction in \
+        "Agent-only default: enabled" \
+        "Brainstorming grants mutation authority: yes" \
+        "Internal delegation is independent external audit" \
+        "Cooperator approves every deterministic internal step"
+    do
+        ! grep -F "$contradiction" "$file" >/dev/null || return 1
+    done
+}
+
+validate_evidence_surface_fixture() {
+    file=$1
+    for field in \
+        "Tier basis:" "Required evidence:" "Specialized profile override:" \
+        "Requested model:" "Observed model:" "Model identity attestation:" \
+        "Requested reasoning:" "Observed reasoning:" "Reasoning enforcement attestation:" \
+        "MAX/enhanced mode:" \
+        "Auto selection:" "Sub-agents/internal delegation:" "Explore Task:" \
+        "Worker topology:" "Silent fallback: prohibited" \
+        "Cost/quota effect on evidence: none"
+    do
+        grep -F "$field" "$file" >/dev/null || return 1
+    done
+    [ "$(grep -Ec '^Evidence tier: E[0-4]$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Independent audit: (unnecessary|recommended|mandatory)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Combined authority: (allowed|prohibited)$' "$file")" -eq 1 ] || return 1
+    tier=$(sed -n 's/^Evidence tier: //p' "$file")
+    audit=$(sed -n 's/^Independent audit: //p' "$file")
+    combined=$(sed -n 's/^Combined authority: //p' "$file")
+    case "$tier" in
+        E3|E4)
+            [ "$audit" = "mandatory" ] || return 1
+            [ "$combined" = "prohibited" ] || return 1
+            ;;
+    esac
+}
+
+validate_failure_preservation_fixture() {
+    file=$1
+    for field in \
+        "First causal operation and error:" \
+        "Transport status:" \
+        "Bounded body capture:" \
+        "Parser precondition and result:" \
+        "Exact cleanup paths and owner:" \
+        "Cleanup outcome:" \
+        "Final result source:" \
+        "Privilege owner: actual-resource-opening-process" \
+        "Prior sudo -n effect: none" \
+        "Permission workaround: prohibited"
+    do
+        grep -F "$field" "$file" >/dev/null || return 1
+    done
+    cleanup_paths=$(sed -n 's/^Exact cleanup paths and owner: //p' "$file")
+    case "$cleanup_paths" in
+        *'*'*|*'?'*|*'['*) return 1 ;;
+    esac
+    ! grep -F 'Final result source: cleanup result' "$file" >/dev/null || return 1
+    ! grep -F 'Prior sudo -n effect: privilege transferred' "$file" >/dev/null || return 1
+    ! grep -F 'Permission workaround: weaken ownership or permissions' "$file" >/dev/null
 }
 
 validate_parallel_exception_fixture() {
@@ -904,6 +1053,8 @@ prepare_semantic_fixture() {
     done
     cp "$REPO/docs/adr/0009-capability-aware-worker-routing-and-execution-gates.md" \
         "$semantic_fixture/docs/adr/0009-capability-aware-worker-routing-and-execution-gates.md"
+    cp "$REPO/docs/adr/0011-risk-routed-planning-and-bounded-closure.md" \
+        "$semantic_fixture/docs/adr/0011-risk-routed-planning-and-bounded-closure.md"
     fixture_out=$TMPROOT/$fixture_id.valid.out
     fixture_err=$TMPROOT/$fixture_id.valid.err
     if ! validate_semantic_negative_contracts "$semantic_fixture" \
@@ -1663,7 +1814,7 @@ test_worker_session_target_and_authority_renewal_contracts() {
     assert_section_contract "$REPO/AP.md" "### Worker Session Target" "### Fresh Evidence Probe" \
         "Worker session target: current-worker-session" || return 1
     assert_section_contract "$REPO/AP.md" "### Worker Session Target" "### Fresh Evidence Probe" \
-        "A missing, invalid, or ambiguous target never authorizes reuse of the current session" || return 1
+        "A missing, invalid, or ambiguous target never selects either session" || return 1
     assert_section_contract "$REPO/AP.md" "### Worker Session Target" "### Fresh Evidence Probe" \
         "A \`current-worker-session\` intentionally reuses the exact existing Worker execution session under a new authoritative prompt" || return 1
     assert_section_contract "$REPO/AP.md" "### Worker Session Target" "### Fresh Evidence Probe" \
@@ -1755,8 +1906,8 @@ test_restoration_readiness_and_routing_contracts() {
     grep -F "\`PARTIAL\` when useful" "$REPO/AP.md" >/dev/null || return 1
     grep -F "\`BLOCKED\` when the state" "$REPO/AP.md" >/dev/null || return 1
     grep -F "cannot be restored responsibly" "$REPO/AP.md" >/dev/null || return 1
-    grep -F "Cooperator-facing language" "$REPO/AP.md" >/dev/null || return 1
-    grep -F "Worker progress language" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "operator or Cooperator language" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "direct Worker-to-Cooperator language" "$REPO/AP.md" >/dev/null || return 1
     grep -F "Orchestrator-to-Worker prompt language" "$REPO/AP.md" >/dev/null || return 1
     grep -F "formal Worker report language" "$REPO/AP.md" >/dev/null || return 1
     grep -F "repository documentation language" "$REPO/AP.md" >/dev/null || return 1
@@ -1814,12 +1965,30 @@ test_semantic_negative_regression_fixtures() {
     assert_semantic_fixture_rejected "routing-metadata-inference" \
         "PROMPT_CONTRACTS.md" "## Plan-to-Execution Gate" \
         "Missing session or mode metadata may be inferred instead of stopping." || return 1
+    assert_semantic_fixture_rejected "planning-complexity-only" \
+        "PROMPT_CONTRACTS.md" "## Worker Capability Handshake Contract" \
+        "Complex tasks always require Plan mode." || return 1
+    assert_semantic_fixture_rejected "report-justification-omitted" \
+        "PROMPT_CONTRACTS.md" "## Common Worker Task Fields" \
+        "A formal report needs no justification." || return 1
     assert_semantic_fixture_rejected "authority-capability-conflation" \
         "AP.md" "## 6. Adaptive Orchestration Lifecycle" \
         "Capability, role, reasoning, permission, Full Access, containment, or approval grants task authority." || return 1
     assert_semantic_fixture_rejected "independence-same-worker" \
         "AP.md" "### Fresh Evidence Probe" \
         "A current-session or same-Worker review qualifies as fresh independent audit." || return 1
+    assert_semantic_fixture_rejected "human-agent-only-default" \
+        "AP.md" "## 3. Instances, Sessions, and Worker Session Profiles" \
+        "AP defaults to an opaque agent-to-agent workflow that bypasses the Cooperator." || return 1
+    assert_semantic_fixture_rejected "human-deterministic-microapproval" \
+        "AP.md" "## 3. Instances, Sessions, and Worker Session Profiles" \
+        "The Cooperator must approve every deterministic internal step." || return 1
+    assert_semantic_fixture_rejected "human-brainstorm-authority" \
+        "AP.md" "## 4. Source of Truth and Evidence" \
+        "Brainstorming automatically grants mutation authority." || return 1
+    assert_semantic_fixture_rejected "human-delegation-independent-audit" \
+        "AP.md" "## 4. Source of Truth and Evidence" \
+        "Internal delegation is independent external audit." || return 1
     assert_semantic_fixture_rejected "rotation-authority-evidence" \
         "AP.md" "## 15. Fresh-Slice Implementation and Diagnostic Closeout" \
         "Model or client rotation transfers authority and makes old reports current evidence." || return 1
@@ -1844,6 +2013,10 @@ test_semantic_negative_regression_fixtures() {
         "ADR-0009 supersedes fresh sequential independent audit." || return 1
     assert_semantic_fixture_rejected "migration-historical-pinned" \
         "docs/adr/0009-capability-aware-worker-routing-and-execution-gates.md" \
+        "## Consequences" \
+        "Historical prompts and pinned consumers are automatically migrated." || return 1
+    assert_semantic_fixture_rejected "migration-historical-pinned" \
+        "docs/adr/0011-risk-routed-planning-and-bounded-closure.md" \
         "## Consequences" \
         "Historical prompts and pinned consumers are automatically migrated." || return 1
     assert_semantic_fixture_rejected "trust-untrusted-equivalence" \
@@ -1929,7 +2102,10 @@ test_semantic_negative_regression_fixtures() {
         "Security-audit independence may be waived to save tokens." || return 1
     assert_semantic_fixture_rejected "routing-model-session-reuse-unjustified" \
         "AP.md" "## 7. Orchestrator Responsibilities" \
-        "A material model change may reuse the current session without renewed authority."
+        "A material model change may reuse the current session without renewed authority." || return 1
+    assert_semantic_fixture_rejected "privilege-probe-transfer" \
+        "PROMPT_CONTRACTS.md" "## Communication Routing Fields" \
+        "A successful sudo -n probe grants privilege to later unprivileged commands."
 }
 
 test_pattern_library_document_processes() {
@@ -2017,10 +2193,10 @@ test_plan_to_execution_and_cooperator_routing_contracts() {
         "complete authority renewal with a continuity anchor" || return 1
     grep -F "Fresh Independent Audit, Fresh Independent Re-Audit" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
     for label in \
-        "Prompt pre fresh Workera — s Plan mode" \
-        "Prompt pre fresh Workera — bez Plan mode" \
-        "Prompt pre aktuálneho Workera — s Plan mode" \
-        "Prompt pre aktuálneho Workera — bez Plan mode"
+        "Prompt pre fresh Workera" \
+        "Prompt pre aktuálneho Workera" \
+        "Prompt pre fresh Workera s Plan mode" \
+        "Prompt pre aktuálneho Workera s Plan mode"
     do
         grep -F "$label" "$REPO/AP_ORCHESTRATOR.md" >/dev/null || return 1
     done
@@ -2634,6 +2810,256 @@ EOF
         "$fixtures/independence-waived" "routing-quota-independence-waived"
 }
 
+test_plan_mode_ownership_routing_and_cycle_budget_contracts() {
+    assert_section_contract "$REPO/AP.md" \
+        "### Orchestration Planning and Implementation Planning" \
+        "### Plan-to-Execution Gate" \
+        "The Orchestrator owns orchestration planning" || return 1
+    assert_section_contract "$REPO/AP.md" \
+        "### Orchestration Planning and Implementation Planning" \
+        "### Plan-to-Execution Gate" \
+        "Do not use it merely because a task is large or complex" || return 1
+    assert_section_contract "$REPO/PROMPT_CONTRACTS.md" \
+        "## Plan-to-Execution Gate" "## Worker Capability Handshake Contract" \
+        "Maximum plan-only cycles: 1" || return 1
+    assert_section_contract "$REPO/PROMPT_CONTRACTS.md" \
+        "## Plan-to-Execution Gate" "## Worker Capability Handshake Contract" \
+        "execution still requires the complete new prompt" || return 1
+
+    fixtures=$TMPROOT/plan-mode-fixtures
+    mkdir -p "$fixtures"
+    cat > "$fixtures/valid-current" <<'EOF'
+Planning layer: implementation-planning
+Orchestration planning owner: ORCHESTRATOR
+Worker planning scope: repository-grounded impact, tests, ordering, and rollback
+Plan disposition: approval-gated
+Implementation in same Worker session: allowed
+Planning stop event: terminal planning report submitted
+Execution authority event: explicit ORCHESTRATOR prompt with Native planning mode: not-used
+Post-plan implementation session: current-worker-session
+Maximum plan-only cycles: 1
+Plan trigger: repository-reconnaissance
+EOF
+    validate_plan_mode_fixture "$fixtures/valid-current" || return 1
+
+    sed 's/^Maximum plan-only cycles: 1$/Maximum plan-only cycles: 2/' \
+        "$fixtures/valid-current" > "$fixtures/two-cycles"
+    ! validate_plan_mode_fixture "$fixtures/two-cycles" || return 1
+    cp "$fixtures/valid-current" "$fixtures/complexity-only"
+    printf '%s\n' 'Plan trigger: complexity-only' >> "$fixtures/complexity-only"
+    ! validate_plan_mode_fixture "$fixtures/complexity-only" || return 1
+    sed 's/^Implementation in same Worker session: allowed$/Implementation in same Worker session: prohibited/' \
+        "$fixtures/valid-current" > "$fixtures/current-prohibited"
+    ! validate_plan_mode_fixture "$fixtures/current-prohibited"
+}
+
+test_worker_freshness_and_same_session_continuation_contracts() {
+    assert_section_contract "$REPO/AP.md" "### Worker Session Target" \
+        "### Orchestration Planning and Implementation Planning" \
+        "Freshness is a risk, context-integrity, and independence decision, not a universal correctness default" || return 1
+    assert_section_contract "$REPO/AP.md" "### Worker Session Target" \
+        "### Orchestration Planning and Implementation Planning" \
+        "A healthy \`current-worker-session\` is normally preferred for implementation after an approved repository-grounded planning task" || return 1
+    assert_section_contract "$REPO/AP.md" "### Plan-to-Execution Gate" \
+        "### Fresh Evidence Probe" \
+        "same current session" || return 1
+    assert_section_contract "$REPO/AP_ORCHESTRATOR.md" \
+        "## Worker Session Target Selection" "## Preflight Selection" \
+        "Freshness alone never establishes independence" || return 1
+    assert_section_contract "$REPO/AP_WORKER.md" "## Worker Session Target" \
+        "## Capability And Authority Check" \
+        "A healthy current session may receive approved implementation under a new complete grant" || return 1
+
+    for label in \
+        "Prompt pre fresh Workera" \
+        "Prompt pre aktuálneho Workera" \
+        "Prompt pre fresh Workera s Plan mode" \
+        "Prompt pre aktuálneho Workera s Plan mode"
+    do
+        grep -F "$label" "$REPO/AP_ORCHESTRATOR.md" >/dev/null || return 1
+    done
+    [ "$(grep -Ec '^[1-4]\. `Prompt pre .+`$' "$REPO/AP_ORCHESTRATOR.md")" -eq 4 ] || return 1
+    ! rg -n -F \
+        -e "Prompt pre fresh Workera — s Plan mode" \
+        -e "Prompt pre fresh Workera — bez Plan mode" \
+        -e "Prompt pre aktuálneho Workera — s Plan mode" \
+        -e "Prompt pre aktuálneho Workera — bez Plan mode" \
+        "$REPO/AP_ORCHESTRATOR.md" || return 1
+    assert_text_contract "$REPO/AP_ORCHESTRATOR.md" \
+        "configured values are an operator-facing example, not universal protocol language"
+}
+
+test_report_audit_handoff_and_authority_envelope_contracts() {
+    assert_section_contract "$REPO/AP.md" "## 6. Adaptive Orchestration Lifecycle" \
+        "### Provider-Neutral Model and Surface Routing" \
+        "A third equivalent cycle is prohibited without new mutation, evidence, risk, external state, or objective" || return 1
+    assert_section_contract "$REPO/AP.md" "## 5. Task Authority" \
+        "## 6. Adaptive Orchestration Lifecycle" \
+        "combined bounded envelope" || return 1
+    assert_section_contract "$REPO/PROMPT_CONTRACTS.md" \
+        "### Evidence Tier and Closure Budget Fields" \
+        "### Failure-Preserving Automation Fields" \
+        "one primary independent audit and at most one proportionate re-audit" || return 1
+    assert_section_contract "$REPO/PROMPT_CONTRACTS.md" \
+        "### Evidence Tier and Closure Budget Fields" \
+        "### Failure-Preserving Automation Fields" \
+        "context-only fresh handoff is limited to one" || return 1
+    assert_contains "$REPO/docs/adr/README.md" \
+        "0011-risk-routed-planning-and-bounded-closure.md" || return 1
+
+    fixtures=$TMPROOT/report-authority-fixtures
+    mkdir -p "$fixtures"
+    cat > "$fixtures/valid" <<'EOF'
+Status: PASS
+Report justification: explicit-closure
+Authority envelope: combined-bounded
+Authorized stages: correction, tests, commit, non-force push, verification
+Stage gates: each consequential stage follows passing validation and unchanged public base
+Rollback: stop before the next stage; preserve first failure
+Independent acceptance required: no
+Terminal report point: after direct public equality verification
+Primary audit budget: 1
+Proportionate re-audit budget: 1
+Context-only handoff budget: 1
+Second equivalent PARTIAL or BLOCKED escalation: required
+Third equivalent cycle without new basis: prohibited
+EOF
+    validate_report_authority_fixture "$fixtures/valid" || return 1
+    sed 's/^Independent acceptance required: no$/Independent acceptance required: yes/' \
+        "$fixtures/valid" > "$fixtures/combined-independent"
+    ! validate_report_authority_fixture "$fixtures/combined-independent" || return 1
+    sed '/^Report justification:/d' "$fixtures/valid" > "$fixtures/no-justification"
+    ! validate_report_authority_fixture "$fixtures/no-justification" || return 1
+
+    cat > "$fixtures/human-valid" <<'EOF'
+Cooperator visibility: objective, logical whole, routing, authority, risk, acceptance, closure
+Human decision points: product, value, cost, privacy, material risk, irreversible operations, acceptance
+Deterministic steps inside bounded authority: validation and exact-path Git operations; no per-step approval
+Brainstorming classification: backlog
+Internal delegation posture: not-used
+Accountable Worker: WORKER
+Orchestrator visibility and Cooperator-legible closure: required
+EOF
+    validate_human_governance_fixture "$fixtures/human-valid" || return 1
+    for contradiction in agent-only brainstorm-authority delegated-audit microapproval
+    do
+        cp "$fixtures/human-valid" "$fixtures/$contradiction"
+        case "$contradiction" in
+            agent-only) printf '%s\n' 'Agent-only default: enabled' >> "$fixtures/$contradiction" ;;
+            brainstorm-authority) printf '%s\n' 'Brainstorming grants mutation authority: yes' >> "$fixtures/$contradiction" ;;
+            delegated-audit) printf '%s\n' 'Internal delegation is independent external audit' >> "$fixtures/$contradiction" ;;
+            microapproval) printf '%s\n' 'Cooperator approves every deterministic internal step' >> "$fixtures/$contradiction" ;;
+        esac
+        ! validate_human_governance_fixture "$fixtures/$contradiction" || return 1
+    done
+}
+
+test_evidence_tiers_activation_and_surface_routing_contracts() {
+    for tier in E0 E1 E2 E3 E4
+    do
+        grep -F "$tier" "$REPO/AP.md" >/dev/null || return 1
+        grep -F "$tier" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
+    done
+    assert_section_contract "$REPO/AP.md" \
+        "## 6. Adaptive Orchestration Lifecycle" \
+        "### Provider-Neutral Model and Surface Routing" \
+        "E3 — high impact" || return 1
+    assert_section_contract "$REPO/PROMPT_CONTRACTS.md" \
+        "### Evidence Tier and Closure Budget Fields" \
+        "### Failure-Preserving Automation Fields" \
+        "E3/E4 require fresh independent acceptance" || return 1
+    assert_text_contract "$REPO/PROMPT_CONTRACTS.md" \
+        "stricter \`INFOSEC.md\` separation" || return 1
+    for surface in \
+        "Enhanced or maximum mode" "Automatic model selection" \
+        "Sub-agents or internal delegation" "Explore-style task" "Worker topology"
+    do
+        grep -F "$surface" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
+    done
+
+    fixtures=$TMPROOT/evidence-surface-fixtures
+    mkdir -p "$fixtures"
+    cat > "$fixtures/e2-valid" <<'EOF'
+Evidence tier: E2
+Tier basis: cross-cutting reversible documentation and semantic tests
+Required evidence: full affected suite, diff review, and public verification
+Independent audit: recommended
+Combined authority: allowed
+Specialized profile override: none
+Requested model: reasoning-capable model
+Observed model: unknown/not observably exposed
+Model identity attestation: not independently attested
+Requested reasoning: maximum available
+Observed reasoning: unknown/not observably exposed
+Reasoning enforcement attestation: not independently attested
+MAX/enhanced mode: unknown/not observably exposed
+Auto selection: off
+Sub-agents/internal delegation: not-used
+Explore Task: not-used
+Worker topology: one accountable WORKER
+Silent fallback: prohibited
+Cost/quota effect on evidence: none
+EOF
+    validate_evidence_surface_fixture "$fixtures/e2-valid" || return 1
+    sed -e 's/^Evidence tier: E2$/Evidence tier: E3/' \
+        -e 's/^Independent audit: recommended$/Independent audit: mandatory/' \
+        -e 's/^Combined authority: allowed$/Combined authority: prohibited/' \
+        "$fixtures/e2-valid" > "$fixtures/e3-valid"
+    validate_evidence_surface_fixture "$fixtures/e3-valid" || return 1
+    sed 's/^Combined authority: prohibited$/Combined authority: allowed/' \
+        "$fixtures/e3-valid" > "$fixtures/e3-combined"
+    ! validate_evidence_surface_fixture "$fixtures/e3-combined" || return 1
+    sed 's/^Independent audit: mandatory$/Independent audit: recommended/' \
+        "$fixtures/e3-valid" > "$fixtures/e3-no-audit"
+    ! validate_evidence_surface_fixture "$fixtures/e3-no-audit"
+}
+
+test_failure_preservation_privilege_and_cleanup_contracts() {
+    assert_section_contract "$REPO/AP.md" "## 12. Validation and Public Verification" \
+        "## 13. Artifact Lifecycle and Repository Hygiene" \
+        "preserve the first causal error" || return 1
+    assert_section_contract "$REPO/AP.md" "## 5. Task Authority" \
+        "## 6. Adaptive Orchestration Lifecycle" \
+        "privilege belongs to the actual process" || return 1
+    assert_section_contract "$REPO/AP_WORKER.md" "## Validation" \
+        "## Reporting" \
+        "report parser failure explicitly" || return 1
+    assert_section_contract "$REPO/PROMPT_CONTRACTS.md" \
+        "### Failure-Preserving Automation Fields" \
+        "## Communication Routing Fields" \
+        "Cleanup and reporting failures remain secondary evidence" || return 1
+
+    fixtures=$TMPROOT/failure-preservation-fixtures
+    mkdir -p "$fixtures"
+    cat > "$fixtures/valid" <<'EOF'
+First causal operation and error: HTTP request returned status 503
+Transport status: 503
+Bounded body capture: /tmp/ap-owned-response/body
+Parser precondition and result: expected 2xx JSON; parser not run because status failed
+Exact cleanup paths and owner: /tmp/ap-owned-response/body owned by current task
+Cleanup outcome: removed
+Final result source: first causal HTTP status 503; cleanup did not overwrite it
+Privilege owner: actual-resource-opening-process
+Prior sudo -n effect: none
+Permission workaround: prohibited
+EOF
+    validate_failure_preservation_fixture "$fixtures/valid" || return 1
+    sed '/^Parser precondition and result:/d' "$fixtures/valid" > "$fixtures/no-parser-evidence"
+    ! validate_failure_preservation_fixture "$fixtures/no-parser-evidence" || return 1
+    sed 's#^Exact cleanup paths and owner:.*#Exact cleanup paths and owner: /tmp/ap-owned-response/* owned by current task#' \
+        "$fixtures/valid" > "$fixtures/wildcard-cleanup"
+    ! validate_failure_preservation_fixture "$fixtures/wildcard-cleanup" || return 1
+    sed 's/^Prior sudo -n effect: none$/Prior sudo -n effect: privilege transferred/' \
+        "$fixtures/valid" > "$fixtures/transferred-privilege"
+    ! validate_failure_preservation_fixture "$fixtures/transferred-privilege" || return 1
+    sed 's/^Permission workaround: prohibited$/Permission workaround: weaken ownership or permissions/' \
+        "$fixtures/valid" > "$fixtures/weaken-permissions"
+    ! validate_failure_preservation_fixture "$fixtures/weaken-permissions" || return 1
+    sed 's/^Final result source:.*$/Final result source: cleanup result/' \
+        "$fixtures/valid" > "$fixtures/cleanup-masks-cause"
+    ! validate_failure_preservation_fixture "$fixtures/cleanup-masks-cause"
+}
+
 copy_worktree_to_source
 
 run_test "section contract helper enforces exact boundaries" test_section_contract_helper_boundaries
@@ -2694,6 +3120,11 @@ run_test "security prompt fixtures enforce threat-model, containment, and author
 run_test "containment ledger and source record fixtures enforce cleanup and version discipline" test_containment_ledger_and_source_record_fixtures
 run_test "provider-neutral model routing positive contracts are present" test_model_routing_positive_contracts
 run_test "model routing fixtures enforce observation, quota, fallback, and refusal discipline" test_model_routing_fixture_contracts
+run_test "Plan Mode ownership, routing, and one-cycle budget contracts are enforced" test_plan_mode_ownership_routing_and_cycle_budget_contracts
+run_test "Worker freshness and same-session continuation contracts are enforced" test_worker_freshness_and_same_session_continuation_contracts
+run_test "report, audit, handoff, human governance, and authority-envelope contracts are enforced" test_report_audit_handoff_and_authority_envelope_contracts
+run_test "evidence tiers, activation, and surface-routing contracts are enforced" test_evidence_tiers_activation_and_surface_routing_contracts
+run_test "first-causal-error, privilege, parser, and cleanup contracts are enforced" test_failure_preservation_privilege_and_cleanup_contracts
 
 say "passed: $pass_count"
 say "failed: $fail_count"

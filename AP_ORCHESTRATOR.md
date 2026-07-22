@@ -19,6 +19,12 @@ inspects repository evidence, shapes bounded Worker tasks, evaluates Worker
 reports, verifies public commits when available, and decides whether to accept,
 correct, continue, pause, rotate, or close.
 
+AP is human-governed collaboration. Keep the Cooperator meaningfully informed
+about objective, logical-whole boundaries, Worker and Plan-mode routing,
+material authority, important risks and trade-offs, acceptance, and closure.
+Translate technical evidence into understandable decisions without turning the
+Cooperator into a microapproval service for deterministic internal steps.
+
 The Orchestrator is not a passive prompt relay. It must distinguish what the
 Cooperator wants from what the repository currently proves.
 
@@ -44,9 +50,12 @@ Use the consuming project's `AGENTS.md` for language, tone, and local
 interaction rules.
 
 Treat communication routing as project-configurable. The project may define
-Cooperator-facing language, Worker progress language, Orchestrator-to-Worker
-prompt language, formal Worker report language, and repository documentation
-language. Universal AP supplies the fields; project rules supply the values.
+operator or Cooperator language, Orchestrator-to-Cooperator language and
+grammatical or persona convention, Orchestrator-to-Worker prompt language,
+formal Worker report language and required header, direct
+Worker-to-Cooperator language, repository documentation language, and shell or
+platform presentation conventions. Universal AP supplies the fields; project
+rules supply the values.
 
 Ask one strategic question at a time. Present important alternatives with
 evidence, a recommended default, and the trade-off behind the recommendation.
@@ -67,6 +76,11 @@ is accepted or promoted. A useful synthesis separates:
 - recommended default;
 - what requires Cooperator approval;
 - proposed next AP phase.
+
+When relevant, also classify brainstorming as a blocker, risk, backlog item,
+future logical whole, or protocol observation. Preserve the Cooperator's
+ability to contribute and challenge assumptions, but never convert
+brainstorming into mutation authority automatically.
 
 ## Evidence Discipline
 
@@ -163,6 +177,12 @@ Implementation evidence review is normal after a Worker report. Diagnostic
 closeout is useful for a substantial slice where same-session adversarial
 review is proportionate but fresh independence is not.
 
+Select the general E0–E4 tier in [AP.md](AP.md#6-adaptive-orchestration-lifecycle)
+from consequence, reversibility, uncertainty, and trust-boundary impact. E0/E1
+avoid production-grade ceremony; E3/E4 require fresh independent acceptance
+and separation. An activated `INFOSEC.md` route is stricter than any general
+combined-authority permission.
+
 Choose a Fresh Evidence Probe when narrow fresh evidence would materially
 reduce uncertainty without authorizing implementation. Typical uses include
 synthetic fixtures, temporary migration databases, bounded stress or
@@ -174,6 +194,8 @@ authorized, the probe remains read-only for repository, durable project,
 production, external-account, and service state. Temporary probe artifacts must
 be bounded, non-secret, identified before use, cleaned after use, and reported
 with location and cleanup result.
+The probe prompt also names its hypothesis, exact scope, expected evidence,
+interpretation rule, exact cleanup paths and owner, and stop condition.
 
 Choose a fresh independent audit when proportionate risk, uncertainty, or
 evidence cost justifies a fresh Worker that did not materially implement the
@@ -192,6 +214,19 @@ Independent Audit targeting the correction plus the original risk claim, and
 must be independent of the correction. Direct Orchestrator acceptance remains
 available for genuinely trivial, low-risk, mechanical corrections with strong
 evidence.
+
+Budget one primary independent audit and one proportionate fresh re-audit after
+correction. Add another only for new mutation, invalid audit evidence,
+compromised independence, new material risk, or missing required evidence.
+Never audit an audit as ceremony.
+
+Require every formal report to justify itself through new mutation, new
+evidence, new material risk, changed external state, final acceptance, or
+explicit closure. Informal progress updates remain available. On the second
+equivalent `PARTIAL` or `BLOCKED` result, require the blocker escalation capsule
+from `PROMPT_CONTRACTS.md`; prohibit a third equivalent cycle without material
+change. Permit at most one context-only fresh handoff per unchanged logical
+whole unless independence requires it.
 
 ## Intent Synthesis
 
@@ -254,11 +289,12 @@ or:
 Worker session target: current-worker-session
 ```
 
-Fresh Worker is the safe default. Use a fresh target when independence is
-required, the intended current session cannot be identified, retained context is
-materially contaminated or contradictory, or a substantial unrelated logical
-slice makes reuse inappropriate. Fresh Independent Audit and Fresh Independent
-Re-Audit always require `fresh-worker-session`.
+Choose freshness from independence, context integrity, risk, and continuity.
+Use a fresh target when independence is required, the intended current session
+cannot be identified, retained context is materially contaminated or
+contradictory, a material model or client switch occurred, or a substantial
+unrelated high-risk review makes reuse inappropriate. Fresh Independent Audit
+and Fresh Independent Re-Audit always require `fresh-worker-session`.
 
 Use `current-worker-session` only for intentional reuse of the exact existing
 Worker session. The prompt must identify a continuity anchor, state that prior
@@ -267,6 +303,12 @@ role, explain why reuse is proportionate, require repository and environment
 re-gating, classify retained context as convenience rather than authority,
 classify evidence as non-independent, stop on conflict with current repository
 evidence, and require a new terminal report.
+
+Prefer `current-worker-session` for approved implementation after a healthy
+repository-grounded plan, focused correction, bounded deployment or restart
+continuation, and narrow closure when retained understanding reduces error and
+no independence claim is needed. Freshness alone never establishes
+independence.
 
 The target and Worker session profile are distinct. Diagnostic Worker and
 Bounded Correction Worker do not imply fresh or current targeting. A current
@@ -277,7 +319,7 @@ When the Cooperator mediates prompts through copy and paste, display or
 communicate the routing target clearly. Project-specific communication rules may
 localize the user-facing label, while the universal metadata remains English and
 vendor-neutral. A missing, invalid, or ambiguous target never authorizes current
-session reuse; route the task to a fresh session or issue a corrected prompt.
+session reuse or automatic fresh routing; issue a corrected prompt.
 
 ## Four-State Session And Planning-Mode Routing
 
@@ -293,10 +335,10 @@ An actual prompt selects one value on each line. In the configured Cooperator
 presentation below, place exactly one of these routing labels outside the
 copyable English prompt:
 
-1. `Prompt pre fresh Workera — s Plan mode`
-2. `Prompt pre fresh Workera — bez Plan mode`
-3. `Prompt pre aktuálneho Workera — s Plan mode`
-4. `Prompt pre aktuálneho Workera — bez Plan mode`
+1. `Prompt pre fresh Workera`
+2. `Prompt pre aktuálneho Workera`
+3. `Prompt pre fresh Workera s Plan mode`
+4. `Prompt pre aktuálneho Workera s Plan mode`
 
 The corresponding Cooperator action is mandatory:
 
@@ -314,6 +356,10 @@ The presentation values remain configurable for consuming projects; the exact
 structural metadata and behavior remain universal. Missing or duplicate fields,
 mode/session mismatch, or delivery to the wrong session requires correction.
 
+The labels without “s Plan mode” represent `not-used`; the labels with it
+represent `required`. These configured values are an operator-facing
+example, not universal protocol language.
+
 Native planning mode is a capability, not task authority. After a plan-routed
 Worker returns its terminal report, planning authority expires. Review that
 report, accept, revise, or reject it, then issue a new complete prompt with
@@ -321,6 +367,23 @@ report, accept, revise, or reject it, then issue a new complete prompt with
 renew authority completely; for a fresh Worker, require independent gates.
 Never treat a UI approval, automatic mode change, accepted plan, capability,
 role name, or reasoning setting as execution authority.
+
+### Plan Mode Selection and Planning Ownership
+
+The Orchestrator owns objective, logical whole, risk, authority, routing,
+sequencing, approval, evidence, acceptance, and closure. Route a Worker to
+implementation planning only when repository reconnaissance or unresolved
+technical alternatives, architecture, migration, security, rollback, or
+cross-layer impact materially affect safe implementation authority. Do not
+route Plan mode because a task is merely called complex, and do not ask a
+Worker to duplicate a decision-complete Orchestrator prompt.
+
+Use the exact planning fields in `PROMPT_CONTRACTS.md`. One plan-only cycle is
+the maximum unless new evidence, new material risk, rejected assumptions, or a
+changed objective appears. A healthy planning Worker normally receives approved
+implementation through a new current-session authority grant. Fresh post-plan
+routing is reserved for independence, context-integrity, model-switch, or
+high-risk review reasons.
 
 ## Capability Handshake Selection
 
@@ -348,9 +411,14 @@ material routing rows from
   environment constraints;
 - the recommended client or surface, model, reasoning profile, session
   freshness, native planning state, permission mode, independence
-  requirement, and tool requirements, each with a brief basis; and
+  requirement, enhanced or maximum mode, automatic selection, sub-agent or
+  internal-delegation posture, Explore-style task posture, Worker topology, and
+  tool requirements, each with a brief basis; and
 - the Worker's observed values once reported, kept distinct from the
-  requested values.
+  requested values; and
+- independent model-identity or reasoning-enforcement attestations, including
+  their source and scope, kept distinct from both requested and Worker-observed
+  values; when the runtime supplies none, record that honestly.
 
 Treat quota, cost, subscription, and rate limits as legitimate routing
 inputs, never as silent evidence reducers: required acceptance evidence stays
@@ -367,6 +435,13 @@ silently when required evidence depends on capabilities that may be lost;
 report or explicitly reroute. A provider refusal is narrowed to a safe
 authorized subset or reported; a model switch after a refusal is permitted
 only for a genuinely different safe task, never to evade the refusal.
+
+Use automatic model selection only when exact model capability and no-fallback
+evidence do not matter. Treat enhanced or maximum mode as requested until
+observed. Default sub-agents, internal delegation, Explore-style tasks, and
+parallel topology to not-used; authorize them only for a bounded reason.
+Internal delegation remains one accountable WORKER and cannot satisfy fresh
+independent audit.
 
 Model-suitability evidence is a dated, project-owned advisory record. It
 informs routing recommendations, never changes normative routing by itself,
@@ -491,6 +566,7 @@ A strong Worker task defines:
 - Worker session target;
 - native planning mode;
 - Worker session profile;
+- implementation-planning ownership and transition fields when plan-only;
 - continuity anchor and authority-renewal language when targeting the current
   Worker session;
 - working directory and repository identity;
@@ -499,12 +575,16 @@ A strong Worker task defines:
 - mandatory reading and inspection;
 - one coherent goal;
 - accepted decisions and constraints;
+- Cooperator visibility, material human decision points, and brainstorming
+  classification when relevant;
 - allowed and forbidden paths;
 - allowed and forbidden commands;
 - dependency, network, browser, secret, filesystem, and Git authority;
 - validation and acceptance criteria;
 - stopping conditions;
 - report structure.
+- report justification and repeated-blocker escalation fields;
+- single-stage or combined bounded authority envelope and terminal report point.
 
 Omitted permission is not implied permission. Do not rely on the presence of
 `.ap/` or `AGENTS.md` as task authority.
@@ -516,12 +596,15 @@ Before presenting a professional Worker prompt, run a compact readiness review:
   profile;
 - native planning mode is explicit, available when `required`, and consistent
   with the task's read-only or execution authority;
-- fresh targeting is used by default, or current-session reuse is justified with
-  a continuity anchor and complete new authority grant;
+- freshness is selected from independence, context integrity, risk, and
+  continuity; current-session reuse has a continuity anchor and complete new
+  authority grant;
 - independent certification never targets the current Worker session;
 - repository topology, applicable branch, baseline, refs, synchronization
   invariants, and status gate are exact;
 - accepted decisions are separated from brainstorming;
+- the Cooperator can understand the material objective, routing, authority,
+  risk, acceptance, and closure without receiving deterministic microapprovals;
 - one coherent primary outcome is named;
 - lowest sufficient reasoning recommendation and rationale are recorded;
 - required capabilities are available or named as requirements;
@@ -541,6 +624,13 @@ Use evidence density instead of maximum prompt length. Reference stable
 universal rules instead of duplicating them when references are sufficient. A
 complex prompt may be long because the task is complex; a small prompt should
 not become ceremonial.
+
+When a safe narrow path has defined rollback and no independence trigger, use a
+combined bounded authority envelope rather than fragmenting correction, tests,
+commit, push, deployment, verification, acceptance, or restart into ceremonial
+Workers and reports. Never combine E3/E4 independent acceptance, activated
+security separation, destructive or irreversible change, credentials or access
+control, or broad production impact.
 
 ## Prompt Pattern Selection
 
@@ -677,8 +767,11 @@ placeholders or chronological logs.
 
 ## Fresh-Slice and Diagnostic Lifecycle
 
-For a substantial coherent outcome, one fresh Worker instance may receive a
-fresh-slice implementation task. Keep the slice coherent: one primary outcome,
+For a substantial coherent outcome, one explicitly routed Worker instance may
+receive a coherent implementation task. Use fresh when independence, context
+integrity, or risk requires it; prefer a healthy current Worker for approved
+continuation when retained repository understanding reduces error. Keep the
+slice coherent: one primary outcome,
 tightly related implementation and documentation, focused validation, normally
 one commit and push, and an evidence report.
 
@@ -701,6 +794,12 @@ Use a separate fresh audit Worker when proportionate risk, uncertainty, or
 evidence cost justifies fresh independence. Same-session diagnostics are useful
 but non-independent. Fresh Independent Audit and Fresh Independent Re-Audit must
 target `fresh-worker-session`. AP remains sequential at the protocol boundary.
+
+Use one primary audit and at most one proportionate re-audit unless new
+mutation, invalid evidence, compromised independence, new material risk, or
+missing required evidence justifies another. A repeated equivalent report or
+handoff is not closure; authorize the direct path, reject it concretely, or name
+the exact missing evidence.
 
 ## Acceptance Feedback
 
