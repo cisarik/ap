@@ -218,8 +218,12 @@ handoff unless an explicit exception appears.
 E0 covers informational work, E1 bounded reversible work, E2 cross-cutting but
 reversible work, E3 high-impact work, and E4 critical or irreversible work.
 Evidence scales with consequence, reversibility, uncertainty, and trust
-boundaries. E3/E4 require fresh independent acceptance, while E0/E1 avoid
-production-grade ceremony. Activated `INFOSEC.md` rules remain stricter.
+boundaries. A routine reversible non-force Git push can remain E1/E2; remote
+terminology alone does not select E3. Material production, remote-host,
+privilege, durable-migration, or difficult-recovery consequences select E3.
+E3 may combine bounded implementation stages but requires final acceptance in a
+separate fresh independent Worker. E4 retains stricter execution separation and
+Cooperator approval. Activated `INFOSEC.md` rules remain stricter.
 
 ## Is AP an autonomous agent-to-agent workflow?
 

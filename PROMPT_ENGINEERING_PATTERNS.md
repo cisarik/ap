@@ -243,15 +243,17 @@ capability, or evidence grants authority.
 #### Adaptation questions
 
 Which paths, stages, and actions are allowed or forbidden? What prior grant
-expired? Is a combined envelope safe? Which continuity anchor and stage gates
-must match? Which decisions require human attention rather than microapproval?
+expired? Is a combined implementation envelope safe? Which independent
+acceptance envelope is required? Which continuity anchor and stage gates must
+match? Which decisions require human attention rather than microapproval?
 
 #### Template fragment
 
 ```text
 Authority: <allowed reads/writes/actions>. Forbidden: <negative scope>.
-Authority envelope: <single-stage|combined-bounded>; stages/gates: <list>.
-Rollback and independence boundary: <contract>.
+Combined implementation envelope: <allowed|prohibited>; stages/gates: <list>.
+Independent acceptance: <not-required|recommended|required-separate-fresh-worker>.
+Rollback or recovery checkpoint: <contract>.
 Prior authority: <expired/not applicable>.
 Current-session anchor, if applicable: <exact boundary>.
 Cooperator visibility and material decision points: <contract>.
@@ -356,7 +358,8 @@ Worker session target: <fresh-worker-session|current-worker-session>.
 Native planning mode: <required|not-used>.
 Task phase: <plan-only|execution>.
 Planning owner/scope/disposition: <exact contract when plan-only>.
-Post-plan session: <current|fresh|none>. Maximum plan-only cycles: 1.
+Post-plan implementation session: <current-worker-session|fresh-worker-session|none>.
+Maximum plan-only cycles: 1.
 A UI approval or accepted plan grants no implementation authority.
 Execution requires a separate complete Orchestrator prompt with not-used.
 ```
@@ -558,7 +561,8 @@ Reasoning profile: <lowest sufficient level>, because <risk/ambiguity>.
 Evidence tier: <E0|E1|E2|E3|E4>, because <consequence/reversibility/uncertainty/boundary>.
 Required evidence: <deterministic checks and observations>.
 Self-review may establish: <bounded claims>.
-Fresh independent audit: <unnecessary|recommended|mandatory>.
+Combined implementation envelope: <allowed|prohibited>.
+Independent acceptance: <not-required|recommended|required-separate-fresh-worker>.
 Audit budget: one primary audit plus one proportionate re-audit; exceptions: <if any>.
 ```
 

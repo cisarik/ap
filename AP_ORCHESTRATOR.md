@@ -179,9 +179,11 @@ review is proportionate but fresh independence is not.
 
 Select the general E0–E4 tier in [AP.md](AP.md#6-adaptive-orchestration-lifecycle)
 from consequence, reversibility, uncertainty, and trust-boundary impact. E0/E1
-avoid production-grade ceremony; E3/E4 require fresh independent acceptance
-and separation. An activated `INFOSEC.md` route is stricter than any general
-combined-authority permission.
+avoid production-grade ceremony. E3 permits bounded combined implementation
+stages when their gates and recovery are exact but requires a separate fresh
+independent acceptance envelope. E4 requires strict separation when its trigger
+demands it. An activated `INFOSEC.md` route is stricter than any general
+combined-implementation permission.
 
 Choose a Fresh Evidence Probe when narrow fresh evidence would materially
 reduce uncertainty without authorizing implementation. Typical uses include
@@ -584,7 +586,8 @@ A strong Worker task defines:
 - stopping conditions;
 - report structure.
 - report justification and repeated-blocker escalation fields;
-- single-stage or combined bounded authority envelope and terminal report point.
+- single-stage or combined implementation envelope, independent acceptance
+  envelope, rollback or recovery checkpoint, and terminal report point.
 
 Omitted permission is not implied permission. Do not rely on the presence of
 `.ap/` or `AGENTS.md` as task authority.
@@ -625,12 +628,15 @@ universal rules instead of duplicating them when references are sufficient. A
 complex prompt may be long because the task is complex; a small prompt should
 not become ceremonial.
 
-When a safe narrow path has defined rollback and no independence trigger, use a
-combined bounded authority envelope rather than fragmenting correction, tests,
-commit, push, deployment, verification, acceptance, or restart into ceremonial
-Workers and reports. Never combine E3/E4 independent acceptance, activated
-security separation, destructive or irreversible change, credentials or access
-control, or broad production impact.
+When a safe narrow path has defined rollback or recovery, use a combined
+implementation envelope rather than fragmenting correction, tests, commit,
+normal non-force push, checkpoint, deployment, bounded operational acceptance
+probes, no-provider or bounded verification, or restart into ceremonial Workers
+and reports. Every failed gate stops the sequence, and credentials and private
+data remain protected. E3 may use that implementation envelope, but its fresh
+independent final acceptance is a separate envelope and Worker. E4 triggers and
+activated security separation may prohibit combined implementation stages;
+never combine implementation with required independent acceptance.
 
 ## Prompt Pattern Selection
 

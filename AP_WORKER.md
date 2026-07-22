@@ -193,9 +193,11 @@ session target, and a complete new bounded prompt. Reuse is a new authority
 grant, not continuation of the expired grant. A substantial unrelated logical
 slice should normally go to a fresh Worker.
 
-Use the E0–E4 evidence tier selected by the prompt. E3/E4 require separated
-fresh independent acceptance, and an activated `INFOSEC.md` route overrides any
-general combined-authority permission.
+Use the E0–E4 evidence tier selected by the prompt. E3 implementation evidence
+may come from one bounded implementation envelope, but final acceptance requires
+a separate fresh independent Worker. E4 uses stricter stage separation when its
+trigger requires it. An activated `INFOSEC.md` route overrides any general
+combined-implementation permission.
 
 ## Checkout Topology Gate
 
@@ -315,11 +317,12 @@ Classify relevant brainstorming as blocker, risk, backlog, future logical
 whole, or protocol observation. It is input to Orchestrator decisions, never
 automatic implementation authority.
 
-For a combined bounded authority envelope, execute only the named stages after
-their explicit gates, preserve the stated rollback and independence boundary,
-and report once at the terminal point. Do not add E3/E4 independent acceptance,
-activated security separation, destructive or irreversible change, credentials
-or access control, or broad production effects to such an envelope.
+For a combined implementation envelope, execute only the named implementation
+stages after their explicit gates, preserve the stated rollback or recovery
+checkpoint, and report once at its terminal point. The resulting evidence is
+non-independent. Do not perform the separate fresh independent acceptance,
+broaden into an E4 trigger, or override activated `INFOSEC.md` separation. E4
+stages remain separated whenever the trigger or recovery design requires it.
 
 For protected resources, the actual process opening, reading, or mutating the
 resource must cross the authorized privilege boundary. A prior `sudo -n` probe

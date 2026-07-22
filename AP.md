@@ -179,7 +179,8 @@ every task.
 
 A healthy `current-worker-session` is normally preferred for implementation
 after an approved repository-grounded planning task, focused correction,
-deployment or restart continuation already covered by a bounded envelope, and
+deployment or restart continuation already covered by an implementation
+envelope, and
 narrow closure where retained repository understanding reduces implementation
 error. Freshness alone never proves independence.
 
@@ -444,15 +445,24 @@ communication to people, deployment, and credential or billing operation.
 Every authorized consequential effect names its class, target, operation, and
 applicable confirmation or technical control. Unlisted effects require stopping.
 
-An authority grant may use a single-stage or combined bounded envelope. A
-combined envelope names every stage, stage gate, side effect, rollback,
-independence requirement, and terminal report point. It may combine related
-correction, tests, commit, non-force push, deployment, bounded verification,
-acceptance, or restart persistence only when scope is narrow, rollback is
-defined, and separation adds no material safety or independence. It is
-prohibited for destructive or irreversible change, security boundaries,
-credentials or access control, broad production impact, or any task requiring
-independent acceptance. UI actions never add stages or expand the envelope.
+Implementation authority may use a single-stage or combined implementation
+envelope. A combined implementation envelope names every implementation stage,
+stage gate, side effect, rollback or recovery checkpoint, and terminal
+implementation report point. It may combine related correction, tests, commit,
+normal non-force push, checkpoint or backup, deployment, bounded operational
+acceptance probes, no-provider or bounded verification, or restart persistence
+when scope is exact, recovery is defined, credentials and private data remain
+protected, every failed gate stops the sequence, and the operation is not E4.
+Its evidence remains non-independent.
+
+An independent acceptance envelope is always separate from implementation. E3
+may allow one combined implementation envelope while requiring final acceptance
+by a fresh independent Worker that did not materially implement the target. E4
+prohibits broad combined implementation when its destructive, irreversible,
+credential, access-control, broad-production, or unbounded-recovery trigger
+requires separated execution stages. Activated `INFOSEC.md` or another stricter
+profile overrides general combination permission. UI actions never add stages,
+combine the two envelopes, or expand either envelope.
 
 For a protected resource, privilege belongs to the actual process that opens,
 reads, or mutates that resource. A prior successful privilege probe such as
@@ -569,15 +579,31 @@ into a mandatory pipeline:
 | Tier | Trigger | Minimum evidence and independence |
 |---|---|---|
 | E0 — informational | read-only analysis or non-behavioral documentation | direct inspection plus applicable diff, link, or status checks; no independent audit |
-| E1 — bounded reversible | localized known path, strong focused tests, easy rollback | focused positive and negative checks, diff and Git evidence; no independent audit unless evidence is anomalously weak |
-| E2 — cross-cutting reversible | multiple layers, user-visible compatibility, moderate uncertainty, or weak mocks | affected full suite, behavioral and rollback evidence, public verification when applicable; fresh audit recommended when uncertainty remains |
-| E3 — high impact | security boundary, durable migration, material privilege, production or remote mutation, deployment, or difficult rollback | separate preflight, checkpoint and negative paths, public evidence, and fresh independent audit before final acceptance |
-| E4 — critical or irreversible | destructive data, credentials or access control, irreversible migration, or broad production impact | Cooperator approval, rehearsal and recovery where possible, separated execution and acceptance, mandatory fresh audit, and fresh re-audit after material correction |
+| E1 — bounded reversible | localized known path, strong focused tests, easy rollback, or routine reversible non-force Git publication | focused positive and negative checks, diff and Git evidence, and public equality when published; no independent audit unless evidence is anomalously weak |
+| E2 — cross-cutting reversible | multiple layers, user-visible compatibility, moderate uncertainty, weak mocks, or reversible development-surface mutation | affected full suite, behavioral and rollback evidence, public verification when applicable; fresh audit recommended when uncertainty remains |
+| E3 — high impact | security boundary, durable migration, material privilege, or remote or production mutation with material operational, durable, trust-boundary, availability, security, or recovery consequences | separate preflight, checkpoint and negative paths, public or operational evidence, a bounded implementation envelope, and fresh independent audit before final acceptance |
+| E4 — critical or irreversible | destructive data, credentials or access control, irreversible migration, broad production impact, or recovery uncertainty that cannot be bounded adequately | Cooperator approval at material decisions, strict stage separation, rehearsal and recovery where possible, mandatory fresh audit, and fresh re-audit after material correction |
 
 Select the highest tier triggered by consequence, reversibility, uncertainty,
 or trust-boundary impact, not by file count. Activated specialized profiles may
 be stricter; in particular, `INFOSEC.md` overrides any general permission to
-combine authority.
+combine implementation stages.
+
+Remote contact or terminology alone does not select E3. A normal non-force push
+may remain E1 or E2 when the repository and branch are explicit, changed paths
+are bounded, the commit is reviewable and revertible, public equality is
+verified, and no production-runtime, credential, access-control, destructive,
+irreversible, or broad-impact trigger exists. Production deployment, material
+remote-host mutation, durable migration with meaningful rollback, privileged
+operational change, production restart, or difficult recovery normally selects
+E3 because of its actual consequences rather than the word `remote` or
+`deployment` alone.
+
+E3 may combine exact implementation stages under explicit gates and rollback or
+recovery while keeping the implementation evidence non-independent. Its final
+acceptance remains a separate fresh independent acceptance envelope. E4 retains
+strict execution and acceptance separation and prohibits broad combination when
+its trigger requires separated stages.
 
 Use fresh independence when proportionate risk, uncertainty, or evidence cost
 justifies it. Independent audit is not required for every commit. Independent

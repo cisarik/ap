@@ -96,13 +96,19 @@ reversibility, uncertainty, and trust-boundary impact. E0 is informational, E1
 bounded reversible, E2 cross-cutting reversible, E3 high impact, and E4
 critical or irreversible. Activated specialized profiles may be stricter.
 
-## Combined Bounded Authority Envelope
+## Combined Implementation Envelope
 
-One explicit authority grant covering several ordered stages with named gates,
-side effects, rollback, independence boundary, and terminal report point. It is
-available only for narrow safe closure and never combines E3/E4 independent
-acceptance, activated security separation, destructive or irreversible work,
-credentials or access control, or broad production impact.
+One explicit implementation grant covering several ordered stages with named
+gates, side effects, rollback or recovery, and one terminal implementation
+report. E3 may use it for exact recoverable execution, but its evidence remains
+non-independent. E4 or an activated stricter profile may prohibit it.
+
+## Independent Acceptance Envelope
+
+A separate acceptance grant for a fresh Worker that did not materially
+implement the target. E3 requires this envelope for final acceptance. It is
+never combined with implementation; E4 retains stricter Cooperator approval,
+execution separation, recovery, and audit requirements.
 
 ## Report Budget
 

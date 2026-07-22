@@ -34,7 +34,7 @@ On the second consecutive `PARTIAL` or `BLOCKED` report for the same materially
 unchanged blocker, add:
 
 ```text
-Consecutive non-terminal reports for same blocker: 2
+Consecutive terminal PARTIAL/BLOCKED reports for the same materially unchanged blocker: 2
 Exact blocker: <one causal blocker>
 Smallest authority expansion needed: <minimum or none>
 Direct closure path: <execute, reject, or identify missing evidence>
@@ -77,7 +77,7 @@ reinterpret the same blocker.
 | Secret authority | Whether secret access is allowed; normally none |
 | Untrusted-content boundary | Governing instruction sources, data-under-analysis classes, and conflict behavior |
 | Side-effect authority | Authorized read-only, reversible local, destructive local, remote, communication, deployment, credential, or billing effects |
-| Authority envelope | Single-stage or combined-bounded stages, gates, rollback, independence boundary, and terminal report point |
+| Implementation and acceptance envelopes | Authorized implementation stages, combined-implementation decision, gates, rollback or recovery, separate independent-acceptance decision, and terminal report point |
 | Browser authority | Allowed origins, interactions, storage, screenshots, and cleanup |
 | Validation | Required checks and expected evidence |
 | Stopping conditions | Conditions that require stopping without improvisation |
@@ -456,23 +456,36 @@ reversible local mutation, destructive local mutation, remote mutation,
 communication to people, deployment, or credential/billing operation. Name the
 target, operation, confirmation, and stop rule for every non-read-only effect.
 
-A combined bounded authority envelope uses:
+A combined implementation envelope and its independent acceptance envelope use:
 
 ```text
-Authority envelope: single-stage | combined-bounded
-Authorized stages: <ordered stages>
-Stage gates: <preconditions for each consequential stage>
-Rollback: <defined rollback or stop>
-Independent acceptance required: yes | no
-Terminal report point: <one terminal point>
+Evidence tier: E0 | E1 | E2 | E3 | E4
+Evidence tier basis: <consequence, reversibility, uncertainty, trust-boundary triggers>
+Authorized implementation stages: <exact ordered stages>
+Combined implementation envelope: allowed | prohibited
+Implementation stage gates: <preconditions for each consequential stage>
+Independent acceptance: not-required | recommended | required-separate-fresh-worker
+Rollback or recovery checkpoint: <exact evidence or not-applicable>
+Activated stricter profile: none | INFOSEC.md | <other governed profile>
+Terminal implementation report point: <one terminal point>
 ```
 
-Use `combined-bounded` only for narrow scope with defined rollback and no
-independence trigger. It may combine correction, tests, commit, non-force push,
-deployment, bounded verification, acceptance, or restart persistence. It must
-not combine destructive or irreversible work, security boundaries, credentials
-or access control, broad production impact, E3/E4 independent acceptance, or
-stricter `INFOSEC.md` separation.
+Use `Combined implementation envelope: allowed` only for exact scope with
+defined gates and rollback or recovery. It may combine correction, tests,
+commit, normal non-force push, checkpoint or backup, deployment, bounded
+operational acceptance probes, no-provider or bounded verification, restart
+persistence, and one terminal implementation report. A failed gate stops the
+sequence; credentials and private data remain protected. Its evidence remains
+non-independent.
+
+E3 may allow that implementation envelope while requiring `Independent
+acceptance: required-separate-fresh-worker`. The implementation Worker never
+performs or self-certifies that separate acceptance. E4 uses `Combined
+implementation envelope: prohibited` whenever its destructive, irreversible,
+credential, access-control, broad-production, or unbounded-recovery trigger
+requires separated execution stages. Activated `INFOSEC.md` or another stricter
+profile overrides general combination permission. No envelope combines
+implementation with required independent final acceptance.
 
 For protected resources, the actual resource-opening or mutating command must
 cross the authorized privilege boundary. A successful `sudo -n` probe grants
@@ -481,25 +494,37 @@ to bypass the boundary.
 
 ### Evidence Tier and Closure Budget Fields
 
-A consequential prompt records the highest triggered general tier:
-
-```text
-Evidence tier: E0 | E1 | E2 | E3 | E4
-Tier basis: <consequence, reversibility, uncertainty, trust boundary>
-Required evidence: <checks and observations>
-Independent audit: unnecessary | recommended | mandatory
-Combined authority: allowed | prohibited
-Specialized profile override: <none | profile and stricter rule>
-```
+A consequential prompt records the highest triggered general tier and keeps the
+tier, implementation stages, implementation-envelope decision, and independent
+acceptance envelope independently visible through the canonical fields above.
 
 E0 is informational, E1 bounded reversible, E2 cross-cutting reversible, E3
-high impact, and E4 critical or irreversible. E3/E4 require fresh independent
-acceptance and prohibit combining that acceptance with implementation. One
-logical whole receives one primary independent audit and at most one
-proportionate re-audit after correction unless new mutation, invalid audit,
-compromised independence, new material risk, or missing required evidence
-justifies another. A context-only fresh handoff is limited to one per unchanged
-logical whole unless independence requires it.
+materially high impact, and E4 critical, irreversible, or insufficiently
+recoverable. Select from consequence, reversibility, uncertainty, and
+trust-boundary impact. A normal non-force Git push or reversible development
+surface is not E3 merely because it is remote: explicit repository and branch,
+bounded paths, a reviewable and revertible commit, public equality, and absence
+of production, credential, access-control, destructive, irreversible, security,
+or broad-impact triggers may keep it E1 or E2.
+
+Material production deployment, remote-host mutation, durable migration,
+privilege-sensitive operation, production restart, or difficult recovery is E3
+when its operational, durable, trust-boundary, availability, security, or
+recovery consequence is material. E3 requires separate fresh independent final
+acceptance but may combine bounded implementation stages. E4 covers destructive
+or irreversible data, credentials or access control, irreversible migration,
+broad production impact, or recovery uncertainty that cannot be bounded; it
+requires Cooperator approval, strict separation as triggered, recovery or
+rehearsal evidence where possible, and fresh independent audit.
+
+A declared lower tier is invalid when its basis or authorized stages contain a
+higher-tier trigger. An activated stricter profile cannot be weakened by the
+general tier or implementation-envelope decision. One logical whole receives
+one primary independent audit and at most one proportionate re-audit after
+correction unless new mutation, invalid audit, compromised independence, new
+material risk, or missing required evidence justifies another. A context-only
+fresh handoff is limited to one per unchanged logical whole unless independence
+requires it.
 
 ### Failure-Preserving Automation Fields
 

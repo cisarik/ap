@@ -7,11 +7,12 @@ the authoritative archive for exact content.
 
 - Added risk-routed orchestration and implementation planning, healthy
   same-session continuation, E0–E4 evidence tiers, report/audit/handoff and
-  plan-cycle budgets, safe combined authority envelopes, repeated-blocker
-  escalation, failure-preserving automation and privilege rules, expanded
-  communication and surface routing, and human-governed collaboration that
-  preserves meaningful Cooperator decisions without deterministic-step
-  microapproval; recorded by ADR-0011 with semantic scenario coverage.
+  plan-cycle budgets, safe combined implementation envelopes with separate
+  fresh independent acceptance, repeated-blocker escalation,
+  failure-preserving automation and privilege rules, expanded communication and
+  surface routing, and human-governed collaboration that preserves meaningful
+  Cooperator decisions without deterministic-step microapproval; recorded by
+  ADR-0011 with semantic scenario coverage.
 
 - Added the advisory Community-Profile-style `INFOSEC.md` defensive-security
   specialization with a small normative Defensive-Security Task Anchor in

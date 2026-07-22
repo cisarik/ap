@@ -55,8 +55,8 @@ Plan mode is routed by unresolved implementation uncertainty rather than task
 size. Healthy current Workers normally continue approved repository-grounded
 plans under renewed authority; fresh sessions remain required for independence
 or degraded context. Evidence tiers E0–E4, bounded report/audit/handoff budgets,
-and safe combined authority favor direct closure without weakening high-impact
-independence.
+safe combined implementation envelopes, and separate fresh independent
+acceptance favor direct closure without weakening high-impact independence.
 
 ## Canonical Distribution
 

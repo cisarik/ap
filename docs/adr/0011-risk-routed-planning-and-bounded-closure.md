@@ -14,7 +14,7 @@ AP already separates capability from authority, requires repository evidence,
 supports current-session renewal, prevents Plan approval from granting
 execution, and selects evidence proportionately. Field incidents nevertheless
 exposed a linked failure cluster: universal fresh-Worker bias, duplicate plans,
-report and audit recursion, repeated non-terminal blockers, authority
+report and audit recursion, repeated unresolved blockers, authority
 fragmentation, disproportionate proof, brittle structured parsing, cleanup
 masking the first failure, and privilege probes being mistaken for privilege.
 
@@ -85,15 +85,21 @@ it, rejects it concretely, or identifies exact missing evidence.
 
 General evidence tiers E0 through E4 scale from informational to critical or
 irreversible work using consequence, reversibility, uncertainty, and
-trust-boundary impact. E3/E4 require fresh independent acceptance. Activated
+trust-boundary impact. Routine reversible non-force Git publication is not E3
+merely because it is remote; material operational, production, durable,
+privilege, trust-boundary, or recovery consequences select E3. Activated
 specialized profiles, especially `INFOSEC.md`, may be stricter.
 
-A combined bounded authority envelope may cover related correction, tests,
-commit, non-force push, deployment, bounded verification, acceptance, and
-restart persistence when scope is narrow, rollback and stage gates are defined,
-and independence adds no material value. It never combines destructive or
-irreversible work, security boundaries, credentials or access control, broad
-production impact, or required independent acceptance.
+A combined implementation envelope may cover related correction, tests,
+commit, normal non-force push, checkpoint, deployment, bounded operational
+acceptance probes, no-provider or bounded verification, and restart persistence
+when scope is exact and rollback or recovery and stage gates are defined. Gate
+failure stops the sequence, and credentials and private data remain protected.
+E3 implementation may use that envelope, but its final acceptance remains a
+separate fresh independent acceptance envelope. E4 requires strict stage
+separation when its destructive, irreversible, credential, access-control,
+broad-production, or unbounded-recovery trigger demands it. Activated
+`INFOSEC.md` overrides general combination permission.
 
 ### Operational Evidence
 
@@ -143,8 +149,9 @@ Safe work can close with fewer handoffs, plans, reports, and audits while
 high-impact work retains explicit independence. Healthy sessions preserve
 repository understanding. Cooperator attention moves to material decisions
 rather than deterministic mechanics. The main risk is under-routing rigor;
-E3/E4, specialized-profile overrides, explicit exceptions, and semantic
-negative tests control it.
+tier-basis and authorized-stage validation, E3 separate acceptance, E4 strict
+separation, specialized-profile overrides, and semantic negative tests control
+it.
 
 ## Rejected Alternatives
 

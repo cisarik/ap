@@ -476,23 +476,23 @@ validate_report_authority_fixture() {
     file=$1
     [ "$(grep -Ec '^Status: (PASS|PARTIAL|BLOCKED)$' "$file")" -eq 1 ] || return 1
     [ "$(grep -Ec '^Report justification: (new-mutation|new-evidence|new-material-risk|changed-external-state|final-acceptance|explicit-closure)$' "$file")" -eq 1 ] || return 1
-    [ "$(grep -Ec '^Authority envelope: (single-stage|combined-bounded)$' "$file")" -eq 1 ] || return 1
-    for field in "Authorized stages:" "Stage gates:" "Rollback:" "Terminal report point:"
+    [ "$(grep -Ec '^Combined implementation envelope: (allowed|prohibited)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Independent acceptance: (not-required|recommended|required-separate-fresh-worker)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -cFx 'Implementation Worker performs independent acceptance: no' "$file")" -eq 1 ] || return 1
+    for field in \
+        "Authorized implementation stages:" \
+        "Implementation stage gates:" \
+        "Rollback or recovery checkpoint:" \
+        "Activated stricter profile:" \
+        "Terminal implementation report point:"
     do
         grep -F "$field" "$file" >/dev/null || return 1
     done
-    [ "$(grep -Ec '^Independent acceptance required: (yes|no)$' "$file")" -eq 1 ] || return 1
     [ "$(grep -cFx 'Primary audit budget: 1' "$file")" -eq 1 ] || return 1
     [ "$(grep -cFx 'Proportionate re-audit budget: 1' "$file")" -eq 1 ] || return 1
     [ "$(grep -cFx 'Context-only handoff budget: 1' "$file")" -eq 1 ] || return 1
     [ "$(grep -cFx 'Second equivalent PARTIAL or BLOCKED escalation: required' "$file")" -eq 1 ] || return 1
     [ "$(grep -cFx 'Third equivalent cycle without new basis: prohibited' "$file")" -eq 1 ] || return 1
-
-    envelope=$(sed -n 's/^Authority envelope: //p' "$file")
-    independent=$(sed -n 's/^Independent acceptance required: //p' "$file")
-    if [ "$envelope" = "combined-bounded" ] && [ "$independent" = "yes" ]; then
-        return 1
-    fi
 }
 
 validate_human_governance_fixture() {
@@ -521,7 +521,9 @@ validate_human_governance_fixture() {
 validate_evidence_surface_fixture() {
     file=$1
     for field in \
-        "Tier basis:" "Required evidence:" "Specialized profile override:" \
+        "Evidence tier basis:" "Required evidence:" \
+        "Authorized implementation stages:" "Rollback or recovery checkpoint:" \
+        "Activated stricter profile:" \
         "Requested model:" "Observed model:" "Model identity attestation:" \
         "Requested reasoning:" "Observed reasoning:" "Reasoning enforcement attestation:" \
         "MAX/enhanced mode:" \
@@ -532,17 +534,114 @@ validate_evidence_surface_fixture() {
         grep -F "$field" "$file" >/dev/null || return 1
     done
     [ "$(grep -Ec '^Evidence tier: E[0-4]$' "$file")" -eq 1 ] || return 1
-    [ "$(grep -Ec '^Independent audit: (unnecessary|recommended|mandatory)$' "$file")" -eq 1 ] || return 1
-    [ "$(grep -Ec '^Combined authority: (allowed|prohibited)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Independent acceptance: (not-required|recommended|required-separate-fresh-worker)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Combined implementation envelope: (allowed|prohibited)$' "$file")" -eq 1 ] || return 1
     tier=$(sed -n 's/^Evidence tier: //p' "$file")
-    audit=$(sed -n 's/^Independent audit: //p' "$file")
-    combined=$(sed -n 's/^Combined authority: //p' "$file")
+    acceptance=$(sed -n 's/^Independent acceptance: //p' "$file")
+    combined=$(sed -n 's/^Combined implementation envelope: //p' "$file")
     case "$tier" in
-        E3|E4)
-            [ "$audit" = "mandatory" ] || return 1
+        E3)
+            [ "$acceptance" = "required-separate-fresh-worker" ] || return 1
+            ;;
+        E4)
+            [ "$acceptance" = "required-separate-fresh-worker" ] || return 1
             [ "$combined" = "prohibited" ] || return 1
             ;;
     esac
+}
+
+validate_evidence_authority_scenario() {
+    file=$1
+    for field in \
+        "Scenario:" \
+        "Evidence tier:" \
+        "Evidence tier basis:" \
+        "Repository and branch:" \
+        "Changed paths:" \
+        "Publication operation:" \
+        "Public equality verification:" \
+        "Authorized implementation stages:" \
+        "General combined implementation permission:" \
+        "Combined implementation envelope:" \
+        "Independent acceptance:" \
+        "Independent acceptance Worker:" \
+        "Implementation Worker performs independent acceptance:" \
+        "Rollback or recovery checkpoint:" \
+        "Activated stricter profile:" \
+        "COOPERATOR approval:" \
+        "Recovery or rehearsal evidence:"
+    do
+        [ "$(grep -cF "$field" "$file")" -eq 1 ] || return 1
+        value=$(sed -n "s/^$field //p" "$file")
+        [ -n "$value" ] || return 1
+    done
+
+    [ "$(grep -Ec '^Evidence tier: E[0-4]$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^General combined implementation permission: (allowed|prohibited)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Combined implementation envelope: (allowed|prohibited)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Independent acceptance: (not-required|recommended|required-separate-fresh-worker)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Independent acceptance Worker: (not-applicable|fresh-independent-worker|current-implementation-worker)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Implementation Worker performs independent acceptance: (yes|no)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Activated stricter profile: (none|INFOSEC.md)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^COOPERATOR approval: (not-required|required)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Publication operation: (none|normal-non-force-push)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Public equality verification: (required|not-applicable)$' "$file")" -eq 1 ] || return 1
+
+    tier=$(sed -n 's/^Evidence tier: //p' "$file")
+    basis=$(sed -n 's/^Evidence tier basis: //p' "$file")
+    stages=$(sed -n 's/^Authorized implementation stages: //p' "$file")
+    combined=$(sed -n 's/^Combined implementation envelope: //p' "$file")
+    acceptance=$(sed -n 's/^Independent acceptance: //p' "$file")
+    acceptance_worker=$(sed -n 's/^Independent acceptance Worker: //p' "$file")
+    self_acceptance=$(sed -n 's/^Implementation Worker performs independent acceptance: //p' "$file")
+    rollback=$(sed -n 's/^Rollback or recovery checkpoint: //p' "$file")
+    profile=$(sed -n 's/^Activated stricter profile: //p' "$file")
+    cooperator=$(sed -n 's/^COOPERATOR approval: //p' "$file")
+    recovery=$(sed -n 's/^Recovery or rehearsal evidence: //p' "$file")
+    publication=$(sed -n 's/^Publication operation: //p' "$file")
+    repository_branch=$(sed -n 's/^Repository and branch: //p' "$file")
+    changed_paths=$(sed -n 's/^Changed paths: //p' "$file")
+    public_equality=$(sed -n 's/^Public equality verification: //p' "$file")
+    basis_and_stages=$(printf '%s\n%s\n' "$basis" "$stages" | tr '[:upper:]' '[:lower:]')
+
+    if [ "$publication" = "normal-non-force-push" ]; then
+        [ "$repository_branch" != "not-applicable" ] || return 1
+        [ "$changed_paths" != "not-applicable" ] || return 1
+        [ "$public_equality" = "required" ] || return 1
+    fi
+
+    case "$tier" in
+        E1|E2)
+            if printf '%s\n' "$basis_and_stages" | grep -Eq \
+                'destructive|irreversible|credential|access[- ]control|broad production|material production deployment|material remote host|security[- ]boundary|durable migration|material privilege|production restart|difficult recovery'; then
+                return 1
+            fi
+            ;;
+        E3)
+            [ "$acceptance" = "required-separate-fresh-worker" ] || return 1
+            [ "$acceptance_worker" = "fresh-independent-worker" ] || return 1
+            [ "$self_acceptance" = "no" ] || return 1
+            case "$rollback" in missing|not-applicable) return 1 ;; esac
+            if printf '%s\n' "$basis_and_stages" | grep -Eq \
+                'destructive|irreversible|credential|access[- ]control|broad production|unbounded recovery'; then
+                return 1
+            fi
+            ;;
+        E4)
+            [ "$combined" = "prohibited" ] || return 1
+            [ "$acceptance" = "required-separate-fresh-worker" ] || return 1
+            [ "$acceptance_worker" = "fresh-independent-worker" ] || return 1
+            [ "$self_acceptance" = "no" ] || return 1
+            [ "$cooperator" = "required" ] || return 1
+            case "$rollback" in missing|not-applicable) return 1 ;; esac
+            case "$recovery" in missing|not-applicable) return 1 ;; esac
+            ;;
+    esac
+
+    if [ "$profile" = "INFOSEC.md" ]; then
+        [ "$combined" = "prohibited" ] || return 1
+        [ "$acceptance" = "required-separate-fresh-worker" ] || return 1
+    fi
 }
 
 validate_failure_preservation_fixture() {
@@ -2895,7 +2994,7 @@ test_report_audit_handoff_and_authority_envelope_contracts() {
         "A third equivalent cycle is prohibited without new mutation, evidence, risk, external state, or objective" || return 1
     assert_section_contract "$REPO/AP.md" "## 5. Task Authority" \
         "## 6. Adaptive Orchestration Lifecycle" \
-        "combined bounded envelope" || return 1
+        "combined implementation envelope" || return 1
     assert_section_contract "$REPO/PROMPT_CONTRACTS.md" \
         "### Evidence Tier and Closure Budget Fields" \
         "### Failure-Preserving Automation Fields" \
@@ -2912,12 +3011,14 @@ test_report_audit_handoff_and_authority_envelope_contracts() {
     cat > "$fixtures/valid" <<'EOF'
 Status: PASS
 Report justification: explicit-closure
-Authority envelope: combined-bounded
-Authorized stages: correction, tests, commit, non-force push, verification
-Stage gates: each consequential stage follows passing validation and unchanged public base
-Rollback: stop before the next stage; preserve first failure
-Independent acceptance required: no
-Terminal report point: after direct public equality verification
+Combined implementation envelope: allowed
+Authorized implementation stages: correction, tests, commit, non-force push, verification
+Implementation stage gates: each consequential stage follows passing validation and unchanged public base
+Rollback or recovery checkpoint: stop before the next stage; preserve first failure
+Independent acceptance: not-required
+Implementation Worker performs independent acceptance: no
+Activated stricter profile: none
+Terminal implementation report point: after direct public equality verification
 Primary audit budget: 1
 Proportionate re-audit budget: 1
 Context-only handoff budget: 1
@@ -2925,11 +3026,15 @@ Second equivalent PARTIAL or BLOCKED escalation: required
 Third equivalent cycle without new basis: prohibited
 EOF
     validate_report_authority_fixture "$fixtures/valid" || return 1
-    sed 's/^Independent acceptance required: no$/Independent acceptance required: yes/' \
-        "$fixtures/valid" > "$fixtures/combined-independent"
-    ! validate_report_authority_fixture "$fixtures/combined-independent" || return 1
+    sed 's/^Implementation Worker performs independent acceptance: no$/Implementation Worker performs independent acceptance: yes/' \
+        "$fixtures/valid" > "$fixtures/self-independent"
+    ! validate_report_authority_fixture "$fixtures/self-independent" || return 1
     sed '/^Report justification:/d' "$fixtures/valid" > "$fixtures/no-justification"
     ! validate_report_authority_fixture "$fixtures/no-justification" || return 1
+    grep -Fx \
+        'Consecutive terminal PARTIAL/BLOCKED reports for the same materially unchanged blocker: 2' \
+        "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
+    ! grep -F 'Consecutive non-terminal reports' "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
 
     cat > "$fixtures/human-valid" <<'EOF'
 Cooperator visibility: objective, logical whole, routing, authority, risk, acceptance, closure
@@ -2967,9 +3072,9 @@ test_evidence_tiers_activation_and_surface_routing_contracts() {
     assert_section_contract "$REPO/PROMPT_CONTRACTS.md" \
         "### Evidence Tier and Closure Budget Fields" \
         "### Failure-Preserving Automation Fields" \
-        "E3/E4 require fresh independent acceptance" || return 1
+        "E3 requires separate fresh independent final acceptance but may combine bounded implementation stages" || return 1
     assert_text_contract "$REPO/PROMPT_CONTRACTS.md" \
-        "stricter \`INFOSEC.md\` separation" || return 1
+        "Activated \`INFOSEC.md\` or another stricter profile overrides general combination permission" || return 1
     for surface in \
         "Enhanced or maximum mode" "Automatic model selection" \
         "Sub-agents or internal delegation" "Explore-style task" "Worker topology"
@@ -2981,11 +3086,13 @@ test_evidence_tiers_activation_and_surface_routing_contracts() {
     mkdir -p "$fixtures"
     cat > "$fixtures/e2-valid" <<'EOF'
 Evidence tier: E2
-Tier basis: cross-cutting reversible documentation and semantic tests
+Evidence tier basis: cross-cutting reversible documentation and semantic tests
 Required evidence: full affected suite, diff review, and public verification
-Independent audit: recommended
-Combined authority: allowed
-Specialized profile override: none
+Authorized implementation stages: correction, tests, commit, normal non-force push, public verification
+Combined implementation envelope: allowed
+Independent acceptance: recommended
+Rollback or recovery checkpoint: revertible commit and stop before publication on validation failure
+Activated stricter profile: none
 Requested model: reasoning-capable model
 Observed model: unknown/not observably exposed
 Model identity attestation: not independently attested
@@ -3002,16 +3109,171 @@ Cost/quota effect on evidence: none
 EOF
     validate_evidence_surface_fixture "$fixtures/e2-valid" || return 1
     sed -e 's/^Evidence tier: E2$/Evidence tier: E3/' \
-        -e 's/^Independent audit: recommended$/Independent audit: mandatory/' \
-        -e 's/^Combined authority: allowed$/Combined authority: prohibited/' \
+        -e 's/^Independent acceptance: recommended$/Independent acceptance: required-separate-fresh-worker/' \
         "$fixtures/e2-valid" > "$fixtures/e3-valid"
     validate_evidence_surface_fixture "$fixtures/e3-valid" || return 1
-    sed 's/^Combined authority: prohibited$/Combined authority: allowed/' \
-        "$fixtures/e3-valid" > "$fixtures/e3-combined"
-    ! validate_evidence_surface_fixture "$fixtures/e3-combined" || return 1
-    sed 's/^Independent audit: mandatory$/Independent audit: recommended/' \
+    sed 's/^Independent acceptance: required-separate-fresh-worker$/Independent acceptance: recommended/' \
         "$fixtures/e3-valid" > "$fixtures/e3-no-audit"
     ! validate_evidence_surface_fixture "$fixtures/e3-no-audit"
+}
+
+test_evidence_tier_and_implementation_envelope_scenarios() {
+    fixtures=$TMPROOT/evidence-authority-scenarios
+    mkdir -p "$fixtures"
+
+    cat > "$fixtures/e2-reversible-publication" <<'EOF'
+Scenario: E2 reversible non-force Git publication
+Evidence tier: E2
+Evidence tier basis: cross-cutting reversible publication to an explicit remote development repository and branch
+Repository and branch: https://github.com/example/project.git refs/heads/main
+Changed paths: docs/protocol.md, tests/protocol-tests.sh
+Publication operation: normal-non-force-push
+Public equality verification: required
+Authorized implementation stages: tests, commit bounded changed paths, normal non-force push, public equality verification
+General combined implementation permission: allowed
+Combined implementation envelope: allowed
+Independent acceptance: recommended
+Independent acceptance Worker: not-applicable
+Implementation Worker performs independent acceptance: no
+Rollback or recovery checkpoint: reviewable revertible commit and stop before push on gate failure
+Activated stricter profile: none
+COOPERATOR approval: not-required
+Recovery or rehearsal evidence: public commit equality and documented revert path
+EOF
+    validate_evidence_authority_scenario "$fixtures/e2-reversible-publication" || return 1
+
+    cat > "$fixtures/e3-combined-separate-acceptance" <<'EOF'
+Scenario: E3 combined implementation with separate fresh acceptance
+Evidence tier: E3
+Evidence tier basis: material production deployment with bounded operational and recovery consequences
+Repository and branch: https://github.com/example/service.git refs/heads/main
+Changed paths: deploy/service.conf, tests/deploy-tests.sh
+Publication operation: normal-non-force-push
+Public equality verification: required
+Authorized implementation stages: correction, focused and full tests, commit, non-force push, checkpoint, deployment, no-provider verification, bounded operational acceptance probes, restart persistence
+General combined implementation permission: allowed
+Combined implementation envelope: allowed
+Independent acceptance: required-separate-fresh-worker
+Independent acceptance Worker: fresh-independent-worker
+Implementation Worker performs independent acceptance: no
+Rollback or recovery checkpoint: verified pre-deployment checkpoint and exact rollback command
+Activated stricter profile: none
+COOPERATOR approval: not-required
+Recovery or rehearsal evidence: checkpoint verified before deployment
+EOF
+    validate_evidence_authority_scenario "$fixtures/e3-combined-separate-acceptance" || return 1
+
+    sed -e 's/^Combined implementation envelope: allowed$/Combined implementation envelope: prohibited/' \
+        -e 's#^Authorized implementation stages:.*#Authorized implementation stages: separately authorized correction and tests, publication, deployment, verification, and restart persistence stages#' \
+        "$fixtures/e3-combined-separate-acceptance" > "$fixtures/e3-separated"
+    validate_evidence_authority_scenario "$fixtures/e3-separated" || return 1
+
+    cat > "$fixtures/e4-strict-separation" <<'EOF'
+Scenario: E4 irreversible access-control mutation
+Evidence tier: E4
+Evidence tier basis: irreversible access-control mutation with broad production impact
+Repository and branch: not-applicable
+Changed paths: not-applicable
+Publication operation: none
+Public equality verification: not-applicable
+Authorized implementation stages: separated rehearsal, recovery checkpoint, credential and access-control execution, terminal implementation report
+General combined implementation permission: prohibited
+Combined implementation envelope: prohibited
+Independent acceptance: required-separate-fresh-worker
+Independent acceptance Worker: fresh-independent-worker
+Implementation Worker performs independent acceptance: no
+Rollback or recovery checkpoint: rehearsed break-glass recovery and verified backup
+Activated stricter profile: none
+COOPERATOR approval: required
+Recovery or rehearsal evidence: successful isolated rehearsal and recovery record
+EOF
+    validate_evidence_authority_scenario "$fixtures/e4-strict-separation" || return 1
+
+    cat > "$fixtures/infosec-override" <<'EOF'
+Scenario: activated INFOSEC override defeats general combination permission
+Evidence tier: E3
+Evidence tier basis: security-boundary correction under activated INFOSEC separation
+Repository and branch: https://github.com/example/security-service.git refs/heads/main
+Changed paths: src/auth.c, tests/auth-tests.sh
+Publication operation: normal-non-force-push
+Public equality verification: required
+Authorized implementation stages: separated correction, tests, commit, non-force push, terminal implementation report
+General combined implementation permission: allowed
+Combined implementation envelope: prohibited
+Independent acceptance: required-separate-fresh-worker
+Independent acceptance Worker: fresh-independent-worker
+Implementation Worker performs independent acceptance: no
+Rollback or recovery checkpoint: revertible correction commit and exact stop gate
+Activated stricter profile: INFOSEC.md
+COOPERATOR approval: not-required
+Recovery or rehearsal evidence: isolated security regression evidence
+EOF
+    validate_evidence_authority_scenario "$fixtures/infosec-override" || return 1
+
+    for trigger in \
+        destructive-mutation \
+        irreversible-migration \
+        credential-mutation \
+        access-control-mutation \
+        broad-production-impact \
+        material-production-deployment \
+        security-boundary \
+        durable-migration
+    do
+        case "$trigger" in
+            destructive-mutation) basis='destructive mutation' ;;
+            irreversible-migration) basis='irreversible migration' ;;
+            credential-mutation) basis='credential mutation' ;;
+            access-control-mutation) basis='access-control mutation' ;;
+            broad-production-impact) basis='broad production impact' ;;
+            material-production-deployment) basis='material production deployment without recovery treatment' ;;
+            security-boundary) basis='security-boundary mutation' ;;
+            durable-migration) basis='durable migration with meaningful rollback requirements' ;;
+        esac
+        sed "s#^Evidence tier basis:.*#Evidence tier basis: $basis#" \
+            "$fixtures/e2-reversible-publication" > "$fixtures/e2-$trigger"
+        ! validate_evidence_authority_scenario "$fixtures/e2-$trigger" || return 1
+    done
+
+    sed -e 's/^Independent acceptance Worker: fresh-independent-worker$/Independent acceptance Worker: current-implementation-worker/' \
+        -e 's/^Implementation Worker performs independent acceptance: no$/Implementation Worker performs independent acceptance: yes/' \
+        "$fixtures/e3-combined-separate-acceptance" > "$fixtures/e3-self-certification"
+    ! validate_evidence_authority_scenario "$fixtures/e3-self-certification" || return 1
+
+    sed 's/^Rollback or recovery checkpoint:.*$/Rollback or recovery checkpoint: missing/' \
+        "$fixtures/e3-combined-separate-acceptance" > "$fixtures/e3-no-recovery"
+    ! validate_evidence_authority_scenario "$fixtures/e3-no-recovery" || return 1
+
+    sed 's/^Combined implementation envelope: prohibited$/Combined implementation envelope: allowed/' \
+        "$fixtures/e4-strict-separation" > "$fixtures/e4-combined"
+    ! validate_evidence_authority_scenario "$fixtures/e4-combined" || return 1
+
+    sed -e 's/^Independent acceptance Worker: fresh-independent-worker$/Independent acceptance Worker: current-implementation-worker/' \
+        -e 's/^Implementation Worker performs independent acceptance: no$/Implementation Worker performs independent acceptance: yes/' \
+        "$fixtures/e4-strict-separation" > "$fixtures/e4-execution-and-acceptance"
+    ! validate_evidence_authority_scenario "$fixtures/e4-execution-and-acceptance" || return 1
+
+    sed 's/^COOPERATOR approval: required$/COOPERATOR approval: not-required/' \
+        "$fixtures/e4-strict-separation" > "$fixtures/e4-no-cooperator"
+    ! validate_evidence_authority_scenario "$fixtures/e4-no-cooperator" || return 1
+
+    sed 's/^Recovery or rehearsal evidence:.*$/Recovery or rehearsal evidence: missing/' \
+        "$fixtures/e4-strict-separation" > "$fixtures/e4-no-rehearsal"
+    ! validate_evidence_authority_scenario "$fixtures/e4-no-rehearsal" || return 1
+
+    sed 's/^Combined implementation envelope: prohibited$/Combined implementation envelope: allowed/' \
+        "$fixtures/infosec-override" > "$fixtures/infosec-ignored"
+    ! validate_evidence_authority_scenario "$fixtures/infosec-ignored" || return 1
+
+    ! rg -n -F 'non-terminal' \
+        "$REPO/AP.md" "$REPO/AP_ORCHESTRATOR.md" "$REPO/AP_WORKER.md" \
+        "$REPO/PROMPT_CONTRACTS.md" "$REPO/PROMPT_ENGINEERING_PATTERNS.md" \
+        "$REPO/README.md" "$REPO/FAQ.md" "$REPO/GLOSSARY.md" \
+        "$REPO/CHANGELOG.md" "$REPO/docs/adr/0011-risk-routed-planning-and-bounded-closure.md" || return 1
+    grep -F 'Post-plan implementation session: <current-worker-session|fresh-worker-session|none>.' \
+        "$REPO/PROMPT_ENGINEERING_PATTERNS.md" >/dev/null || return 1
+    ! grep -F 'Post-plan session: <current|fresh|none>' \
+        "$REPO/PROMPT_ENGINEERING_PATTERNS.md" >/dev/null
 }
 
 test_failure_preservation_privilege_and_cleanup_contracts() {
@@ -3124,6 +3386,7 @@ run_test "Plan Mode ownership, routing, and one-cycle budget contracts are enfor
 run_test "Worker freshness and same-session continuation contracts are enforced" test_worker_freshness_and_same_session_continuation_contracts
 run_test "report, audit, handoff, human governance, and authority-envelope contracts are enforced" test_report_audit_handoff_and_authority_envelope_contracts
 run_test "evidence tiers, activation, and surface-routing contracts are enforced" test_evidence_tiers_activation_and_surface_routing_contracts
+run_test "evidence tiers and implementation/acceptance envelopes enforce scenario relationships" test_evidence_tier_and_implementation_envelope_scenarios
 run_test "first-causal-error, privilege, parser, and cleanup contracts are enforced" test_failure_preservation_privilege_and_cleanup_contracts
 
 say "passed: $pass_count"
