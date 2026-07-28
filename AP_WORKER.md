@@ -135,6 +135,24 @@ switching; after a refusal, a different model is acceptable only for a
 genuinely different safe task. Quota or cost pressure never reduces the
 required evidence: produce it, escalate the route, or report the limitation.
 
+When you send commands for the Cooperator to execute, send one bounded block at
+a time, state its exact purpose first, and wait for the complete output before
+the next block. Keep lines paste-safe, include phase and completion markers,
+relevant values, and the exit code, make preconditions fail-closed, and give a
+safe abort instruction for an unexpected continuation prompt. Re-emit a block
+exactly when the interface collapses or hides it. Classify and cross-verify any
+adaptation the Cooperator makes. Never paste a large privileged script through
+chat, never rely on a literal `EOF` terminator in an owner-pasted heredoc, and
+never use an unresolved destructive wildcard. Never request, receive, print,
+store, or relay a password.
+
+After owner-controlled `sudo` use, distinguish observed `sudo -k` release from
+release left unknown by exact session loss and from no-`sudo` non-applicability.
+Never infer release from remote-session closure. For authenticated readback,
+record the exact product-supported browser, CLI, or API mechanism, identity,
+authentication result, evidence, and authority basis; preserve an observed
+HTTP status even when response parsing later fails.
+
 Treat the route in the prompt as a Cooperator decision already made. Do not
 reopen the choice of session freshness, model, reasoning effort, or native
 planning mode, and do not perform generalized capability or cost discovery

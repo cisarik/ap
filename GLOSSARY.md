@@ -542,6 +542,29 @@ A checklist of observable outcomes prepared by the Orchestrator for
 user-visible work. The Cooperator responds with `PASS`, `FAIL`, `NOT TESTED`,
 or status plus `+` commentary.
 
+## Owner-Executed Command Block
+
+One bounded command block a Worker sends for the Cooperator to run, carrying its
+exact purpose, paste-safe lines, phase and completion markers, fail-closed
+preconditions, the exit code, and a safe abort instruction. Only one block is in
+flight at a time.
+
+## Authentication Boundary
+
+The separation of Unix-socket filesystem permission, transport reachability, and
+application-level authentication and identity. A reachable socket may correctly
+return HTTP 401; transport success is not identity, and not every 401 is
+healthy. Authoritative owner readback may use the product-supported
+authenticated same-origin browser, CLI, or API path that records its identity,
+result, evidence, and authority basis.
+
+## Privilege Release Evidence
+
+The separately recorded outcome of owner-controlled timestamp cleanup:
+observed `sudo -k`, unknown because exact session loss prevented observation, or
+not applicable because `sudo` was unused. It is not inferred from remote-shell
+closure, and a material unknown requires explicit disposition.
+
 ## Continuous Closure Loop
 
 The bounded lifecycle that carries authorized acceptance from fixture readiness

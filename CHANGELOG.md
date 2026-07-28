@@ -19,6 +19,11 @@ the authoritative archive for exact content.
   metrics with explicit relationships and observed, explained-unknown, and
   not-applicable states, the continuous closure loop, authorized in-cycle
   fixture preparation, and billable-side-effect awareness.
+- Bounded owner-executed command transport, the owner-controlled `sudo`
+  lifecycle scoped to the pending operation with evidence-bearing release
+  states, and the authentication boundary separating socket permission,
+  transport reachability, application identity, authoritative browser/CLI/API
+  readback, and response parsing.
 
 - Added risk-routed orchestration and implementation planning, healthy
   same-session continuation, E0–E4 evidence tiers, report/audit/handoff and

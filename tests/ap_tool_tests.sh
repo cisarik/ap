@@ -981,6 +981,254 @@ provider_unknown_closure_is_valid() {
     esac
 }
 
+validate_owner_command_fixture() {
+    file=$1
+    for field in \
+        "Block purpose:" \
+        "Blocks in flight:" \
+        "Output wait:" \
+        "Phase marker:" \
+        "Completion marker:" \
+        "Exit code reported:" \
+        "Preconditions:" \
+        "Heredoc terminator:" \
+        "Destructive wildcard:" \
+        "Abort instruction:" \
+        "Re-emission on collapsed interface:" \
+        "Owner adaptation:" \
+        "Privileged script pasted through chat:"
+    do
+        [ "$(grep -cF "$field" "$file")" -eq 1 ] || return 1
+        value=$(sed -n "s/^$field //p" "$file")
+        [ -n "$value" ] || return 1
+    done
+
+    [ "$(grep -Ec '^Blocks in flight: one$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Phase marker: present$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Completion marker: present$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Exit code reported: yes$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Preconditions: fail-closed$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Re-emission on collapsed interface: exact$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Privileged script pasted through chat: none$' "$file")" -eq 1 ] || return 1
+
+    # A literal EOF gives no protection against a corrupted paste, but a
+    # distinctly named terminator remains allowed.
+    terminator=$(sed -n 's/^Heredoc terminator: //p' "$file")
+    case "$terminator" in
+        none) ;;
+        EOF|eof) return 1 ;;
+        ?*) ;;
+        *) return 1 ;;
+    esac
+
+    # A destructive wildcard is allowed only with an exactly proven target.
+    wildcard=$(sed -n 's/^Destructive wildcard: //p' "$file")
+    case "$wildcard" in
+        none) ;;
+        *"exactly resolved"*|*"exactly proven"*) ;;
+        *) return 1 ;;
+    esac
+
+    adaptation=$(sed -n 's/^Owner adaptation: //p' "$file")
+    case "$adaptation" in
+        none) ;;
+        *cross-verified*) ;;
+        *) return 1 ;;
+    esac
+}
+
+validate_privileged_session_fixture() {
+    file=$1
+    for field in \
+        "Privilege requirement:" \
+        "Terminal opener:" \
+        "Starting directory:" \
+        "Timestamp establishment:" \
+        "Authorization check:" \
+        "Password handling:" \
+        "Worker password exposure:" \
+        "Keep-alive process:" \
+        "Sudoers modification:" \
+        "Command paths:" \
+        "Timestamp retention:" \
+        "Privilege release:" \
+        "Privilege release evidence:" \
+        "Session-loss evidence:" \
+        "Remote session closure:" \
+        "Remote session closure evidence:" \
+        "Material privilege unknown disposition:" \
+        "Gate scope:"
+    do
+        field_count=$(awk -v prefix="$field " \
+            'index($0, prefix) == 1 { count++ } END { print count + 0 }' "$file")
+        [ "$field_count" -eq 1 ] || return 1
+        value=$(awk -v prefix="$field " \
+            'index($0, prefix) == 1 { print substr($0, length(prefix) + 1) }' "$file")
+        [ -n "$value" ] || return 1
+    done
+
+    [ "$(grep -Ec '^Terminal opener: cooperator$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Password handling: operating-system prompt only$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Worker password exposure: none$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Keep-alive process: none$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Sudoers modification: none$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Command paths: exact$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Gate scope: pending operation only$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Remote session closure: (observed|unknown|not applicable)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Privilege release: (observed-sudo-k|unknown-session-lost|not-applicable-no-sudo)$' "$file")" -eq 1 ] || return 1
+
+    requirement=$(sed -n 's/^Privilege requirement: //p' "$file")
+    release=$(sed -n 's/^Privilege release: //p' "$file")
+    release_evidence=$(sed -n 's/^Privilege release evidence: //p' "$file")
+    session_loss=$(sed -n 's/^Session-loss evidence: //p' "$file")
+    disposition=$(sed -n 's/^Material privilege unknown disposition: //p' "$file")
+    case "$requirement" in
+        none)
+            [ "$release" = not-applicable-no-sudo ] || return 1
+            [ "$release_evidence" = "not applicable because sudo was not used" ] || return 1
+            [ "$session_loss" = "not applicable" ] || return 1
+            [ "$disposition" = none ] || return 1
+            [ "$(sed -n 's/^Timestamp establishment: //p' "$file")" = "not applicable because sudo was not used" ] || return 1
+            [ "$(sed -n 's/^Authorization check: //p' "$file")" = "not applicable because sudo was not used" ] || return 1
+            [ "$(sed -n 's/^Timestamp retention: //p' "$file")" = "not applicable because sudo was not used" ] || return 1
+            ;;
+        "sudo required for "?*)
+            [ "$(sed -n 's/^Timestamp establishment: //p' "$file")" = "sudo -v by the cooperator" ] || return 1
+            [ "$(sed -n 's/^Authorization check: //p' "$file")" = "sudo -n true" ] || return 1
+            [ "$(sed -n 's/^Timestamp retention: //p' "$file")" = "until required post-state evidence is captured" ] || return 1
+            case "$release" in
+                observed-sudo-k)
+                    [ "$release_evidence" = "observed sudo -k exit 0" ] || return 1
+                    [ "$session_loss" = "not applicable" ] || return 1
+                    [ "$disposition" = none ] || return 1
+                    ;;
+                unknown-session-lost)
+                    [ "$release_evidence" = "not observed because exact session was lost" ] || return 1
+                    case "$session_loss" in "exact "?*) ;; *) return 1 ;; esac
+                    printf '%s\n' "$session_loss" | grep -F "sudo -k" >/dev/null && return 1
+                    printf '%s\n' "$disposition" |
+                        grep -Eq '^(accepted by|escalated to) .+ because .+$' || return 1
+                    ;;
+                not-applicable-no-sudo)
+                    return 1
+                    ;;
+            esac
+            ;;
+        *) return 1 ;;
+    esac
+
+    remote_closure=$(sed -n 's/^Remote session closure: //p' "$file")
+    remote_evidence=$(sed -n 's/^Remote session closure evidence: //p' "$file")
+    case "$remote_closure" in
+        observed)
+            case "$remote_evidence" in unknown|none|"not applicable"*) return 1 ;; esac
+            ;;
+        unknown)
+            case "$remote_evidence" in "unknown because "?*) ;; *) return 1 ;; esac
+            ;;
+        "not applicable")
+            case "$remote_evidence" in "not applicable because "?*) ;; *) return 1 ;; esac
+            ;;
+    esac
+}
+
+validate_authenticated_readback_fixture() {
+    file=$1
+    for field in \
+        "Socket filesystem permission:" \
+        "Transport reachability:" \
+        "Application authentication:" \
+        "Identity expected on request:" \
+        "Authoritative readback mechanism:" \
+        "Product-supported mechanism:" \
+        "Required identity:" \
+        "Observed authentication result:" \
+        "Authentication evidence source:" \
+        "Authority basis:" \
+        "Observed status:" \
+        "Status classification:" \
+        "Response parser result:" \
+        "HTTP evidence preservation:" \
+        "Identity header spoofing:" \
+        "Credential inspection:"
+    do
+        field_count=$(awk -v prefix="$field " \
+            'index($0, prefix) == 1 { count++ } END { print count + 0 }' "$file")
+        [ "$field_count" -eq 1 ] || return 1
+        value=$(awk -v prefix="$field " \
+            'index($0, prefix) == 1 { print substr($0, length(prefix) + 1) }' "$file")
+        [ -n "$value" ] || return 1
+    done
+
+    [ "$(grep -Ec '^Application authentication: (authenticated|unauthenticated|unknown)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Identity expected on request: (yes|no)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Authoritative readback mechanism: (authenticated-same-origin-browser|product-supported-authenticated-cli|product-supported-authenticated-api|not-required)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Status classification: (expected-unauthenticated|unauthenticated-reachability-only|authenticated-success|product-or-authentication-failure)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Response parser result: (succeeded|failed because .+|not attempted because .+)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^HTTP evidence preservation: observed status retained$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Identity header spoofing: none$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Credential inspection: none$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Observed status: [1-5][0-9][0-9]$' "$file")" -eq 1 ] || return 1
+
+    status=$(sed -n 's/^Observed status: //p' "$file")
+    expected=$(sed -n 's/^Identity expected on request: //p' "$file")
+    classification=$(sed -n 's/^Status classification: //p' "$file")
+    mechanism=$(sed -n 's/^Authoritative readback mechanism: //p' "$file")
+    product_mechanism=$(sed -n 's/^Product-supported mechanism: //p' "$file")
+    required_identity=$(sed -n 's/^Required identity: //p' "$file")
+    auth_result=$(sed -n 's/^Observed authentication result: //p' "$file")
+    authority_basis=$(sed -n 's/^Authority basis: //p' "$file")
+    application_auth=$(sed -n 's/^Application authentication: //p' "$file")
+
+    case "$mechanism" in
+        not-required)
+            [ "$expected" = no ] || return 1
+            case "$product_mechanism" in "not applicable because "?*) ;; *) return 1 ;; esac
+            case "$required_identity" in "not required because "?*) ;; *) return 1 ;; esac
+            case "$authority_basis" in "authoritative because identity is not required for "?*) ;; *) return 1 ;; esac
+            ;;
+        authenticated-same-origin-browser)
+            [ "$expected" = yes ] || return 1
+            case "$product_mechanism" in "product-supported authenticated same-origin browser "?*) ;; *) return 1 ;; esac
+            ;;
+        product-supported-authenticated-cli)
+            [ "$expected" = yes ] || return 1
+            case "$product_mechanism" in "product-supported authenticated CLI "?*) ;; *) return 1 ;; esac
+            ;;
+        product-supported-authenticated-api)
+            [ "$expected" = yes ] || return 1
+            case "$product_mechanism" in "product-supported authenticated API "?*) ;; *) return 1 ;; esac
+            ;;
+    esac
+
+    if [ "$mechanism" != not-required ]; then
+        case "$required_identity" in unknown|none|"not required"*) return 1 ;; esac
+        case "$authority_basis" in "authoritative because "?*) ;; *) return 1 ;; esac
+    fi
+
+    if [ "$status" = 401 ]; then
+        if [ "$expected" = no ]; then
+            [ "$classification" = expected-unauthenticated ] || return 1
+            [ "$application_auth" = unauthenticated ] || return 1
+            [ "$auth_result" = unauthenticated ] || return 1
+        else
+            [ "$classification" = product-or-authentication-failure ] || return 1
+            [ "$application_auth" != authenticated ] || return 1
+            case "$auth_result" in "authentication failed because "?*) ;; *) return 1 ;; esac
+        fi
+    elif [ "$expected" = no ]; then
+        [ "$classification" = unauthenticated-reachability-only ] || return 1
+        [ "$classification" != authenticated-success ] || return 1
+    fi
+
+    if [ "$classification" = authenticated-success ]; then
+        [ "$mechanism" != not-required ] || return 1
+        [ "$application_auth" = authenticated ] || return 1
+        [ "$auth_result" = "authenticated as $required_identity" ] || return 1
+        printf '%s\n' "$status" | grep -Eq '^2[0-9][0-9]$' || return 1
+    fi
+}
+
 validate_provider_accounting_fixture() {
     file=$1
     for field in \
@@ -4095,6 +4343,374 @@ EOF
     done
 }
 
+test_owner_command_privilege_and_readback_contracts() {
+    start="### Owner-Executed Commands and Privileged Sessions"
+    end="### Authorized Provider Calls and Continuous Closure"
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "sent as one bounded block at a time, each preceded by its exact purpose" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "waiting for the complete output before the next block is issued" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "paste-safe line lengths and carry explicit phase markers, the relevant values, a completion marker, and the exit code" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "Preconditions must be fail-closed" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "the Worker re-emits the block exactly rather than describing it" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "the Worker classifies the adaptation and cross-verifies the resulting evidence" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "safe abort instructions for an unexpected continuation prompt" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "Large privileged scripts are never pasted through chat" || return 1
+
+    # The constraint targets transport risk, not scripting syntax.
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "AP does not ban all heredocs or all wildcards" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "never treat a literal \`EOF\` as a substitute for a distinctly named terminator" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "mechanically safe internal scripting constructs remain allowed wherever the chat-paste risk does not apply" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "are properties that generated prompt and report structures can validate mechanically" || return 1
+
+    for privileged_step in \
+        "the Cooperator opens the terminal" \
+        "a neutral inherited directory such as \`/tmp\`" \
+        "the Cooperator runs \`sudo -v\` to establish the timestamp" \
+        "verifies authorization with \`sudo -n true\`" \
+        "entered only into the operating system's own prompt" \
+        "never requests, receives, prints, stores, or relays a password" \
+        "no \`sudo\` keep-alive process is started" \
+        "\`sudoers\` is never modified to bypass the gate" \
+        "privileged commands use exact paths and strict preconditions" \
+        "retained only until the required post-state evidence is captured" \
+        "when the exact session remains reachable after \`sudo\` use, the Cooperator runs \`sudo -k\`" \
+        "when the exact session is lost first, privilege release stays unknown" \
+        "privilege-release state and evidence remain separate from remote-session closure state and evidence"
+    do
+        assert_section_contract "$REPO/AP.md" "$start" "$end" "$privileged_step" || return 1
+    done
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "A privilege gate is never broadened beyond the pending operation" || return 1
+
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "filesystem permission on a Unix socket, transport reachability, and application-level authentication and identity" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "may return HTTP 401 entirely correctly, because transport success is not identity" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "never spoof mesh-VPN, proxy, or application-identity headers" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "never inspect credentials merely to force a diagnostic to pass" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "an exact product-supported authenticated CLI or API" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "Every path states the product-supported mechanism, required identity, observed authentication result, evidence source, and why the path is authoritative" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "preserve the already observed HTTP status when an empty-body or parser failure occurs" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "never declare every HTTP 401 healthy" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "still treat a 401 as a product or authentication failure when the request was supposed to carry valid identity" || return 1
+    grep -F "Owner-Executed Command Block" "$REPO/GLOSSARY.md" >/dev/null || return 1
+    grep -F "Authentication Boundary" "$REPO/GLOSSARY.md" >/dev/null || return 1
+
+    # A concrete transport constraint must not become a blanket prohibition.
+    scan_absent "blanket-syntax-prohibition" \
+        -n "never use (a )?heredoc|heredocs are (banned|prohibited|forbidden)|all wildcards are (banned|prohibited|forbidden)" \
+        "$REPO/AP.md" "$REPO/AP_ORCHESTRATOR.md" "$REPO/AP_WORKER.md" \
+        "$REPO/PROMPT_CONTRACTS.md" || return 1
+
+    blocks=$TMPROOT/owner-command-fixtures
+    mkdir -p "$blocks"
+    cat > "$blocks/valid" <<'EOF'
+Block purpose: capture the service unit state before any mutation
+Blocks in flight: one
+Output wait: complete output required before the next block
+Phase marker: present
+Completion marker: present
+Exit code reported: yes
+Preconditions: fail-closed
+Heredoc terminator: none
+Destructive wildcard: none
+Abort instruction: press Ctrl-C and report the prompt verbatim if a continuation prompt appears
+Re-emission on collapsed interface: exact
+Owner adaptation: none
+Privileged script pasted through chat: none
+EOF
+    validate_owner_command_fixture "$blocks/valid" || return 1
+
+    # A distinctly named terminator is allowed; a literal EOF is not.
+    sed 's/^Heredoc terminator: none$/Heredoc terminator: AP_BLOCK_TERMINATOR_7/' \
+        "$blocks/valid" > "$blocks/named-terminator"
+    validate_owner_command_fixture "$blocks/named-terminator" || return 1
+
+    sed 's/^Heredoc terminator: none$/Heredoc terminator: EOF/' \
+        "$blocks/valid" > "$blocks/literal-eof"
+    ! validate_owner_command_fixture "$blocks/literal-eof" || return 1
+
+    sed 's/^Destructive wildcard: none$/Destructive wildcard: rm -rf on every matching path/' \
+        "$blocks/valid" > "$blocks/unresolved-wildcard"
+    ! validate_owner_command_fixture "$blocks/unresolved-wildcard" || return 1
+
+    sed 's/^Destructive wildcard: none$/Destructive wildcard: two exactly resolved and proven temporary paths/' \
+        "$blocks/valid" > "$blocks/resolved-wildcard"
+    validate_owner_command_fixture "$blocks/resolved-wildcard" || return 1
+
+    sed 's/^Blocks in flight: one$/Blocks in flight: four/' \
+        "$blocks/valid" > "$blocks/batched-blocks"
+    ! validate_owner_command_fixture "$blocks/batched-blocks" || return 1
+
+    sed 's/^Exit code reported: yes$/Exit code reported: no/' \
+        "$blocks/valid" > "$blocks/no-exit-code"
+    ! validate_owner_command_fixture "$blocks/no-exit-code" || return 1
+
+    sed 's/^Preconditions: fail-closed$/Preconditions: best-effort/' \
+        "$blocks/valid" > "$blocks/open-preconditions"
+    ! validate_owner_command_fixture "$blocks/open-preconditions" || return 1
+
+    sed 's/^Owner adaptation: none$/Owner adaptation: the Cooperator shortened the path/' \
+        "$blocks/valid" > "$blocks/unverified-adaptation"
+    ! validate_owner_command_fixture "$blocks/unverified-adaptation" || return 1
+
+    sed 's/^Privileged script pasted through chat: none$/Privileged script pasted through chat: one setup script/' \
+        "$blocks/valid" > "$blocks/pasted-script"
+    ! validate_owner_command_fixture "$blocks/pasted-script" || return 1
+
+    sed '/^Abort instruction:/d' "$blocks/valid" > "$blocks/no-abort"
+    ! validate_owner_command_fixture "$blocks/no-abort" || return 1
+
+    privileged=$TMPROOT/privileged-session-fixtures
+    mkdir -p "$privileged"
+    cat > "$privileged/valid" <<'EOF'
+Privilege requirement: sudo required for one authorized service unit reload
+Terminal opener: cooperator
+Starting directory: /tmp
+Timestamp establishment: sudo -v by the cooperator
+Authorization check: sudo -n true
+Password handling: operating-system prompt only
+Worker password exposure: none
+Keep-alive process: none
+Sudoers modification: none
+Command paths: exact
+Timestamp retention: until required post-state evidence is captured
+Privilege release: observed-sudo-k
+Privilege release evidence: observed sudo -k exit 0
+Session-loss evidence: not applicable
+Remote session closure: observed
+Remote session closure evidence: observed owner exit and closed transport
+Material privilege unknown disposition: none
+Gate scope: pending operation only
+EOF
+    validate_privileged_session_fixture "$privileged/valid" || return 1
+
+    sed 's/^Worker password exposure: none$/Worker password exposure: relayed to the owner/' \
+        "$privileged/valid" > "$privileged/password-relayed"
+    ! validate_privileged_session_fixture "$privileged/password-relayed" || return 1
+
+    sed 's/^Keep-alive process: none$/Keep-alive process: background sudo refresh loop/' \
+        "$privileged/valid" > "$privileged/keep-alive"
+    ! validate_privileged_session_fixture "$privileged/keep-alive" || return 1
+
+    sed 's/^Sudoers modification: none$/Sudoers modification: added a passwordless rule/' \
+        "$privileged/valid" > "$privileged/sudoers-bypass"
+    ! validate_privileged_session_fixture "$privileged/sudoers-bypass" || return 1
+
+    sed 's/^Privilege release: observed-sudo-k$/Privilege release: left active for later work/' \
+        "$privileged/valid" > "$privileged/privilege-retained"
+    ! validate_privileged_session_fixture "$privileged/privilege-retained" || return 1
+
+    sed -e 's/^Privilege release: observed-sudo-k$/Privilege release: unknown-session-lost/' \
+        -e 's/^Privilege release evidence: observed sudo -k exit 0$/Privilege release evidence: not observed because exact session was lost/' \
+        -e 's/^Session-loss evidence: not applicable$/Session-loss evidence: exact transport disconnect immediately after post-state capture before cleanup/' \
+        -e 's/^Remote session closure: observed$/Remote session closure: unknown/' \
+        -e 's/^Remote session closure evidence: observed owner exit and closed transport$/Remote session closure evidence: unknown because the client lost the exact remote session/' \
+        -e 's/^Material privilege unknown disposition: none$/Material privilege unknown disposition: escalated to Orchestrator because timestamp release could not be observed/' \
+        "$privileged/valid" > "$privileged/session-lost"
+    validate_privileged_session_fixture "$privileged/session-lost" || return 1
+
+    sed 's/^Session-loss evidence: exact .*$/Session-loss evidence: not applicable/' \
+        "$privileged/session-lost" > "$privileged/session-lost-no-evidence"
+    ! validate_privileged_session_fixture "$privileged/session-lost-no-evidence" || return 1
+
+    sed 's/^Material privilege unknown disposition: .*$/Material privilege unknown disposition: none/' \
+        "$privileged/session-lost" > "$privileged/session-lost-no-disposition"
+    ! validate_privileged_session_fixture "$privileged/session-lost-no-disposition" || return 1
+
+    sed 's/^Privilege release evidence: not observed because exact session was lost$/Privilege release evidence: observed sudo -k exit 0/' \
+        "$privileged/session-lost" > "$privileged/fabricated-release"
+    ! validate_privileged_session_fixture "$privileged/fabricated-release" || return 1
+
+    cat > "$privileged/no-sudo" <<'EOF'
+Privilege requirement: none
+Terminal opener: cooperator
+Starting directory: /tmp
+Timestamp establishment: not applicable because sudo was not used
+Authorization check: not applicable because sudo was not used
+Password handling: operating-system prompt only
+Worker password exposure: none
+Keep-alive process: none
+Sudoers modification: none
+Command paths: exact
+Timestamp retention: not applicable because sudo was not used
+Privilege release: not-applicable-no-sudo
+Privilege release evidence: not applicable because sudo was not used
+Session-loss evidence: not applicable
+Remote session closure: not applicable
+Remote session closure evidence: not applicable because no remote session existed
+Material privilege unknown disposition: none
+Gate scope: pending operation only
+EOF
+    validate_privileged_session_fixture "$privileged/no-sudo" || return 1
+
+    sed 's/^Privilege release: not-applicable-no-sudo$/Privilege release: observed-sudo-k/' \
+        "$privileged/no-sudo" > "$privileged/no-sudo-fabricated-release"
+    ! validate_privileged_session_fixture "$privileged/no-sudo-fabricated-release" || return 1
+
+    # The gate must not be widened past the pending operation.
+    sed 's/^Gate scope: pending operation only$/Gate scope: all remaining deployment steps/' \
+        "$privileged/valid" > "$privileged/broad-gate"
+    ! validate_privileged_session_fixture "$privileged/broad-gate" || return 1
+
+    sed 's/^Remote session closure: observed$/Remote session closure: probably fine/' \
+        "$privileged/valid" > "$privileged/unclassified-closure"
+    ! validate_privileged_session_fixture "$privileged/unclassified-closure" || return 1
+
+    sed 's/^Authorization check: sudo -n true$/Authorization check: assumed from the earlier probe/' \
+        "$privileged/valid" > "$privileged/assumed-authorization"
+    ! validate_privileged_session_fixture "$privileged/assumed-authorization" || return 1
+
+    readback=$TMPROOT/readback-fixtures
+    mkdir -p "$readback"
+    cat > "$readback/expected-401" <<'EOF'
+Socket filesystem permission: socket readable and writable by the service group
+Transport reachability: request completed over the Unix socket
+Application authentication: unauthenticated
+Identity expected on request: no
+Authoritative readback mechanism: not-required
+Product-supported mechanism: not applicable because this probe tests unauthenticated transport only
+Required identity: not required because this probe tests unauthenticated transport only
+Observed authentication result: unauthenticated
+Authentication evidence source: observed HTTP status and challenge on the exact request
+Authority basis: authoritative because identity is not required for unauthenticated transport reachability
+Observed status: 401
+Status classification: expected-unauthenticated
+Response parser result: succeeded
+HTTP evidence preservation: observed status retained
+Identity header spoofing: none
+Credential inspection: none
+EOF
+    validate_authenticated_readback_fixture "$readback/expected-401" || return 1
+
+    # A 401 must never be recorded as authenticated success.
+    sed 's/^Status classification: expected-unauthenticated$/Status classification: authenticated-success/' \
+        "$readback/expected-401" > "$readback/401-as-healthy"
+    ! validate_authenticated_readback_fixture "$readback/401-as-healthy" || return 1
+
+    # A parser failure remains separate and cannot erase the observed 401.
+    sed 's/^Response parser result: succeeded$/Response parser result: failed because the body was empty/' \
+        "$readback/expected-401" > "$readback/parser-failure"
+    validate_authenticated_readback_fixture "$readback/parser-failure" || return 1
+
+    sed 's/^Observed status: 401$/Observed status: unknown because parsing failed/' \
+        "$readback/parser-failure" > "$readback/parser-erased-status"
+    ! validate_authenticated_readback_fixture "$readback/parser-erased-status" || return 1
+
+    sed -e 's/^Observed status: 401$/Observed status: 200/' \
+        -e 's/^Status classification: expected-unauthenticated$/Status classification: unauthenticated-reachability-only/' \
+        "$readback/expected-401" > "$readback/unauthenticated-reachability"
+    validate_authenticated_readback_fixture "$readback/unauthenticated-reachability" || return 1
+
+    # A 401 on a request that was supposed to carry identity is a real failure.
+    cat > "$readback/identity-expected" <<'EOF'
+Socket filesystem permission: socket readable and writable by the service group
+Transport reachability: request completed over the Unix socket
+Application authentication: unauthenticated
+Identity expected on request: yes
+Authoritative readback mechanism: product-supported-authenticated-cli
+Product-supported mechanism: product-supported authenticated CLI owner-readback command
+Required identity: owner-account-17
+Observed authentication result: authentication failed because the server rejected the authenticated request
+Authentication evidence source: observed CLI request status and authentication challenge
+Authority basis: authoritative because the product designates this CLI for owner readback
+Observed status: 401
+Status classification: product-or-authentication-failure
+Response parser result: succeeded
+HTTP evidence preservation: observed status retained
+Identity header spoofing: none
+Credential inspection: none
+EOF
+    validate_authenticated_readback_fixture "$readback/identity-expected" || return 1
+
+    sed 's/^Status classification: product-or-authentication-failure$/Status classification: expected-unauthenticated/' \
+        "$readback/identity-expected" > "$readback/dismissed-failure"
+    ! validate_authenticated_readback_fixture "$readback/dismissed-failure" || return 1
+
+    sed 's/^Authoritative readback mechanism: product-supported-authenticated-cli$/Authoritative readback mechanism: not-required/' \
+        "$readback/identity-expected" > "$readback/no-owner-path"
+    ! validate_authenticated_readback_fixture "$readback/no-owner-path" || return 1
+
+    sed 's/^Identity header spoofing: none$/Identity header spoofing: injected an identity header/' \
+        "$readback/expected-401" > "$readback/spoofed-identity"
+    ! validate_authenticated_readback_fixture "$readback/spoofed-identity" || return 1
+
+    sed 's/^Credential inspection: none$/Credential inspection: read the stored token to force a pass/' \
+        "$readback/expected-401" > "$readback/inspected-credentials"
+    ! validate_authenticated_readback_fixture "$readback/inspected-credentials" || return 1
+
+    # Transport reachability must not be collapsed into authentication.
+    sed '/^Application authentication:/d' "$readback/expected-401" > "$readback/no-auth-fact"
+    ! validate_authenticated_readback_fixture "$readback/no-auth-fact" || return 1
+
+    sed '/^Socket filesystem permission:/d' "$readback/expected-401" > "$readback/no-permission-fact"
+    ! validate_authenticated_readback_fixture "$readback/no-permission-fact" || return 1
+
+    cat > "$readback/authenticated-browser" <<'EOF'
+Socket filesystem permission: socket readable and writable by the service group
+Transport reachability: request completed over the Unix socket
+Application authentication: authenticated
+Identity expected on request: yes
+Authoritative readback mechanism: authenticated-same-origin-browser
+Product-supported mechanism: product-supported authenticated same-origin browser owner session
+Required identity: owner-account-17
+Observed authentication result: authenticated as owner-account-17
+Authentication evidence source: same-origin identity response bound to the observed browser session
+Authority basis: authoritative because the product binds owner identity to its same-origin browser session
+Observed status: 200
+Status classification: authenticated-success
+Response parser result: succeeded
+HTTP evidence preservation: observed status retained
+Identity header spoofing: none
+Credential inspection: none
+EOF
+    validate_authenticated_readback_fixture "$readback/authenticated-browser" || return 1
+
+    sed -e 's/^Authoritative readback mechanism: authenticated-same-origin-browser$/Authoritative readback mechanism: product-supported-authenticated-cli/' \
+        -e 's/^Product-supported mechanism: .*$/Product-supported mechanism: product-supported authenticated CLI owner-readback command/' \
+        -e 's/^Authentication evidence source: .*$/Authentication evidence source: authenticated CLI identity response and exact status/' \
+        -e 's/^Authority basis: .*$/Authority basis: authoritative because the product designates this CLI for owner readback/' \
+        "$readback/authenticated-browser" > "$readback/authenticated-cli"
+    validate_authenticated_readback_fixture "$readback/authenticated-cli" || return 1
+
+    sed -e 's/^Authoritative readback mechanism: authenticated-same-origin-browser$/Authoritative readback mechanism: product-supported-authenticated-api/' \
+        -e 's/^Product-supported mechanism: .*$/Product-supported mechanism: product-supported authenticated API owner-readback endpoint/' \
+        -e 's/^Authentication evidence source: .*$/Authentication evidence source: authenticated API identity response and exact status/' \
+        -e 's/^Authority basis: .*$/Authority basis: authoritative because the product designates this API for owner readback/' \
+        "$readback/authenticated-browser" > "$readback/authenticated-api"
+    validate_authenticated_readback_fixture "$readback/authenticated-api" || return 1
+
+    sed 's/^Application authentication: authenticated$/Application authentication: unknown/' \
+        "$readback/authenticated-browser" > "$readback/unproven-success"
+    ! validate_authenticated_readback_fixture "$readback/unproven-success" || return 1
+
+    sed 's/^Observed authentication result: authenticated as owner-account-17$/Observed authentication result: authenticated as different-account/' \
+        "$readback/authenticated-cli" > "$readback/wrong-identity"
+    ! validate_authenticated_readback_fixture "$readback/wrong-identity" || return 1
+
+    sed 's/^Product-supported mechanism: product-supported authenticated CLI owner-readback command$/Product-supported mechanism: generic shell request/' \
+        "$readback/authenticated-cli" > "$readback/unsupported-cli"
+    ! validate_authenticated_readback_fixture "$readback/unsupported-cli" || return 1
+}
+
 test_provider_accounting_and_continuous_closure_contracts() {
     start="### Authorized Provider Calls and Continuous Closure"
     end="### Defensive-Security Task Anchor"
@@ -5077,6 +5693,7 @@ run_test "model routing fixtures enforce observation, quota, fallback, and refus
 run_test "Plan Mode ownership, routing, and one-cycle budget contracts are enforced" test_plan_mode_ownership_routing_and_cycle_budget_contracts
 run_test "Worker freshness and same-session continuation contracts are enforced" test_worker_freshness_and_same_session_continuation_contracts
 run_test "report, audit, handoff, human governance, and authority-envelope contracts are enforced" test_report_audit_handoff_and_authority_envelope_contracts
+run_test "owner command, privileged session, and readback fixtures are enforced" test_owner_command_privilege_and_readback_contracts
 run_test "provider accounting, closure loop, and fixture-preparation fixtures are enforced" test_provider_accounting_and_continuous_closure_contracts
 run_test "Cooperator routing sovereignty and route-provenance fixtures are enforced" test_cooperator_routing_sovereignty_contracts
 run_test "upgrade ledger lifecycle and reconciliation fixtures are enforced" test_upgrade_ledger_lifecycle_contracts

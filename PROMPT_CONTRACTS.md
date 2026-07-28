@@ -647,6 +647,102 @@ tests, report formatting, internal phase labels, deterministic rechecks, and
 continuation inside unchanged authority use `Material phase gate: no`.
 `Unchanged axes reopened: none` is the only accepted value.
 
+## Owner-Executed Command Contract
+
+Commands sent for the Cooperator to execute follow
+[AP.md](AP.md#owner-executed-commands-and-privileged-sessions). The
+mechanically validatable properties of one block are:
+
+```text
+Block purpose: <exact purpose stated before the block>
+Blocks in flight: one
+Output wait: complete output required before the next block
+Phase marker: present
+Completion marker: present
+Exit code reported: yes
+Preconditions: fail-closed
+Heredoc terminator: none | <distinctly named terminator>
+Destructive wildcard: none | <exactly resolved and proven target>
+Abort instruction: <safe abort for an unexpected continuation prompt>
+Re-emission on collapsed interface: exact
+Owner adaptation: none | <classified adaptation with cross-verified evidence>
+Privileged script pasted through chat: none
+```
+
+`Heredoc terminator: EOF` is invalid, because a literal `EOF` gives no
+protection against a corrupted paste. `Blocks in flight: one` and
+`Privileged script pasted through chat: none` are the only accepted values.
+A destructive wildcard is valid only when its target is exactly resolved and
+proven.
+
+Where the operation requires `sudo`, the privileged session records its
+bounded lifecycle:
+
+```text
+Privilege requirement: none | sudo required for <pending operation>
+Terminal opener: cooperator
+Starting directory: <neutral inherited directory>
+Timestamp establishment: sudo -v by the cooperator
+Authorization check: sudo -n true
+Password handling: operating-system prompt only
+Worker password exposure: none
+Keep-alive process: none
+Sudoers modification: none
+Command paths: exact
+Timestamp retention: until required post-state evidence is captured
+Privilege release: observed-sudo-k | unknown-session-lost | not-applicable-no-sudo
+Privilege release evidence: observed sudo -k exit 0 | not observed because exact session was lost | not applicable because sudo was not used
+Session-loss evidence: not applicable | exact <premature session-loss evidence>
+Remote session closure: observed | unknown | not applicable
+Remote session closure evidence: <exact evidence> | unknown because <missing evidence> | not applicable because no remote session existed
+Material privilege unknown disposition: none | accepted by <owner> because <bounded rationale> | escalated to <owner> because <bounded rationale>
+Gate scope: pending operation only
+```
+
+`Worker password exposure: none`, `Keep-alive process: none`,
+`Sudoers modification: none`, and `Gate scope: pending operation only` are the
+only accepted values. When the session remains reachable after `sudo` use,
+`observed-sudo-k` requires exact observed evidence. Premature exact-session loss
+uses `unknown-session-lost`, never claims that `sudo -k` ran, names exact
+session-loss evidence, and carries an explicit material-unknown disposition.
+`not-applicable-no-sudo` is valid only when `sudo` was unused. Remote-session
+closure remains a separate status and evidence pair.
+
+## Authenticated Readback Contract
+
+Readback diagnostics record the three separated facts and the resulting
+classification, following
+[AP.md](AP.md#authentication-boundaries-for-diagnostic-readback):
+
+```text
+Socket filesystem permission: <observed permission fact>
+Transport reachability: <observed reachability fact>
+Application authentication: authenticated | unauthenticated | unknown
+Identity expected on request: yes | no
+Authoritative readback mechanism: authenticated-same-origin-browser | product-supported-authenticated-cli | product-supported-authenticated-api | not-required
+Product-supported mechanism: <exact mechanism> | not applicable because <reason>
+Required identity: <exact identity> | not required because <reason>
+Observed authentication result: authenticated as <exact identity> | unauthenticated | authentication failed because <reason>
+Authentication evidence source: <exact evidence source>
+Authority basis: authoritative because <product reason> | authoritative because identity is not required for <probe>
+Observed status: <HTTP status>
+Status classification: expected-unauthenticated | unauthenticated-reachability-only | authenticated-success | product-or-authentication-failure
+Response parser result: succeeded | failed because <exact parser evidence> | not attempted because <reason>
+HTTP evidence preservation: observed status retained
+Identity header spoofing: none
+Credential inspection: none
+```
+
+A `401` with `Identity expected on request: no` classifies as
+`expected-unauthenticated` and is never reported as healthy application
+identity. A `401` with `Identity expected on request: yes` classifies as
+`product-or-authentication-failure`. An empty-body or parser failure is recorded
+in `Response parser result` without erasing the observed status classification.
+`Identity header spoofing: none` and `Credential inspection: none` are the only
+accepted values. Required owner identity uses the exact product-supported
+authenticated browser, CLI, or API mechanism; `not-required` is accepted only
+when the probe genuinely needs no authenticated identity.
+
 ## Provider Accounting Contract
 
 Work that involves authorized external provider calls reports the bounded

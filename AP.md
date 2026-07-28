@@ -935,6 +935,99 @@ does not imply offensive deployment authority. Prompt wording and delimiters
 may reduce ambiguity but do not constitute complete prompt-injection or
 disclosure prevention; use layered technical and human controls.
 
+### Owner-Executed Commands and Privileged Sessions
+
+Where a Worker sends commands for the Cooperator to execute, the chat itself is
+the transport, and a corrupted paste is a real failure mode. Such commands must
+be sent as one bounded block at a time, each preceded by its exact purpose, and
+each followed by waiting for the complete output before the next block is
+issued.
+
+Every owner-executed block must use paste-safe line lengths and carry explicit
+phase markers, the relevant values, a completion marker, and the exit code, so
+that a truncated or reordered paste is visible rather than silent.
+Preconditions must be fail-closed, so a block stops instead of continuing from
+an unverified state. If the interface collapses, wraps, or hides command text,
+the Worker re-emits the block exactly rather than describing it. When the
+Cooperator adapts a command, the Worker classifies the adaptation and
+cross-verifies the resulting evidence instead of assuming the original
+intent. Every block includes safe abort instructions for an unexpected
+continuation prompt. Large privileged scripts are never pasted through chat.
+
+Transport risk, not scripting syntax, is what these constraints target. AP does
+not ban all heredocs or all wildcards. Specifically:
+
+- avoid heredocs in owner-pasted blocks where chat indentation, line wrapping,
+  or terminal paste can corrupt the terminator;
+- never treat a literal `EOF` as a substitute for a distinctly named
+  terminator;
+- never use a broad, unresolved, or weakly proven destructive wildcard;
+- mechanically safe internal scripting constructs remain allowed wherever the
+  chat-paste risk does not apply.
+
+Keep these two layers distinct: purpose, adaptation classification, and abort
+judgement are normative guidance for a person, while marker presence, exit-code
+reporting, block boundaries, and terminator naming are properties that
+generated prompt and report structures can validate mechanically.
+
+#### Privileged Session Lifecycle
+
+Where an operation genuinely requires `sudo`, privilege stays owner-controlled
+and bounded to the pending operation:
+
+- the Cooperator opens the terminal;
+- the session begins from a neutral inherited directory such as `/tmp`;
+- the Cooperator runs `sudo -v` to establish the timestamp;
+- the Cooperator verifies authorization with `sudo -n true`;
+- a password is entered only into the operating system's own prompt;
+- a Worker never requests, receives, prints, stores, or relays a password;
+- no `sudo` keep-alive process is started;
+- `sudoers` is never modified to bypass the gate;
+- privileged commands use exact paths and strict preconditions;
+- the timestamp is retained only until the required post-state evidence is
+  captured;
+- when the exact session remains reachable after `sudo` use, the Cooperator
+  runs `sudo -k` and the observed result is recorded;
+- when the exact session is lost first, privilege release stays unknown with
+  exact session-loss evidence rather than a fabricated `sudo -k` claim;
+- when `sudo` was not used, privilege release is explicitly not applicable;
+- privilege-release state and evidence remain separate from remote-session
+  closure state and evidence;
+- every material privilege-release unknown receives an explicit acceptance or
+  escalation disposition and is never silently reported as a security PASS.
+
+A privilege gate is never broadened beyond the pending operation. Holding
+privilege longer, or for more than the authorized operation, is itself a
+finding.
+
+#### Authentication Boundaries for Diagnostic Readback
+
+Three facts are commonly conflated during readback diagnostics and must stay
+separate: filesystem permission on a Unix socket, transport reachability, and
+application-level authentication and identity. A reachable Unix socket with
+correct permissions may return HTTP 401 entirely correctly, because transport
+success is not identity.
+
+The authoritative readback mechanism is selected explicitly. It may be an
+authenticated same-origin browser when browser-bound owner identity is the
+product's authoritative path, an exact product-supported authenticated CLI or
+API, or `not required` only when authenticated owner identity is genuinely
+unnecessary. Every path states the product-supported mechanism, required
+identity, observed authentication result, evidence source, and why the path is
+authoritative.
+
+Diagnostics must therefore:
+
+- never spoof mesh-VPN, proxy, or application-identity headers;
+- never inspect credentials merely to force a diagnostic to pass;
+- use an authenticated mechanism that the product defines as authoritative
+  when owner identity is required;
+- preserve the already observed HTTP status when an empty-body or parser
+  failure occurs, and record the parser failure separately;
+- never declare every HTTP 401 healthy;
+- still treat a 401 as a product or authentication failure when the request was
+  supposed to carry valid identity.
+
 ### Authorized Provider Calls and Continuous Closure
 
 External provider calls always require explicit authority. Within that
