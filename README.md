@@ -78,6 +78,12 @@ git submodule update --init --recursive
 ./.ap/ap doctor
 ```
 
+Strict doctor validates the canonical repository, `.ap` path, immutable
+containing-project gitlink, matching `.ap` checkout, and exact root managed
+block. That exact compatibility tuple is the explicit stable selection, so the
+command reports `OK resolved governing variant: stable` without requiring a
+managed-block migration.
+
 To inspect updates:
 
 ```sh

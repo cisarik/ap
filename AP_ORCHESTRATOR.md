@@ -277,6 +277,21 @@ exists, describe the required reasoning characteristics instead of inventing
 labels or telemetry. The Cooperator retains final selection among available
 client settings.
 
+## Protocol-Variant Selection
+
+Confirm that exactly one protocol source governs the project. For stable AP,
+the verified canonical repository identity, `.ap` path, immutable gitlink,
+checkout equality, and exact root managed block are the explicit stable
+compatibility declaration; no added literal variant field or content migration
+is required. Require strict `ap doctor` to resolve and report `stable`.
+
+Do not apply, quote as authority, or blend in rules from a non-governing
+variant. Treat contradictory repository identities, an unpinned governing source
+where a pin is required, and more than one declared governing variant as invalid
+selections that stop protocol-governed work until resolved. Active additional
+governing-source or rule-import directives also stop; quoted or fenced variant
+text does not govern.
+
 ## Recovery Classification And Closure Signalling
 
 Classify every difference from an expected baseline before authorizing mutation.

@@ -94,6 +94,22 @@ and cleanliness. It does not require an active `main` branch. Public AP `main`
 and the submodule's local `origin/main` may advance while a consuming project
 intentionally remains on its older accepted pin.
 
+For stable AP, strict doctor resolves one exact compatibility tuple:
+
+- canonical repository identity `https://github.com/cisarik/ap.git`, allowing
+  only accepted cosmetic URL equivalents;
+- canonical consuming-project path `.ap`;
+- an immutable `.ap` gitlink in the containing project;
+- equality between that gitlink and the `.ap` checkout;
+- the exact canonical AP-managed block in root `AGENTS.md`.
+
+This tuple is the explicit stable declaration. It requires no added literal
+variant field or managed-block migration and is reported as
+`OK resolved governing variant: stable`. An active project-owned declaration
+of another governing AP source or variant, or an instruction to import rules
+from another variant, invalidates the selection. Quoted and fenced examples are
+not active declarations.
+
 Adopting a newer AP version requires a separate explicit submodule-update task,
 validation of the candidate, and a containing-repository commit that changes
 the `.ap` gitlink. Do not attach or update the submodule merely to make its
@@ -110,7 +126,8 @@ Run:
 The doctor checks the containing Git repository, `.ap` submodule shape,
 canonical AP identity, pinned commit, submodule cleanliness, gitlink
 consistency, `.gitmodules` coherence, exact managed `AGENTS.md` block, and
-confirmed copied AP artifacts.
+confirmed copied AP artifacts. Strict mode also resolves and reports the
+governing `stable` variant from the exact compatibility tuple above.
 
 Strict doctor is read-only with respect to the superproject and `.ap`
 worktrees, indexes, refs, remotes, and Git configuration. It may create and

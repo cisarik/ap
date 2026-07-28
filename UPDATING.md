@@ -61,6 +61,12 @@ git add .ap
 git commit -m "docs: update analytic programming"
 ```
 
+Candidate mode validates the proposed checkout but does not declare it
+governing while it differs from the recorded gitlink. After `git add .ap`,
+strict doctor re-establishes checkout/gitlink equality, validates the rest of
+the canonical compatibility tuple, and reports
+`OK resolved governing variant: stable`.
+
 Do not promise that a protocol update is behaviorally risk-free before project
 validation.
 
@@ -107,7 +113,8 @@ Before committing an AP update in a consuming project:
 - confirm `.ap/` has no local dirty state;
 - confirm only the intended gitlink changes unless a separate authorized change
   is included;
-- stage `.ap`, then run strict `./.ap/ap doctor` before committing.
+- stage `.ap`, then run strict `./.ap/ap doctor` before committing and confirm
+  that it resolves the governing variant as `stable`.
 
 ## Related Documents
 

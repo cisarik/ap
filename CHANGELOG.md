@@ -35,6 +35,11 @@ the authoritative archive for exact content.
   bounded correction routing that prevents audit-after-audit recursion.
   `Logical whole` is now the preferred term and `logical block` remains a
   compatible synonym.
+- Added the protocol-variant selection boundary: exactly one governing source
+  declared as one canonical repository identity, one immutable version identity,
+  and one variant, with no silent mixing of rules across variants. The real
+  init/doctor path resolves the existing canonical tuple as `stable`, so exact
+  stable consumers need no managed-block migration.
 
 - Added risk-routed orchestration and implementation planning, healthy
   same-session continuation, E0–E4 evidence tiers, report/audit/handoff and

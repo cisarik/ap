@@ -50,6 +50,58 @@ weaken repository identity, cleanliness, or applicable public-ref protections,
 and attaching, updating, or otherwise changing a checkout requires explicit
 authority.
 
+### Protocol-Variant Selection Boundary
+
+A protocol may exist in more than one variant: a stable line, an experimental
+line, or a project-specific derivative. Exactly one of them governs a project at
+a time.
+
+A project selects its governing protocol source by declaring all three of:
+
+- one canonical repository identity;
+- one immutable pin, or an equivalent immutable version identity;
+- one declared variant.
+
+The declaration belongs in the project's governing rules, where the protocol
+source is actually selected, and not merely in prose, a comment, a changelog
+entry, or another irrelevant context. A declaration that appears only in an
+unrelated place selects nothing.
+
+Two variants never govern simultaneously. Rules from a non-governing variant
+must not be applied, quoted as authority, or blended into the governing
+protocol. Mixing rules from different variants is prohibited even when the
+mixture appears convenient, and it is a defect precisely because it is silent:
+the resulting behavior belongs to no declared protocol.
+
+Contradictory repository identities, an unpinned governing source where an
+immutable pin is required, and more than one simultaneously declared governing
+variant are each invalid selections. An invalid selection stops protocol-governed
+work until the project resolves it.
+
+Experimental or derivative protocol work is legitimate in its own repository
+under its own identity. It gains no authority over a project pinned to the
+stable line, and the stable line neither depends on nor imports experimental
+lifecycle machinery.
+
+For stable AP, this exact verified tuple is itself the explicit stable protocol
+selection:
+
+- canonical repository identity `https://github.com/cisarik/ap.git`, including
+  only its already accepted cosmetic URL equivalents;
+- canonical consuming-project submodule path `.ap`;
+- an immutable containing-project `.ap` gitlink;
+- equality between the `.ap` checkout and that gitlink;
+- the exact canonical AP-managed block in the project's root `AGENTS.md`.
+
+This is an explicit compatibility mapping, not an inference. It contains one
+governing stable source without requiring a new literal variant field in every
+existing managed block. `ap doctor` validates the tuple and reports the
+resolved governing variant as `stable`. An active project-owned declaration of
+another governing AP source, another governing variant, or additional governing
+AP rules contradicts the tuple and stops work. Irrelevant quoted or fenced
+variant text selects nothing. Existing exact stable consumers require no
+content migration.
+
 ## 2. Roles
 
 AP uses three persistent protocol roles.

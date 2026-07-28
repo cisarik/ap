@@ -542,6 +542,21 @@ A checklist of observable outcomes prepared by the Orchestrator for
 user-visible work. The Cooperator responds with `PASS`, `FAIL`, `NOT TESTED`,
 or status plus `+` commentary.
 
+## Protocol Variant
+
+One line of a protocol, such as a stable line, an experimental line, or a
+project-specific derivative. Exactly one variant governs a project at a time.
+
+## Governing Protocol Source
+
+The single selected protocol source for a project, declared as one canonical
+repository identity, one immutable pin or equivalent immutable version identity,
+and one variant, recorded in the project's governing rules. Rules from a
+non-governing variant carry no authority and are never blended in. For stable
+AP, the exact canonical repository, `.ap` path, immutable gitlink, matching
+checkout, and exact managed root block are the explicit compatibility
+declaration.
+
 ## Recovery Candidate
 
 A multidimensional classification of one exact repository, worktree, commit

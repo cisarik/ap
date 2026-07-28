@@ -659,6 +659,50 @@ tests, report formatting, internal phase labels, deterministic rechecks, and
 continuation inside unchanged authority use `Material phase gate: no`.
 `Unchanged axes reopened: none` is the only accepted value.
 
+## Protocol-Variant Selection Contract
+
+A project's governing protocol source is declared once, per
+[AP.md](AP.md#protocol-variant-selection-boundary):
+
+```text
+Canonical repository identity: <one canonical repository>
+Immutable version identity: <one pin, gitlink, or equivalent immutable identity>
+Declared variant: stable | experimental | project-derivative
+Governing variants in effect: one
+Declaration location: project governing rules
+Rules from non-governing variants: none
+Migration required: no | <explicitly justified migration>
+```
+
+`Governing variants in effect: one` and
+`Rules from non-governing variants: none` are the only accepted values, because
+two variants never govern at once and blended rules belong to no declared
+protocol. `Declaration location: project governing rules` is required; a
+declaration recorded only in prose, a comment, or a changelog selects nothing.
+An empty or contradictory repository identity, and a missing immutable version
+identity where a pin is required, are invalid selections. A project already
+pinned to the stable line uses `Migration required: no`.
+
+For the stable AP compatibility path, the general structural record above is
+resolved by one exact runtime tuple:
+
+```text
+Canonical repository identity: https://github.com/cisarik/ap.git
+Canonical consuming-project path: .ap
+Immutable version identity: containing-project .ap gitlink
+Checkout equality: .ap HEAD equals the containing-project gitlink
+Root integration declaration: exact canonical AP-managed AGENTS.md block
+Resolved governing variant: stable
+Additional governing AP sources, variants, or imported rules: none
+```
+
+The `ap` runtime validates that tuple directly during `init` and strict
+`doctor`. The tuple is the explicit stable declaration and needs no new literal
+variant field inside existing managed blocks. Active contradictory or additional
+governing-source directives invalidate it; quoted or fenced examples do not.
+The generic fixture record remains useful for protocol-structure review, but it
+is not a substitute for runtime integration validation.
+
 ## Repository Recovery-Candidate Classification Contract
 
 A difference from the expected baseline is classified before mutation, using the

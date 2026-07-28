@@ -228,6 +228,84 @@ validate_agents_block() {
     cmp -s "$expected" "$block" || fail "AGENTS.md managed AP block does not match the canonical block; run ./.ap/ap init"
 }
 
+require_no_competing_governing_ap_source() {
+    file="$super_root/AGENTS.md"
+    [ -f "$file" ] || return 0
+
+    competing=$(awk -v begin="$BEGIN_MARKER" -v end="$END_MARKER" '
+        function active_outside_comments(value,    active, marker) {
+            active = ""
+            while (value != "") {
+                if (in_comment) {
+                    marker = index(value, "-->")
+                    if (!marker) return active
+                    value = substr(value, marker + 3)
+                    in_comment = 0
+                } else {
+                    marker = index(value, "<!--")
+                    if (!marker) return active value
+                    active = active substr(value, 1, marker - 1)
+                    value = substr(value, marker + 4)
+                    in_comment = 1
+                }
+            }
+            return active
+        }
+        function normalize_leading_list_markers(value,    previous) {
+            while (value ~ /^[[:space:]]*([-+*][[:space:]]+|[0-9]+[.)][[:space:]]+)/) {
+                previous = value
+                sub(/^[[:space:]]*([-+*][[:space:]]+|[0-9]+[.)][[:space:]]+)/, "", value)
+                if (value == previous) break
+                list_item = 1
+            }
+            return value
+        }
+        $0 == begin { in_managed = 1; next }
+        $0 == end { in_managed = 0; next }
+        in_managed { next }
+        {
+            line = $0
+            list_item = 0
+            line = normalize_leading_list_markers(line)
+        }
+        /^[[:space:]]*>/ { next }
+        line ~ /^[[:space:]]*>/ { next }
+        in_fence {
+            if (line ~ /^[[:space:]]*(```|~~~)/) in_fence = 0
+            next
+        }
+        {
+            comment_touched = in_comment
+            line = active_outside_comments(line)
+            if (comment_touched || index($0, "<!--")) {
+                sub(/^[[:space:]]*/, "", line)
+            }
+            line = normalize_leading_list_markers(line)
+        }
+        line ~ /^[[:space:]]*>/ { next }
+        line ~ /^[[:space:]]*(```|~~~)/ {
+            in_fence = 1
+            next
+        }
+        {
+            if (list_item) sub(/^[[:space:]]*/, "", line)
+            if (line ~ /^(Governing AP variant|Governing AP source|Governing AP repository|Additional governing AP source|Rules from non-governing AP variant|Apply governing AP rules from|Protocol rules also imported from):[[:space:]]*/) {
+                print $0
+            }
+        }
+    ' "$file")
+    [ -z "$competing" ] ||
+        fail "AGENTS.md declares another governing AP source, variant, or rule import outside the managed block"
+}
+
+resolve_stable_variant() {
+    verify_canonical_identity
+    require_gitlink_consistent
+    validate_agents_block
+    require_no_competing_governing_ap_source
+    printf '%s\n' stable
+}
+
 write_agents_block() {
     file="$super_root/AGENTS.md"
     [ ! -L "$file" ] || fail "refusing to modify symlink AGENTS.md"
@@ -359,7 +437,10 @@ cmd_init() {
     verify_canonical_identity
     require_gitlink_consistent
     require_submodule_clean
+    require_no_competing_governing_ap_source
     write_agents_block
+    variant=$(resolve_stable_variant)
+    say "OK resolved governing variant: $variant"
     say "ap init: PASS"
 }
 
@@ -387,9 +468,12 @@ cmd_doctor() {
     say "OK .ap submodule clean"
     validate_agents_block
     say "OK managed AGENTS.md block"
+    require_no_competing_governing_ap_source
     legacy=$(legacy_artifacts)
     [ -z "$legacy" ] || fail "confirmed copied AP artifacts present: $(printf '%s' "$legacy" | tr '\n' ' ')"
     if [ "$mode" = "strict" ]; then
+        variant=$(resolve_stable_variant)
+        say "OK resolved governing variant: $variant"
         say "ap doctor: PASS"
     else
         say "ap doctor --candidate: PASS"

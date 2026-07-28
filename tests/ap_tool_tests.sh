@@ -981,6 +981,50 @@ provider_unknown_closure_is_valid() {
     esac
 }
 
+validate_protocol_variant_fixture() {
+    # Synthetic contract oracle only. Runtime selection is exercised through
+    # real init/doctor integration repositories.
+    file=$1
+    for field in \
+        "Canonical repository identity:" \
+        "Immutable version identity:" \
+        "Declared variant:" \
+        "Governing variants in effect:" \
+        "Declaration location:" \
+        "Rules from non-governing variants:" \
+        "Migration required:"
+    do
+        [ "$(grep -cF "$field" "$file")" -eq 1 ] || return 1
+        value=$(sed -n "s/^$field //p" "$file")
+        [ -n "$value" ] || return 1
+    done
+
+    [ "$(grep -Ec '^Declared variant: (stable|experimental|project-derivative)$' "$file")" -eq 1 ] || return 1
+    # Exactly one variant governs, and no rules leak across variants.
+    [ "$(grep -Ec '^Governing variants in effect: one$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Rules from non-governing variants: none$' "$file")" -eq 1 ] || return 1
+    # A declaration hidden in an irrelevant context selects nothing.
+    [ "$(grep -Ec '^Declaration location: project governing rules$' "$file")" -eq 1 ] || return 1
+
+    identity=$(sed -n 's/^Canonical repository identity: //p' "$file")
+    case "$identity" in
+        none|unknown|"not applicable") return 1 ;;
+        *" and "*|*", "*|*" or "*) return 1 ;;
+    esac
+
+    pin=$(sed -n 's/^Immutable version identity: //p' "$file")
+    case "$pin" in
+        none|unknown|unpinned|"not applicable"|"tracking branch head") return 1 ;;
+    esac
+
+    migration=$(sed -n 's/^Migration required: //p' "$file")
+    case "$migration" in
+        no) ;;
+        *because\ *) ;;
+        *) return 1 ;;
+    esac
+}
+
 validate_recovery_candidate_fixture() {
     file=$1
     for field in \
@@ -3085,6 +3129,7 @@ test_init_creates_agents() {
     super=$(new_super init_creates)
     head_before=$(git -C "$super" rev-parse HEAD)
     run_ok "$super/.ap/ap" init
+    grep -F "OK resolved governing variant: stable" "$OUT" >/dev/null || return 1
     head_after=$(git -C "$super" rev-parse HEAD)
     [ "$head_before" = "$head_after" ] || return 1
     [ -f "$super/AGENTS.md" ] || return 1
@@ -3194,6 +3239,7 @@ test_doctor_healthy_exact_block_and_read_only() {
     modules_before=$(hash_file "$super/.gitmodules")
     origin_before=$(git -C "$super/.ap" config --get remote.origin.url)
     run_ok "$super/.ap/ap" doctor
+    grep -F "OK resolved governing variant: stable" "$OUT" >/dev/null || return 1
     [ "$status_before" = "$(module_status "$super")" ] || return 1
     [ "$refs_before" = "$(refs_snapshot "$super")" ] || return 1
     [ "$ap_status_before" = "$(module_status "$super/.ap")" ] || return 1
@@ -3217,7 +3263,609 @@ test_doctor_accepts_detached_pinned_submodule() {
     grep -F "superproject recorded AP commit: $recorded" "$OUT" >/dev/null || return 1
     grep -F ".ap worktree AP commit: $recorded" "$OUT" >/dev/null || return 1
     grep -F "OK strict pinned AP commit" "$OUT" >/dev/null || return 1
+    grep -F "OK resolved governing variant: stable" "$OUT" >/dev/null || return 1
     grep -F "ap doctor: PASS" "$OUT" >/dev/null
+}
+
+test_real_stable_variant_resolution_contracts() {
+    stable=$(new_super stable_variant_exact)
+    run_ok "$stable/.ap/ap" init || return 1
+    grep -F "OK resolved governing variant: stable" "$OUT" >/dev/null || return 1
+    commit_integration "$stable"
+    run_ok "$stable/.ap/ap" doctor || return 1
+    grep -F "OK resolved governing variant: stable" "$OUT" >/dev/null || return 1
+
+    recorded=$(git -C "$stable" rev-parse HEAD:.ap)
+    git -C "$stable/.ap" checkout --detach --quiet "$recorded"
+    run_ok "$stable/.ap/ap" doctor || return 1
+    grep -F "OK resolved governing variant: stable" "$OUT" >/dev/null || return 1
+
+    wrong_identity=$(new_super stable_variant_wrong_identity)
+    run_ok "$wrong_identity/.ap/ap" init || return 1
+    commit_integration "$wrong_identity"
+    git -C "$wrong_identity" config -f .gitmodules submodule..ap.url \
+        https://github.com/example/not-ap.git
+    run_fail "$wrong_identity/.ap/ap" doctor || return 1
+
+    wrong_path=$TMPROOT/stable_variant_wrong_path
+    mkdir -p "$wrong_path"
+    git_init "$wrong_path"
+    printf '%s\n' "# Host" > "$wrong_path/README.md"
+    git -C "$wrong_path" add README.md
+    git -C "$wrong_path" commit -q -m "base"
+    mkdir -p "$wrong_path/protocol"
+    git -C "$wrong_path" -c protocol.file.allow=always \
+        submodule add "$SOURCE" protocol/ap >/dev/null 2>&1
+    git -C "$wrong_path/protocol/ap" remote set-url origin \
+        https://github.com/cisarik/ap.git
+    run_fail "$wrong_path/protocol/ap/ap" doctor || return 1
+
+    mismatch=$(new_super stable_variant_mismatch)
+    run_ok "$mismatch/.ap/ap" init || return 1
+    commit_integration "$mismatch"
+    advance_source "stable variant mismatch source" >/dev/null
+    git -C "$mismatch/.ap" fetch origin refs/heads/main >/dev/null 2>&1
+    git -C "$mismatch/.ap" checkout --detach --quiet FETCH_HEAD
+    run_fail "$mismatch/.ap/ap" doctor || return 1
+
+    unpinned=$(new_super stable_variant_unpinned)
+    run_ok "$unpinned/.ap/ap" init || return 1
+    commit_integration "$unpinned"
+    git -C "$unpinned" rm --cached -q .ap
+    run_fail "$unpinned/.ap/ap" doctor || return 1
+
+    mutable=$(new_super stable_variant_mutable)
+    run_ok "$mutable/.ap/ap" init || return 1
+    commit_integration "$mutable"
+    printf '%s\n' "local mutation" > "$mutable/.ap/local-mutation"
+    run_fail "$mutable/.ap/ap" doctor || return 1
+
+    directives=$(new_super stable_variant_directives)
+    run_ok "$directives/.ap/ap" init || return 1
+    commit_integration "$directives"
+    cp "$directives/AGENTS.md" "$TMPROOT/stable-variant-agents"
+
+    printf '%s\n' \
+        "Governing AP source: https://github.com/example/other.git" \
+        >> "$directives/AGENTS.md"
+    run_fail "$directives/.ap/ap" doctor || return 1
+
+    cp "$TMPROOT/stable-variant-agents" "$directives/AGENTS.md"
+    printf '%s\n' \
+        "Governing AP variant: stable" \
+        "Governing AP variant: project-derivative" \
+        >> "$directives/AGENTS.md"
+    run_fail "$directives/.ap/ap" doctor || return 1
+
+    cp "$TMPROOT/stable-variant-agents" "$directives/AGENTS.md"
+    cat >> "$directives/AGENTS.md" <<'EOF'
+
+> Governing AP variant: project-derivative
+
+```text
+Governing AP source: https://github.com/example/quoted.git
+Rules from non-governing AP variant: quoted example only
+```
+EOF
+    run_ok "$directives/.ap/ap" doctor || return 1
+    grep -F "OK resolved governing variant: stable" "$OUT" >/dev/null || return 1
+
+    cp "$TMPROOT/stable-variant-agents" "$directives/AGENTS.md"
+    printf '%s\n' "Rules from non-governing AP variant: enabled" \
+        >> "$directives/AGENTS.md"
+    run_fail "$directives/.ap/ap" doctor || return 1
+
+    cp "$TMPROOT/stable-variant-agents" "$directives/AGENTS.md"
+    printf '%s\n' "Additional governing AP source: project-local protocol" \
+        >> "$directives/AGENTS.md"
+    run_fail "$directives/.ap/ap" doctor
+}
+
+test_real_list_prefixed_variant_directive_contracts() {
+    directives=$(new_super stable_variant_list_directives)
+    run_ok "$directives/.ap/ap" init || return 1
+    grep -F "OK resolved governing variant: stable" "$OUT" >/dev/null || return 1
+    commit_integration "$directives"
+    cp "$directives/AGENTS.md" "$TMPROOT/stable-variant-list-base"
+
+    printf '%s\n' \
+        "- Governing AP source: https://github.com/example/other.git" \
+        >> "$directives/AGENTS.md"
+    run_fail "$directives/.ap/ap" doctor || return 1
+    grep -F "declares another governing AP source, variant, or rule import" \
+        "$ERR" >/dev/null || return 1
+
+    cp "$TMPROOT/stable-variant-list-base" "$directives/AGENTS.md"
+    printf '%s\n' \
+        "  * Governing AP variant: project-derivative" \
+        >> "$directives/AGENTS.md"
+    run_fail "$directives/.ap/ap" doctor || return 1
+    grep -F "declares another governing AP source, variant, or rule import" \
+        "$ERR" >/dev/null || return 1
+
+    cp "$TMPROOT/stable-variant-list-base" "$directives/AGENTS.md"
+    printf '%s\n' \
+        "+ Protocol rules also imported from: project-derivative" \
+        >> "$directives/AGENTS.md"
+    run_fail "$directives/.ap/ap" doctor || return 1
+    grep -F "declares another governing AP source, variant, or rule import" \
+        "$ERR" >/dev/null || return 1
+
+    # Ordered lists are already part of the repository's supported Markdown
+    # contract surface and must enforce the same active-directive boundary.
+    cp "$TMPROOT/stable-variant-list-base" "$directives/AGENTS.md"
+    printf '%s\n' \
+        "1. Governing AP source: https://github.com/example/other.git" \
+        >> "$directives/AGENTS.md"
+    run_fail "$directives/.ap/ap" doctor || return 1
+    grep -F "declares another governing AP source, variant, or rule import" \
+        "$ERR" >/dev/null || return 1
+
+    cp "$TMPROOT/stable-variant-list-base" "$directives/AGENTS.md"
+    cat >> "$directives/AGENTS.md" <<'EOF'
+
+- > Governing AP variant: project-derivative
+
+- ```text
+  - Governing AP source: https://github.com/example/quoted.git
+  + Protocol rules also imported from: quoted example
+  ```
+
+<!--
+* Governing AP variant: commented-example
+-->
+EOF
+    run_ok "$directives/.ap/ap" doctor || return 1
+    grep -F "OK resolved governing variant: stable" "$OUT" >/dev/null
+}
+
+assert_nested_list_boundary_rejects() {
+    nested_case_name=$1
+    fixture=$2
+    expected_error="declares another governing AP source, variant, or rule import"
+
+    init_super=$(new_super "nested_${nested_case_name}_init")
+    append_agents_fixture "$init_super" "$fixture"
+    init_before=$(hash_file "$init_super/AGENTS.md")
+    run_fail "$init_super/.ap/ap" init || return 1
+    grep -F "$expected_error" "$ERR" >/dev/null || return 1
+    ! grep -F "ap init: PASS" "$OUT" >/dev/null || return 1
+    [ "$init_before" = "$(hash_file "$init_super/AGENTS.md")" ] || return 1
+
+    doctor_super=$(new_super "nested_${nested_case_name}_doctor")
+    run_ok "$doctor_super/.ap/ap" init || return 1
+    commit_integration "$doctor_super"
+    append_agents_fixture "$doctor_super" "$fixture"
+    run_fail "$doctor_super/.ap/ap" doctor || return 1
+    grep -F "$expected_error" "$ERR" >/dev/null || return 1
+    ! grep -F "ap doctor: PASS" "$OUT" >/dev/null
+}
+
+assert_nested_list_boundary_accepts() {
+    nested_case_name=$1
+    fixture=$2
+    super=$(new_super "nested_${nested_case_name}_positive")
+    append_agents_fixture "$super" "$fixture"
+    run_ok "$super/.ap/ap" init || return 1
+    grep -F "OK resolved governing variant: stable" "$OUT" >/dev/null || return 1
+    grep -F "ap init: PASS" "$OUT" >/dev/null || return 1
+    commit_integration "$super"
+    run_ok "$super/.ap/ap" doctor || return 1
+    grep -F "OK resolved governing variant: stable" "$OUT" >/dev/null || return 1
+    grep -F "ap doctor: PASS" "$OUT" >/dev/null
+}
+
+test_real_nested_list_variant_directive_contracts() {
+    fixtures=$TMPROOT/nested-list-directive-fixtures
+    mkdir -p "$fixtures"
+
+    printf '%s\n' "- - Governing AP variant: project-derivative" \
+        > "$fixtures/unordered-dash-dash"
+    assert_nested_list_boundary_rejects unordered_dash_dash \
+        "$fixtures/unordered-dash-dash" || return 1
+
+    printf '%s\n' "+ * Governing AP variant: project-derivative" \
+        > "$fixtures/unordered-plus-star"
+    assert_nested_list_boundary_rejects unordered_plus_star \
+        "$fixtures/unordered-plus-star" || return 1
+
+    printf '%s\n' \
+        "* + Additional governing AP source: https://example.invalid/ap" \
+        > "$fixtures/unordered-star-plus"
+    assert_nested_list_boundary_rejects unordered_star_plus \
+        "$fixtures/unordered-star-plus" || return 1
+
+    printf '%s\n' "1. - Governing AP variant: project-derivative" \
+        > "$fixtures/ordered-dot-dash"
+    assert_nested_list_boundary_rejects ordered_dot_dash \
+        "$fixtures/ordered-dot-dash" || return 1
+
+    printf '%s\n' "- 2) Governing AP variant: project-derivative" \
+        > "$fixtures/dash-ordered-paren"
+    assert_nested_list_boundary_rejects dash_ordered_paren \
+        "$fixtures/dash-ordered-paren" || return 1
+
+    printf '%s\n' \
+        "3) * Protocol rules also imported from: other-protocol" \
+        > "$fixtures/ordered-paren-star"
+    assert_nested_list_boundary_rejects ordered_paren_star \
+        "$fixtures/ordered-paren-star" || return 1
+
+    printf '%s\n' "1. 2. Governing AP variant: project-derivative" \
+        > "$fixtures/repeated-ordered-dot"
+    assert_nested_list_boundary_rejects repeated_ordered_dot \
+        "$fixtures/repeated-ordered-dot" || return 1
+
+    printf '%s\n' \
+        "1) 2) Additional governing AP source: https://example.invalid/ap" \
+        > "$fixtures/repeated-ordered-paren"
+    assert_nested_list_boundary_rejects repeated_ordered_paren \
+        "$fixtures/repeated-ordered-paren" || return 1
+
+    printf '%s\n' "  -   - Governing AP variant: project-derivative" \
+        > "$fixtures/indented-unordered"
+    assert_nested_list_boundary_rejects indented_unordered \
+        "$fixtures/indented-unordered" || return 1
+
+    printf '%s\n' "    1.   + Governing AP variant: project-derivative" \
+        > "$fixtures/indented-mixed"
+    assert_nested_list_boundary_rejects indented_mixed \
+        "$fixtures/indented-mixed" || return 1
+
+    printf '%s\n' "- 1. * Governing AP variant: project-derivative" \
+        > "$fixtures/three-level"
+    assert_nested_list_boundary_rejects three_level \
+        "$fixtures/three-level" || return 1
+
+    printf '%s\n' \
+        "<!-- harmless --> - - Governing AP variant: project-derivative" \
+        > "$fixtures/comment-composition"
+    assert_nested_list_boundary_rejects comment_composition \
+        "$fixtures/comment-composition" || return 1
+
+    printf '%s\n' \
+        "- + Governing AP source: https://example.invalid/ap" \
+        > "$fixtures/governing-source-family"
+    assert_nested_list_boundary_rejects governing_source_family \
+        "$fixtures/governing-source-family" || return 1
+
+    printf '%s\n' \
+        "+ 1. Governing AP repository: https://example.invalid/ap.git" \
+        > "$fixtures/governing-repository-family"
+    assert_nested_list_boundary_rejects governing_repository_family \
+        "$fixtures/governing-repository-family" || return 1
+
+    printf '%s\n' \
+        "* 2) Rules from non-governing AP variant: enabled" \
+        > "$fixtures/non-governing-variant-family"
+    assert_nested_list_boundary_rejects non_governing_variant_family \
+        "$fixtures/non-governing-variant-family" || return 1
+
+    printf '%s\n' \
+        "1. + Apply governing AP rules from: other-protocol" \
+        > "$fixtures/apply-governing-rules-family"
+    assert_nested_list_boundary_rejects apply_governing_rules_family \
+        "$fixtures/apply-governing-rules-family" || return 1
+
+    printf '%s\n' "> - - Governing AP variant: project-derivative" \
+        > "$fixtures/blockquoted-nested-list"
+    assert_nested_list_boundary_accepts blockquoted_nested_list \
+        "$fixtures/blockquoted-nested-list" || return 1
+
+    printf '%s\n' "- > - Governing AP variant: project-derivative" \
+        > "$fixtures/list-blockquote"
+    assert_nested_list_boundary_accepts list_blockquote \
+        "$fixtures/list-blockquote" || return 1
+
+    printf '%s\n' \
+        '```text' \
+        "- - Governing AP variant: project-derivative" \
+        '```' \
+        > "$fixtures/fenced-nested-list"
+    assert_nested_list_boundary_accepts fenced_nested_list \
+        "$fixtures/fenced-nested-list" || return 1
+
+    printf '%s\n' \
+        '- ```text' \
+        "  - - Governing AP variant: project-derivative" \
+        '  ```' \
+        > "$fixtures/list-fence"
+    assert_nested_list_boundary_accepts list_fence \
+        "$fixtures/list-fence" || return 1
+
+    printf '%s\n' \
+        "<!-- - - Governing AP variant: project-derivative -->" \
+        > "$fixtures/same-line-comment"
+    assert_nested_list_boundary_accepts same_line_comment \
+        "$fixtures/same-line-comment" || return 1
+
+    printf '%s\n' \
+        '<!--' \
+        "- - Governing AP variant: project-derivative" \
+        '-->' \
+        > "$fixtures/multiline-comment"
+    assert_nested_list_boundary_accepts multiline_comment \
+        "$fixtures/multiline-comment" || return 1
+
+    printf '%s\n' "- - This is ordinary project guidance." \
+        > "$fixtures/ordinary-nested-list"
+    assert_nested_list_boundary_accepts ordinary_nested_list \
+        "$fixtures/ordinary-nested-list" || return 1
+
+    printf '%s\n' \
+        "Project rule: - - Governing AP variant is an example phrase." \
+        > "$fixtures/similar-nonleading-text"
+    assert_nested_list_boundary_accepts similar_nonleading_text \
+        "$fixtures/similar-nonleading-text" || return 1
+
+    : > "$fixtures/exact-managed-stable"
+    assert_nested_list_boundary_accepts exact_managed_stable \
+        "$fixtures/exact-managed-stable" || return 1
+
+    printf '%s\n' "Project rule: keep local test data synthetic." \
+        > "$fixtures/healthy-stable-consumer"
+    healthy=$(new_super nested_healthy_stable_consumer)
+    append_agents_fixture "$healthy" "$fixtures/healthy-stable-consumer"
+    run_ok "$healthy/.ap/ap" init || return 1
+    grep -F "OK resolved governing variant: stable" "$OUT" >/dev/null || return 1
+    run_ok "$healthy/.ap/ap" init || return 1
+    grep -F "AGENTS.md unchanged" "$OUT" >/dev/null || return 1
+    grep -F "OK resolved governing variant: stable" "$OUT" >/dev/null || return 1
+    commit_integration "$healthy"
+    run_ok "$healthy/.ap/ap" doctor || return 1
+    grep -F "OK resolved governing variant: stable" "$OUT" >/dev/null || return 1
+    grep -F "ap doctor: PASS" "$OUT" >/dev/null
+}
+
+append_agents_fixture() {
+    super=$1
+    fixture=$2
+    if [ -s "$super/AGENTS.md" ]; then
+        printf '\n' >> "$super/AGENTS.md"
+    fi
+    cat "$fixture" >> "$super/AGENTS.md"
+    printf '\n' >> "$super/AGENTS.md"
+}
+
+assert_comment_boundary_rejects() {
+    comment_case_name=$1
+    fixture=$2
+    expected_error="declares another governing AP source, variant, or rule import"
+
+    init_super=$(new_super "comment_${comment_case_name}_init")
+    append_agents_fixture "$init_super" "$fixture"
+    init_before=$(hash_file "$init_super/AGENTS.md")
+    run_fail "$init_super/.ap/ap" init || return 1
+    grep -F "$expected_error" "$ERR" >/dev/null || return 1
+    ! grep -F "ap init: PASS" "$OUT" >/dev/null || return 1
+    [ "$init_before" = "$(hash_file "$init_super/AGENTS.md")" ] || return 1
+
+    doctor_super=$(new_super "comment_${comment_case_name}_doctor")
+    run_ok "$doctor_super/.ap/ap" init || return 1
+    commit_integration "$doctor_super"
+    append_agents_fixture "$doctor_super" "$fixture"
+    run_fail "$doctor_super/.ap/ap" doctor || return 1
+    grep -F "$expected_error" "$ERR" >/dev/null || return 1
+    ! grep -F "ap doctor: PASS" "$OUT" >/dev/null
+}
+
+assert_comment_boundary_accepts() {
+    comment_case_name=$1
+    fixture=$2
+    super=$(new_super "comment_${comment_case_name}_positive")
+    append_agents_fixture "$super" "$fixture"
+    run_ok "$super/.ap/ap" init || return 1
+    grep -F "OK resolved governing variant: stable" "$OUT" >/dev/null || return 1
+    grep -F "ap init: PASS" "$OUT" >/dev/null || return 1
+    commit_integration "$super"
+    run_ok "$super/.ap/ap" doctor || return 1
+    grep -F "OK resolved governing variant: stable" "$OUT" >/dev/null || return 1
+    grep -F "ap doctor: PASS" "$OUT" >/dev/null
+}
+
+test_real_html_comment_trailing_directive_contracts() {
+    fixtures=$TMPROOT/html-comment-directive-fixtures
+    mkdir -p "$fixtures"
+
+    printf '%s\n' \
+        "<!-- harmless example --> Governing AP source: https://github.com/example/other.git" \
+        > "$fixtures/same-line-source"
+    assert_comment_boundary_rejects same_line_source \
+        "$fixtures/same-line-source" || return 1
+
+    printf '%s\n' \
+        "<!-- harmless example --> Governing AP variant: project-derivative" \
+        > "$fixtures/same-line-variant"
+    assert_comment_boundary_rejects same_line_variant \
+        "$fixtures/same-line-variant" || return 1
+
+    printf '%s\n' \
+        "<!-- harmless example --> Protocol rules also imported from: project-derivative" \
+        > "$fixtures/same-line-import"
+    assert_comment_boundary_rejects same_line_import \
+        "$fixtures/same-line-import" || return 1
+
+    printf '%s\n' \
+        "<!-- harmless" \
+        "example --> Governing AP variant: project-derivative" \
+        > "$fixtures/multiline-suffix"
+    assert_comment_boundary_rejects multiline_suffix \
+        "$fixtures/multiline-suffix" || return 1
+
+    printf '%s\n' \
+        "Governing AP variant: project-derivative <!-- trailing explanation -->" \
+        > "$fixtures/active-prefix"
+    assert_comment_boundary_rejects active_prefix \
+        "$fixtures/active-prefix" || return 1
+
+    printf '%s\n' \
+        "<!-- first --><!-- second --> Governing AP variant: project-derivative" \
+        > "$fixtures/multiple-comments"
+    assert_comment_boundary_rejects multiple_comments \
+        "$fixtures/multiple-comments" || return 1
+
+    printf '%s\n' \
+        "<!-- example --> - Governing AP variant: project-derivative" \
+        > "$fixtures/list-suffix"
+    assert_comment_boundary_rejects list_suffix \
+        "$fixtures/list-suffix" || return 1
+
+    printf '%s\n' \
+        "<!-- Governing AP variant: project-derivative -->" \
+        > "$fixtures/same-line-comment-only"
+    assert_comment_boundary_accepts same_line_comment_only \
+        "$fixtures/same-line-comment-only" || return 1
+
+    printf '%s\n' \
+        "<!--" \
+        "Governing AP variant: project-derivative" \
+        "-->" \
+        > "$fixtures/multiline-comment-only"
+    assert_comment_boundary_accepts multiline_comment_only \
+        "$fixtures/multiline-comment-only" || return 1
+
+    printf '%s   \n' \
+        "<!-- Governing AP variant: project-derivative -->" \
+        > "$fixtures/comment-whitespace-suffix"
+    assert_comment_boundary_accepts comment_whitespace_suffix \
+        "$fixtures/comment-whitespace-suffix" || return 1
+
+    printf '%s\n' \
+        "Intro <!-- example --> ordinary text" \
+        > "$fixtures/ordinary-text"
+    assert_comment_boundary_accepts ordinary_text \
+        "$fixtures/ordinary-text" || return 1
+
+    printf '%s\n' \
+        "> Governing AP variant: project-derivative" \
+        > "$fixtures/blockquote"
+    assert_comment_boundary_accepts blockquote \
+        "$fixtures/blockquote" || return 1
+
+    printf '%s\n' \
+        '```text' \
+        "Governing AP variant: project-derivative" \
+        '```' \
+        > "$fixtures/fence"
+    assert_comment_boundary_accepts fence "$fixtures/fence" || return 1
+
+    printf '%s\n' \
+        "- > Governing AP variant: project-derivative" \
+        > "$fixtures/list-blockquote"
+    assert_comment_boundary_accepts list_blockquote \
+        "$fixtures/list-blockquote" || return 1
+
+    printf '%s\n' \
+        '- ```text' \
+        "  Governing AP variant: project-derivative" \
+        '  ```' \
+        > "$fixtures/list-fence"
+    assert_comment_boundary_accepts list_fence \
+        "$fixtures/list-fence" || return 1
+
+    printf '%s\n' \
+        "<!--" \
+        "Governing AP variant: project-derivative" \
+        > "$fixtures/unclosed-comment"
+    assert_comment_boundary_accepts unclosed_comment \
+        "$fixtures/unclosed-comment" || return 1
+
+    : > "$fixtures/exact-managed-stable"
+    assert_comment_boundary_accepts exact_managed_stable \
+        "$fixtures/exact-managed-stable"
+}
+
+test_real_html_comment_fence_state_contracts() {
+    fixtures=$TMPROOT/html-comment-fence-state-fixtures
+    mkdir -p "$fixtures"
+
+    printf '%s\n' \
+        '<!--' \
+        '```text' \
+        '-->' \
+        '- Governing AP variant: project-derivative' \
+        > "$fixtures/commented-fence-before-variant"
+    assert_comment_boundary_rejects commented_fence_before_variant \
+        "$fixtures/commented-fence-before-variant" || return 1
+
+    printf '%s\n' \
+        '<!--' \
+        '```' \
+        '-->' \
+        'Additional governing AP source: https://example.invalid/ap' \
+        > "$fixtures/commented-fence-before-source"
+    assert_comment_boundary_rejects commented_fence_before_source \
+        "$fixtures/commented-fence-before-source" || return 1
+
+    printf '%s\n' \
+        '<!--' \
+        '~~~' \
+        '-->' \
+        'Protocol rules also imported from: other-protocol' \
+        > "$fixtures/commented-fence-before-import"
+    assert_comment_boundary_rejects commented_fence_before_import \
+        "$fixtures/commented-fence-before-import" || return 1
+
+    printf '%s\n' \
+        '<!--' \
+        '```text' \
+        '-->' \
+        '- 1. * Governing AP variant: project-derivative' \
+        > "$fixtures/commented-fence-before-nested-list"
+    assert_comment_boundary_rejects commented_fence_before_nested_list \
+        "$fixtures/commented-fence-before-nested-list" || return 1
+
+    printf '%s\n' \
+        '<!-- ``` --><!-- ~~~ --> Governing AP variant: project-derivative' \
+        > "$fixtures/multiple-commented-fences"
+    assert_comment_boundary_rejects multiple_commented_fences \
+        "$fixtures/multiple-commented-fences" || return 1
+
+    printf '%s\n' \
+        '<!--' \
+        '```text' \
+        'Governing AP variant: project-derivative' \
+        '```' \
+        '-->' \
+        > "$fixtures/directive-inside-commented-fence"
+    assert_comment_boundary_accepts directive_inside_commented_fence \
+        "$fixtures/directive-inside-commented-fence" || return 1
+
+    printf '%s\n' \
+        '```text' \
+        'Governing AP variant: project-derivative' \
+        '```' \
+        > "$fixtures/real-fence"
+    assert_comment_boundary_accepts real_fence \
+        "$fixtures/real-fence" || return 1
+
+    printf '%s\n' \
+        '<!-- comment -->' \
+        '```text' \
+        'Governing AP variant: project-derivative' \
+        '```' \
+        > "$fixtures/comment-before-real-fence"
+    assert_comment_boundary_accepts comment_before_real_fence \
+        "$fixtures/comment-before-real-fence" || return 1
+
+    printf '%s\n' \
+        '```text' \
+        '<!--' \
+        'Governing AP variant: project-derivative' \
+        '-->' \
+        '```' \
+        > "$fixtures/comment-markers-inside-real-fence"
+    assert_comment_boundary_accepts comment_markers_inside_real_fence \
+        "$fixtures/comment-markers-inside-real-fence" || return 1
+
+    printf '%s\n' \
+        '<!--' \
+        '```text' \
+        '-->' \
+        'Ordinary project guidance.' \
+        > "$fixtures/commented-fence-before-ordinary-text"
+    assert_comment_boundary_accepts commented_fence_before_ordinary_text \
+        "$fixtures/commented-fence-before-ordinary-text"
 }
 
 test_doctor_managed_block_defects() {
@@ -4859,6 +5507,124 @@ EOF
         esac
         ! validate_human_governance_fixture "$fixtures/$contradiction" || return 1
     done
+}
+
+test_protocol_variant_selection_boundary_contracts() {
+    start="### Protocol-Variant Selection Boundary"
+    end="## 2. Roles"
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "Exactly one of them governs a project at a time" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "- one canonical repository identity;" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "- one immutable pin, or an equivalent immutable version identity;" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "- one declared variant." || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "The declaration belongs in the project's governing rules" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "A declaration that appears only in an unrelated place selects nothing" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "Two variants never govern simultaneously" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "must not be applied, quoted as authority, or blended into the governing protocol" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "the resulting behavior belongs to no declared protocol" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "Contradictory repository identities, an unpinned governing source where an immutable pin is required, and more than one simultaneously declared governing variant are each invalid selections" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "the stable line neither depends on nor imports experimental lifecycle machinery" || return 1
+    # Compatibility: an existing stable pin must not require migration.
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "Existing exact stable consumers require no content migration" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "canonical repository identity \`https://github.com/cisarik/ap.git\`" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "canonical consuming-project submodule path \`.ap\`" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "equality between the \`.ap\` checkout and that gitlink" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "the exact canonical AP-managed block in the project's root \`AGENTS.md\`" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "\`ap doctor\` validates the tuple and reports the resolved governing variant as \`stable\`" || return 1
+    for term in "Protocol Variant" "Governing Protocol Source"
+    do
+        grep -F "## $term" "$REPO/GLOSSARY.md" >/dev/null || return 1
+    done
+    assert_section_contract "$REPO/AP_ORCHESTRATOR.md" "## Protocol-Variant Selection" \
+        "## Recovery Classification And Closure Signalling" \
+        "Do not apply, quote as authority, or blend in rules from a non-governing variant" || return 1
+
+    # Stable AP must not name or import an experimental protocol line.
+    scan_absent "experimental-variant-import" \
+        -n "ap_experimental|USAGE_ANALYZER|ape_|APE protocol" \
+        "$REPO/AP.md" "$REPO/AP_ORCHESTRATOR.md" "$REPO/AP_WORKER.md" \
+        "$REPO/PROMPT_CONTRACTS.md" "$REPO/GLOSSARY.md" "$REPO/FAQ.md" \
+        "$REPO/README.md" "$REPO/CHANGELOG.md" "$REPO/INTEGRATION.md" \
+        "$REPO/ARTIFACT_LIFECYCLE.md" || return 1
+
+    fixtures=$TMPROOT/protocol-variant-fixtures
+    mkdir -p "$fixtures"
+    cat > "$fixtures/stable-pin" <<'EOF'
+Canonical repository identity: the canonical stable protocol repository
+Immutable version identity: submodule gitlink recording one exact protocol commit
+Declared variant: stable
+Governing variants in effect: one
+Declaration location: project governing rules
+Rules from non-governing variants: none
+Migration required: no
+EOF
+    validate_protocol_variant_fixture "$fixtures/stable-pin" || return 1
+
+    # More than one governing variant is invalid.
+    sed 's/^Governing variants in effect: one$/Governing variants in effect: two/' \
+        "$fixtures/stable-pin" > "$fixtures/two-variants"
+    ! validate_protocol_variant_fixture "$fixtures/two-variants" || return 1
+
+    # Silent rule mixing is a defect, not a convenience.
+    sed 's/^Rules from non-governing variants: none$/Rules from non-governing variants: adopted one experimental lifecycle rule/' \
+        "$fixtures/stable-pin" > "$fixtures/mixed-rules"
+    ! validate_protocol_variant_fixture "$fixtures/mixed-rules" || return 1
+
+    # An unpinned governing source is invalid where a pin is required.
+    sed 's/^Immutable version identity: .*$/Immutable version identity: tracking branch head/' \
+        "$fixtures/stable-pin" > "$fixtures/unpinned"
+    ! validate_protocol_variant_fixture "$fixtures/unpinned" || return 1
+
+    sed 's/^Immutable version identity: .*$/Immutable version identity: none/' \
+        "$fixtures/stable-pin" > "$fixtures/no-pin"
+    ! validate_protocol_variant_fixture "$fixtures/no-pin" || return 1
+
+    # Contradictory repository identities are invalid.
+    sed 's/^Canonical repository identity: .*$/Canonical repository identity: the stable repository and a derivative repository/' \
+        "$fixtures/stable-pin" > "$fixtures/two-identities"
+    ! validate_protocol_variant_fixture "$fixtures/two-identities" || return 1
+
+    # A declaration placed only in an irrelevant context selects nothing.
+    sed 's/^Declaration location: project governing rules$/Declaration location: a changelog entry/' \
+        "$fixtures/stable-pin" > "$fixtures/irrelevant-declaration"
+    ! validate_protocol_variant_fixture "$fixtures/irrelevant-declaration" || return 1
+
+    sed 's/^Declared variant: stable$/Declared variant: whichever fits/' \
+        "$fixtures/stable-pin" > "$fixtures/undeclared-variant"
+    ! validate_protocol_variant_fixture "$fixtures/undeclared-variant" || return 1
+
+    # A derivative line is a valid governing selection in its own right.
+    sed 's/^Declared variant: stable$/Declared variant: project-derivative/' \
+        "$fixtures/stable-pin" > "$fixtures/derivative"
+    validate_protocol_variant_fixture "$fixtures/derivative" || return 1
+
+    # A migration is acceptable only with an explicit justification.
+    sed 's/^Migration required: no$/Migration required: yes/' \
+        "$fixtures/stable-pin" > "$fixtures/unjustified-migration"
+    ! validate_protocol_variant_fixture "$fixtures/unjustified-migration" || return 1
+
+    sed 's/^Migration required: no$/Migration required: yes because the project moves to a newer declared variant/' \
+        "$fixtures/stable-pin" > "$fixtures/justified-migration"
+    validate_protocol_variant_fixture "$fixtures/justified-migration" || return 1
+
+    sed '/^Declared variant:/d' "$fixtures/stable-pin" > "$fixtures/no-variant"
+    ! validate_protocol_variant_fixture "$fixtures/no-variant" || return 1
 }
 
 test_recovery_classification_and_closure_signalling_contracts() {
@@ -7003,6 +7769,11 @@ run_test "init accepts cosmetic missing .git suffix" test_init_accepts_cosmetic_
 run_test "init publication failure leaves original file intact" test_init_publication_failure_leaves_original
 run_test "doctor accepts exact healthy block and is project-read-only" test_doctor_healthy_exact_block_and_read_only
 run_test "doctor accepts detached pinned submodule at exact gitlink" test_doctor_accepts_detached_pinned_submodule
+run_test "real init and doctor resolve exactly one stable governing variant" test_real_stable_variant_resolution_contracts
+run_test "real doctor rejects list-prefixed competing variant directives" test_real_list_prefixed_variant_directive_contracts
+run_test "real init and doctor enforce nested-list variant directive boundaries" test_real_nested_list_variant_directive_contracts
+run_test "real init and doctor enforce HTML-comment directive boundaries" test_real_html_comment_trailing_directive_contracts
+run_test "real init and doctor keep HTML comments from changing fence state" test_real_html_comment_fence_state_contracts
 run_test "doctor rejects managed block defects inside the block" test_doctor_managed_block_defects
 run_test "doctor rejects missing, dirty, wrong remote, and mismatched states" test_doctor_missing_dirty_wrong_remote_mismatch
 run_test "legacy detection classifies without deletion or false confirmation" test_legacy_detection_classifies_without_deleting
@@ -7053,6 +7824,7 @@ run_test "model routing fixtures enforce observation, quota, fallback, and refus
 run_test "Plan Mode ownership, routing, and one-cycle budget contracts are enforced" test_plan_mode_ownership_routing_and_cycle_budget_contracts
 run_test "Worker freshness and same-session continuation contracts are enforced" test_worker_freshness_and_same_session_continuation_contracts
 run_test "report, audit, handoff, human governance, and authority-envelope contracts are enforced" test_report_audit_handoff_and_authority_envelope_contracts
+run_test "protocol-variant selection boundary fixtures are enforced" test_protocol_variant_selection_boundary_contracts
 run_test "recovery classification, failure evidence, and closure signalling are enforced" test_recovery_classification_and_closure_signalling_contracts
 run_test "browser stall guard and amended expectation fixtures are enforced" test_browser_stall_guard_and_amended_acceptance_contracts
 run_test "browser stall guard stops after conclusive evidence" test_browser_stall_guard_conclusive_stop_contracts
