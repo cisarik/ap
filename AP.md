@@ -1240,6 +1240,62 @@ behavior, concrete defect, missing evidence, product decision, or adjacent idea.
 Concrete defects may receive bounded correction prompts. Adjacent ideas do not
 silently expand the slice.
 
+### Browser Verification Stall Guard
+
+Deliberate Worker internal-browser verification is retained wherever it
+materially improves UI evidence. The guard below bounds repair of the
+verification tool, not the amount of useful verification work.
+
+A failure episode is one stably identified verification failure together with
+evidence connecting every repeated symptom and recovery attempt to it. Cosmetic
+renaming of a black renderer, control-channel failure, or other materially
+unchanged symptom never creates a new episode. A materially different later
+failure may create a new episode only when its difference and prior episode are
+recorded.
+
+Within one episode, zero, one, or two meaningful recovery attempts may be
+used. Two is a maximum, not a mandatory minimum and not an automatic guard
+trigger. Verification may succeed immediately or after either attempt. Every
+attempt records its exact action and result.
+
+Repeated or conclusive unresolved evidence of a black renderer, browser lock,
+broken automation control channel, no-progress behavior, or unrecovered launch
+or rendering failure triggers the stall guard. Conclusive evidence may trigger
+the guard before two attempts when another attempt would not be meaningful.
+
+When the stall guard triggers:
+
+- preserve all evidence already obtained;
+- stop repairing the verification browser;
+- continue with tests, HTTP or contract evidence, or selective Cooperator
+  observation where appropriate;
+- never let browser tooling stall the logical whole;
+- never convert missing browser evidence into a false `PASS`;
+- state precisely which verification remains absent and whether Cooperator
+  acceptance is required for it.
+
+### Amended Cooperator Expectations
+
+A frozen expectation may be changed only by the Cooperator. When the Cooperator
+explicitly changes an expectation during acceptance:
+
+- preserve exact evidence of the Cooperator's decision ownership;
+- the Orchestrator records the superseded expectation;
+- the Orchestrator issues narrow renewed authority to one exact Worker
+  recipient for one exact amended task boundary;
+- that Worker implements and validates only the renewed boundary;
+- stop reporting the superseded expectation as an active failure;
+- never use the amendment to expand unrelated scope.
+
+The Cooperator decision changes the product expectation but grants no Worker
+mutation authority by itself. Orchestrator product-decision substitution,
+Worker unilateral amendment, generic authority-renewal prose without an issuer,
+and amendment fields found only in an irrelevant example are invalid.
+
+Sequential Cooperator UI and UX acceptance is preserved, as is selective owner
+acceptance after strong internal verification. An amendment changes the
+expectation under test; it never changes who owns rendered acceptance.
+
 ## 12. Validation and Public Verification
 
 Validation is proportional to risk.

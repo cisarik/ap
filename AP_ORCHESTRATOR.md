@@ -277,6 +277,32 @@ exists, describe the required reasoning characteristics instead of inventing
 labels or telemetry. The Cooperator retains final selection among available
 client settings.
 
+## Browser Stall Guard And Amended Expectations
+
+Keep deliberate internal-browser verification wherever it materially improves UI
+evidence. Bound only repair of the verification tool: allow zero, one, or at
+most two meaningful recovery attempts per stable failure episode. Success after
+either attempt does not trigger the guard. Repeated or conclusive unresolved
+black-renderer, browser-lock, broken-control-channel, no-progress, or
+unrecovered-launch evidence does trigger it, including before two attempts when
+another would not be meaningful. Do not accept cosmetic symptom renaming as a
+new episode.
+
+Once the guard triggers, preserve the evidence already obtained, stop repairing
+the browser, and route the remaining verification to tests, HTTP or contract
+evidence, or selective Cooperator observation. Never let browser tooling stall a
+logical whole, and never accept missing browser evidence as a `PASS`. State
+exactly which verification is absent and whether Cooperator acceptance is
+required for it.
+
+When the Cooperator changes a frozen expectation during acceptance, preserve
+the exact decision evidence. Separately record the superseded expectation, then
+issue narrow renewed authority naming one exact boundary and Worker recipient.
+Require that Worker to implement and validate the boundary, stop reporting the
+superseded expectation as active, prevent unrelated widening, and keep rendered
+acceptance with the Cooperator. The Cooperator decision alone is not Worker
+mutation authority.
+
 ## Provider Call Authority And Continuous Closure
 
 Authorize external provider calls by exact purpose, fixture, credential, and

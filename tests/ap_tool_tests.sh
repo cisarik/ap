@@ -981,6 +981,230 @@ provider_unknown_closure_is_valid() {
     esac
 }
 
+validate_browser_stall_guard_fixture() {
+    file=$1
+    for field in \
+        "Failure episode identity:" \
+        "Prior episode identity:" \
+        "Episode relationship:" \
+        "Symptom continuity evidence:" \
+        "Initial verification result:" \
+        "Recovery attempts:" \
+        "Recovery attempt 1:" \
+        "Recovery attempt 2:" \
+        "Verification succeeded:" \
+        "Repeated failure remains unresolved:" \
+        "Conclusive no-progress evidence:" \
+        "Stall guard:" \
+        "Repeated failure evidence:" \
+        "Guard rationale:" \
+        "Evidence preserved:" \
+        "Browser repair after trigger:" \
+        "Alternative evidence:" \
+        "Absent verification:" \
+        "Cooperator acceptance required:" \
+        "Result claimed from missing evidence:"
+    do
+        field_count=$(awk -v prefix="$field " \
+            'index($0, prefix) == 1 { count++ } END { print count + 0 }' "$file")
+        [ "$field_count" -eq 1 ] || return 1
+        value=$(awk -v prefix="$field " \
+            'index($0, prefix) == 1 { print substr($0, length(prefix) + 1) }' "$file")
+        [ -n "$value" ] || return 1
+    done
+
+    [ "$(grep -Ec '^Initial verification result: (succeeded|failed-no-progress|failed-conclusive)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Verification succeeded: (yes|no)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Repeated failure remains unresolved: (yes|no)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Conclusive no-progress evidence: (yes|no)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Stall guard: (not-triggered|triggered)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Evidence preserved: yes$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Cooperator acceptance required: (yes|no)$' "$file")" -eq 1 ] || return 1
+    # Missing browser evidence never becomes a PASS.
+    [ "$(grep -Ec '^Result claimed from missing evidence: none$' "$file")" -eq 1 ] || return 1
+    # At most two meaningful recovery attempts per failure episode.
+    [ "$(grep -Ec '^Recovery attempts: [0-2]$' "$file")" -eq 1 ] || return 1
+
+    attempts=$(sed -n 's/^Recovery attempts: //p' "$file")
+    attempt1=$(sed -n 's/^Recovery attempt 1: //p' "$file")
+    attempt2=$(sed -n 's/^Recovery attempt 2: //p' "$file")
+    initial=$(sed -n 's/^Initial verification result: //p' "$file")
+    succeeded=$(sed -n 's/^Verification succeeded: //p' "$file")
+    unresolved=$(sed -n 's/^Repeated failure remains unresolved: //p' "$file")
+    conclusive=$(sed -n 's/^Conclusive no-progress evidence: //p' "$file")
+    guard=$(sed -n 's/^Stall guard: //p' "$file")
+    repeated=$(sed -n 's/^Repeated failure evidence: //p' "$file")
+    repair=$(sed -n 's/^Browser repair after trigger: //p' "$file")
+    alternative=$(sed -n 's/^Alternative evidence: //p' "$file")
+    absent=$(sed -n 's/^Absent verification: //p' "$file")
+
+    episode=$(sed -n 's/^Failure episode identity: //p' "$file")
+    prior=$(sed -n 's/^Prior episode identity: //p' "$file")
+    relationship=$(sed -n 's/^Episode relationship: //p' "$file")
+    case "$relationship" in
+        initial)
+            [ "$prior" = none ] || return 1
+            ;;
+        continuation-of-same-episode)
+            [ "$prior" != none ] || return 1
+            [ "$episode" = "$prior" ] || return 1
+            ;;
+        "materially-different because "?*)
+            [ "$prior" != none ] || return 1
+            [ "$episode" != "$prior" ] || return 1
+            ;;
+        *) return 1 ;;
+    esac
+
+    case "$attempt1" in
+        "not-used because "?*|*" => succeeded"|*" => failed-no-progress"|*" => failed-conclusive") ;;
+        *) return 1 ;;
+    esac
+    case "$attempt2" in
+        "not-used because "?*|*" => succeeded"|*" => failed-no-progress"|*" => failed-conclusive") ;;
+        *) return 1 ;;
+    esac
+
+    case "$attempts" in
+        0)
+            case "$attempt1" in "not-used because "?*) ;; *) return 1 ;; esac
+            case "$attempt2" in "not-used because "?*) ;; *) return 1 ;; esac
+            last_result=$initial
+            ;;
+        1)
+            [ "$initial" = failed-no-progress ] || return 1
+            case "$attempt1" in "not-used because "?*) return 1 ;; esac
+            case "$attempt2" in "not-used because "?*) ;; *) return 1 ;; esac
+            last_result=${attempt1##* => }
+            ;;
+        2)
+            [ "$initial" = failed-no-progress ] || return 1
+            case "$attempt1" in "not-used because "?*) return 1 ;; esac
+            case "$attempt2" in "not-used because "?*) return 1 ;; esac
+            [ "${attempt1##* => }" = failed-no-progress ] || return 1
+            last_result=${attempt2##* => }
+            ;;
+    esac
+
+    if [ "$last_result" = succeeded ]; then
+        [ "$succeeded" = yes ] || return 1
+        [ "$unresolved" = no ] || return 1
+    else
+        [ "$succeeded" = no ] || return 1
+        [ "$unresolved" = yes ] || return 1
+    fi
+
+    conclusive_result=no
+    [ "$last_result" != failed-conclusive ] || conclusive_result=yes
+    [ "$conclusive" = "$conclusive_result" ] || return 1
+    if [ "$conclusive" = yes ]; then
+        [ "$succeeded" = no ] || return 1
+    fi
+
+    trigger_required=no
+    if [ "$unresolved" = yes ]; then
+        if [ "$conclusive" = yes ] || [ "$attempts" = 2 ] || [ "$repeated" != none ]; then
+            trigger_required=yes
+        fi
+    fi
+    if [ "$trigger_required" = yes ]; then
+        [ "$guard" = triggered ] || return 1
+    else
+        [ "$guard" = not-triggered ] || return 1
+    fi
+
+    if [ "$guard" = "triggered" ]; then
+        [ "$repair" = "none" ] || return 1
+        [ "$alternative" != "not-required" ] || return 1
+        case "$absent" in
+            none|unknown) return 1 ;;
+        esac
+    else
+        if [ "$succeeded" = yes ]; then
+            [ "$absent" = "none" ] || return 1
+            [ "$alternative" = "not-required" ] || return 1
+        fi
+    fi
+}
+
+validate_amended_expectation_fixture() {
+    file=$1
+    [ "$(grep -cFx '## Active Amended Expectation Record' "$file")" -eq 1 ] || return 1
+    [ "$(grep -cFx '## End Active Amended Expectation Record' "$file")" -eq 1 ] || return 1
+    section=$TMPROOT/active-amendment-record
+    awk '
+        $0 == "## Active Amended Expectation Record" {
+            active = 1
+            next
+        }
+        $0 == "## End Active Amended Expectation Record" {
+            active = 0
+            ended = 1
+            next
+        }
+        active { print }
+        END { if (!ended) exit 1 }
+    ' "$file" > "$section" || return 1
+
+    for field in \
+        "Amendment record:" \
+        "Cooperator decision ownership:" \
+        "Cooperator decision evidence:" \
+        "Superseded expectation:" \
+        "Amended expectation:" \
+        "Amendment boundary:" \
+        "Cooperator decision authority effect:" \
+        "Orchestrator superseded-expectation record:" \
+        "Orchestrator authority issuance:" \
+        "Renewed task boundary:" \
+        "Worker recipient:" \
+        "Worker implementation:" \
+        "Worker validation:" \
+        "Role sequence:" \
+        "Superseded expectation reported as failure:" \
+        "Unrelated scope change:" \
+        "Rendered acceptance ownership:"
+    do
+        field_count=$(awk -v prefix="$field " \
+            'index($0, prefix) == 1 { count++ } END { print count + 0 }' "$section")
+        [ "$field_count" -eq 1 ] || return 1
+        value=$(awk -v prefix="$field " \
+            'index($0, prefix) == 1 { print substr($0, length(prefix) + 1) }' "$section")
+        [ -n "$value" ] || return 1
+    done
+
+    [ "$(grep -Ec '^Amendment record: active$' "$section")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Cooperator decision ownership: COOPERATOR$' "$section")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Cooperator decision evidence: exact COOPERATOR acceptance evidence .+$' "$section")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Cooperator decision authority effect: decision-only-no-worker-mutation-authority$' "$section")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Role sequence: COOPERATOR-decision -> ORCHESTRATOR-record -> ORCHESTRATOR-issuance -> WORKER-implementation -> WORKER-validation$' "$section")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Superseded expectation reported as failure: no$' "$section")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Unrelated scope change: none$' "$section")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Rendered acceptance ownership: COOPERATOR$' "$section")" -eq 1 ] || return 1
+
+    superseded=$(sed -n 's/^Superseded expectation: //p' "$section")
+    amended=$(sed -n 's/^Amended expectation: //p' "$section")
+    [ "$superseded" != "$amended" ] || return 1
+    case "$superseded" in
+        none|unknown|not-applicable) return 1 ;;
+    esac
+    boundary=$(sed -n 's/^Amendment boundary: //p' "$section")
+    recipient=$(sed -n 's/^Worker recipient: //p' "$section")
+    printf '%s\n' "$boundary" | grep -Eq '^[a-z0-9][a-z0-9._-]*$' || return 1
+    printf '%s\n' "$recipient" | grep -Eq '^WORKER-[A-Za-z0-9._-]+$' || return 1
+    [ "$(sed -n 's/^Renewed task boundary: //p' "$section")" = "$boundary only" ] || return 1
+    [ "$(sed -n 's/^Orchestrator superseded-expectation record: //p' "$section")" = "recorded by ORCHESTRATOR under $boundary" ] || return 1
+    [ "$(sed -n 's/^Orchestrator authority issuance: //p' "$section")" = "issued by ORCHESTRATOR to $recipient for $boundary only" ] || return 1
+    case "$(sed -n 's/^Worker implementation: //p' "$section")" in
+        "implemented $boundary with "?*) ;;
+        *) return 1 ;;
+    esac
+    case "$(sed -n 's/^Worker validation: //p' "$section")" in
+        "validated $boundary with "?*) ;;
+        *) return 1 ;;
+    esac
+}
+
 validate_owner_command_fixture() {
     file=$1
     for field in \
@@ -4343,6 +4567,403 @@ EOF
     done
 }
 
+test_browser_stall_guard_and_amended_acceptance_contracts() {
+    start="### Browser Verification Stall Guard"
+    end="### Amended Cooperator Expectations"
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "Deliberate Worker internal-browser verification is retained wherever it materially improves UI evidence" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "bounds repair of the verification tool, not the amount of useful verification work" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "A failure episode is one stably identified verification failure together with evidence connecting every repeated symptom and recovery attempt to it" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "zero, one, or two meaningful recovery attempts may be used" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "Two is a maximum, not a mandatory minimum and not an automatic guard trigger" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "Verification may succeed immediately or after either attempt" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "Repeated or conclusive unresolved evidence of a black renderer, browser lock, broken automation control channel, no-progress behavior, or unrecovered launch or rendering failure triggers the stall guard" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "Conclusive evidence may trigger the guard before two attempts when another attempt would not be meaningful" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "preserve all evidence already obtained" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "stop repairing the verification browser" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "never let browser tooling stall the logical whole" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "never convert missing browser evidence into a false \`PASS\`" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "state precisely which verification remains absent and whether Cooperator acceptance is required for it" || return 1
+
+    amend_end="## 12. Validation and Public Verification"
+    assert_section_contract "$REPO/AP.md" "$end" "$amend_end" \
+        "A frozen expectation may be changed only by the Cooperator" || return 1
+    assert_section_contract "$REPO/AP.md" "$end" "$amend_end" \
+        "the Orchestrator records the superseded expectation" || return 1
+    assert_section_contract "$REPO/AP.md" "$end" "$amend_end" \
+        "the Orchestrator issues narrow renewed authority to one exact Worker recipient for one exact amended task boundary" || return 1
+    assert_section_contract "$REPO/AP.md" "$end" "$amend_end" \
+        "The Cooperator decision changes the product expectation but grants no Worker mutation authority by itself" || return 1
+    assert_section_contract "$REPO/AP.md" "$end" "$amend_end" \
+        "stop reporting the superseded expectation as an active failure" || return 1
+    assert_section_contract "$REPO/AP.md" "$end" "$amend_end" \
+        "never use the amendment to expand unrelated scope" || return 1
+    assert_section_contract "$REPO/AP.md" "$end" "$amend_end" \
+        "Sequential Cooperator UI and UX acceptance is preserved, as is selective owner acceptance after strong internal verification" || return 1
+    assert_section_contract "$REPO/AP.md" "$end" "$amend_end" \
+        "it never changes who owns rendered acceptance" || return 1
+    for term in "Failure Episode" "Browser Verification Stall Guard" "Amended Expectation"
+    do
+        grep -F "$term" "$REPO/GLOSSARY.md" >/dev/null || return 1
+    done
+
+    # The guard must not be misread as a two-action browser budget.
+    scan_absent "browser-action-budget" \
+        -n "at most two browser actions|maximum of two browser actions|only two browser (actions|commands)" \
+        "$REPO/AP.md" "$REPO/AP_ORCHESTRATOR.md" "$REPO/AP_WORKER.md" \
+        "$REPO/PROMPT_CONTRACTS.md" || return 1
+
+    fixtures=$TMPROOT/browser-stall-fixtures
+    mkdir -p "$fixtures"
+    cat > "$fixtures/immediate-success" <<'EOF'
+Failure episode identity: browser-episode-immediate
+Prior episode identity: none
+Episode relationship: initial
+Symptom continuity evidence: exact initial navigation evidence for browser-episode-immediate
+Initial verification result: succeeded
+Recovery attempts: 0
+Recovery attempt 1: not-used because initial verification succeeded
+Recovery attempt 2: not-used because initial verification succeeded
+Verification succeeded: yes
+Repeated failure remains unresolved: no
+Conclusive no-progress evidence: no
+Stall guard: not-triggered
+Repeated failure evidence: none
+Guard rationale: not-triggered because initial verification succeeded
+Evidence preserved: yes
+Browser repair after trigger: not-applicable
+Alternative evidence: not-required
+Absent verification: none
+Cooperator acceptance required: no
+Result claimed from missing evidence: none
+EOF
+    validate_browser_stall_guard_fixture "$fixtures/immediate-success" || return 1
+
+    cat > "$fixtures/recovered-first" <<'EOF'
+Failure episode identity: browser-episode-first
+Prior episode identity: none
+Episode relationship: initial
+Symptom continuity evidence: exact black-renderer fingerprint remained stable through the first recovery
+Initial verification result: failed-no-progress
+Recovery attempts: 1
+Recovery attempt 1: reload the same route and control channel => succeeded
+Recovery attempt 2: not-used because the first recovery succeeded
+Verification succeeded: yes
+Repeated failure remains unresolved: no
+Conclusive no-progress evidence: no
+Stall guard: not-triggered
+Repeated failure evidence: none
+Guard rationale: not-triggered because the first recovery restored verification
+Evidence preserved: yes
+Browser repair after trigger: not-applicable
+Alternative evidence: not-required
+Absent verification: none
+Cooperator acceptance required: no
+Result claimed from missing evidence: none
+EOF
+    validate_browser_stall_guard_fixture "$fixtures/recovered-first" || return 1
+
+    cat > "$fixtures/recovered-second" <<'EOF'
+Failure episode identity: browser-episode-second
+Prior episode identity: none
+Episode relationship: initial
+Symptom continuity evidence: exact control-channel fingerprint remained stable through both recoveries
+Initial verification result: failed-no-progress
+Recovery attempts: 2
+Recovery attempt 1: reconnect the same control channel => failed-no-progress
+Recovery attempt 2: restart the bounded browser adapter => succeeded
+Verification succeeded: yes
+Repeated failure remains unresolved: no
+Conclusive no-progress evidence: no
+Stall guard: not-triggered
+Repeated failure evidence: exact first recovery repeated the same control-channel symptom
+Guard rationale: not-triggered because the second and final recovery succeeded
+Evidence preserved: yes
+Browser repair after trigger: not-applicable
+Alternative evidence: not-required
+Absent verification: none
+Cooperator acceptance required: no
+Result claimed from missing evidence: none
+EOF
+    validate_browser_stall_guard_fixture "$fixtures/recovered-second" || return 1
+
+    cat > "$fixtures/immediate-conclusive" <<'EOF'
+Failure episode identity: browser-episode-conclusive
+Prior episode identity: none
+Episode relationship: initial
+Symptom continuity evidence: exact browser process evidence proves the control channel is unavailable
+Initial verification result: failed-conclusive
+Recovery attempts: 0
+Recovery attempt 1: not-used because exact evidence proves another attempt cannot reach the missing control channel
+Recovery attempt 2: not-used because exact evidence proves another attempt cannot reach the missing control channel
+Verification succeeded: no
+Repeated failure remains unresolved: yes
+Conclusive no-progress evidence: yes
+Stall guard: triggered
+Repeated failure evidence: none
+Guard rationale: triggered because conclusive process evidence makes another recovery meaningless
+Evidence preserved: yes
+Browser repair after trigger: none
+Alternative evidence: contract tests and HTTP response evidence for the same route
+Absent verification: rendered gallery layout at the accepted viewport
+Cooperator acceptance required: yes
+Result claimed from missing evidence: none
+EOF
+    validate_browser_stall_guard_fixture "$fixtures/immediate-conclusive" || return 1
+
+    cat > "$fixtures/two-unresolved" <<'EOF'
+Failure episode identity: browser-episode-black
+Prior episode identity: none
+Episode relationship: initial
+Symptom continuity evidence: exact black-frame hash and control-channel error remained the same
+Initial verification result: failed-no-progress
+Recovery attempts: 2
+Recovery attempt 1: reload the same route => failed-no-progress
+Recovery attempt 2: restart the bounded adapter => failed-no-progress
+Verification succeeded: no
+Repeated failure remains unresolved: yes
+Conclusive no-progress evidence: no
+Stall guard: triggered
+Repeated failure evidence: exact black-frame hash repeated after both meaningful recoveries
+Guard rationale: triggered because two meaningful attempts left the same episode unresolved
+Evidence preserved: yes
+Browser repair after trigger: none
+Alternative evidence: route contract tests and selective Cooperator observation
+Absent verification: rendered gallery layout at the accepted viewport
+Cooperator acceptance required: yes
+Result claimed from missing evidence: none
+EOF
+    validate_browser_stall_guard_fixture "$fixtures/two-unresolved" || return 1
+
+    # A third recovery attempt exceeds the episode budget.
+    sed 's/^Recovery attempts: 2$/Recovery attempts: 3/' \
+        "$fixtures/two-unresolved" > "$fixtures/third-attempt"
+    ! validate_browser_stall_guard_fixture "$fixtures/third-attempt" || return 1
+
+    # Successful verification after the second attempt must not trigger.
+    sed 's/^Stall guard: not-triggered$/Stall guard: triggered/' \
+        "$fixtures/recovered-second" > "$fixtures/second-success-falsely-triggered"
+    ! validate_browser_stall_guard_fixture "$fixtures/second-success-falsely-triggered" || return 1
+
+    # Conclusive evidence triggers immediately; two attempts are not mandatory.
+    sed 's/^Stall guard: triggered$/Stall guard: not-triggered/' \
+        "$fixtures/immediate-conclusive" > "$fixtures/guard-ignored"
+    ! validate_browser_stall_guard_fixture "$fixtures/guard-ignored" || return 1
+
+    sed 's/^Browser repair after trigger: none$/Browser repair after trigger: relaunched the adapter twice more/' \
+        "$fixtures/two-unresolved" > "$fixtures/repair-continued"
+    ! validate_browser_stall_guard_fixture "$fixtures/repair-continued" || return 1
+
+    sed 's/^Alternative evidence: .*$/Alternative evidence: not-required/' \
+        "$fixtures/two-unresolved" > "$fixtures/no-alternative"
+    ! validate_browser_stall_guard_fixture "$fixtures/no-alternative" || return 1
+
+    sed 's/^Absent verification: .*$/Absent verification: none/' \
+        "$fixtures/two-unresolved" > "$fixtures/hidden-gap"
+    ! validate_browser_stall_guard_fixture "$fixtures/hidden-gap" || return 1
+
+    sed 's/^Result claimed from missing evidence: none$/Result claimed from missing evidence: PASS/' \
+        "$fixtures/two-unresolved" > "$fixtures/false-pass"
+    ! validate_browser_stall_guard_fixture "$fixtures/false-pass" || return 1
+
+    # Renaming the same symptom cannot manufacture a new episode.
+    sed -e 's/^Failure episode identity: browser-episode-black$/Failure episode identity: browser-episode-dark-renderer/' \
+        -e 's/^Prior episode identity: none$/Prior episode identity: browser-episode-black/' \
+        -e 's/^Episode relationship: initial$/Episode relationship: continuation-of-same-episode/' \
+        "$fixtures/two-unresolved" > "$fixtures/cosmetically-renamed"
+    ! validate_browser_stall_guard_fixture "$fixtures/cosmetically-renamed" || return 1
+
+    cat > "$fixtures/materially-different-later" <<'EOF'
+Failure episode identity: browser-episode-click-intercept
+Prior episode identity: browser-episode-black
+Episode relationship: materially-different because rendering recovered and a later click was intercepted by a distinct overlay
+Symptom continuity evidence: exact prior black-frame evidence is absent and the new overlay target is identified
+Initial verification result: succeeded
+Recovery attempts: 0
+Recovery attempt 1: not-used because the materially different verification succeeded
+Recovery attempt 2: not-used because the materially different verification succeeded
+Verification succeeded: yes
+Repeated failure remains unresolved: no
+Conclusive no-progress evidence: no
+Stall guard: not-triggered
+Repeated failure evidence: none
+Guard rationale: not-triggered because the later materially different verification succeeded
+Evidence preserved: yes
+Browser repair after trigger: not-applicable
+Alternative evidence: not-required
+Absent verification: none
+Cooperator acceptance required: no
+Result claimed from missing evidence: none
+EOF
+    validate_browser_stall_guard_fixture "$fixtures/materially-different-later" || return 1
+
+    amendments=$TMPROOT/amended-expectation-fixtures
+    mkdir -p "$amendments"
+    cat > "$amendments/valid" <<'EOF'
+## Active Amended Expectation Record
+Amendment record: active
+Cooperator decision ownership: COOPERATOR
+Cooperator decision evidence: exact COOPERATOR acceptance evidence decision-17
+Superseded expectation: the quick-action control stays hidden until hover
+Amended expectation: the quick-action control stays visible at all times
+Amendment boundary: quick-action-visibility
+Cooperator decision authority effect: decision-only-no-worker-mutation-authority
+Orchestrator superseded-expectation record: recorded by ORCHESTRATOR under quick-action-visibility
+Orchestrator authority issuance: issued by ORCHESTRATOR to WORKER-17 for quick-action-visibility only
+Renewed task boundary: quick-action-visibility only
+Worker recipient: WORKER-17
+Worker implementation: implemented quick-action-visibility with commit evidence
+Worker validation: validated quick-action-visibility with rendered-state test evidence
+Role sequence: COOPERATOR-decision -> ORCHESTRATOR-record -> ORCHESTRATOR-issuance -> WORKER-implementation -> WORKER-validation
+Superseded expectation reported as failure: no
+Unrelated scope change: none
+Rendered acceptance ownership: COOPERATOR
+## End Active Amended Expectation Record
+EOF
+    validate_amended_expectation_fixture "$amendments/valid" || return 1
+
+    sed 's/^Cooperator decision ownership: COOPERATOR$/Cooperator decision ownership: WORKER/' \
+        "$amendments/valid" > "$amendments/worker-amends"
+    ! validate_amended_expectation_fixture "$amendments/worker-amends" || return 1
+
+    sed 's/^Cooperator decision ownership: COOPERATOR$/Cooperator decision ownership: ORCHESTRATOR/' \
+        "$amendments/valid" > "$amendments/orchestrator-amends"
+    ! validate_amended_expectation_fixture "$amendments/orchestrator-amends" || return 1
+
+    sed '/^Orchestrator authority issuance:/d' \
+        "$amendments/valid" > "$amendments/no-orchestrator-issuance"
+    ! validate_amended_expectation_fixture "$amendments/no-orchestrator-issuance" || return 1
+
+    sed 's/^Orchestrator authority issuance: .*$/Orchestrator authority issuance: authority renewed/' \
+        "$amendments/valid" > "$amendments/generic-renewal"
+    ! validate_amended_expectation_fixture "$amendments/generic-renewal" || return 1
+
+    sed 's/^Renewed task boundary: quick-action-visibility only$/Renewed task boundary: all rendered controls/' \
+        "$amendments/valid" > "$amendments/broad-renewal"
+    ! validate_amended_expectation_fixture "$amendments/broad-renewal" || return 1
+
+    sed 's/^Worker recipient: WORKER-17$/Worker recipient: WORKER-18/' \
+        "$amendments/valid" > "$amendments/wrong-recipient"
+    ! validate_amended_expectation_fixture "$amendments/wrong-recipient" || return 1
+
+    sed -e 's/^## Active Amended Expectation Record$/## Irrelevant Amendment Example/' \
+        -e 's/^## End Active Amended Expectation Record$/## End Irrelevant Amendment Example/' \
+        "$amendments/valid" > "$amendments/irrelevant-example-only"
+    ! validate_amended_expectation_fixture "$amendments/irrelevant-example-only" || return 1
+
+    sed 's/^Worker implementation: .*$/Worker implementation: pending/' \
+        "$amendments/valid" > "$amendments/untested-amendment"
+    ! validate_amended_expectation_fixture "$amendments/untested-amendment" || return 1
+
+    sed 's/^Unrelated scope change: none$/Unrelated scope change: details header restyling/' \
+        "$amendments/valid" > "$amendments/scope-creep"
+    ! validate_amended_expectation_fixture "$amendments/scope-creep" || return 1
+
+    sed 's/^Superseded expectation: .*$/Superseded expectation: the quick-action control stays visible at all times/' \
+        "$amendments/valid" > "$amendments/identical-expectations"
+    ! validate_amended_expectation_fixture "$amendments/identical-expectations" || return 1
+}
+
+test_browser_stall_guard_conclusive_stop_contracts() {
+    fixtures=$TMPROOT/browser-conclusive-stop-fixtures
+    mkdir -p "$fixtures"
+
+    cat > "$fixtures/initial-conclusive" <<'EOF'
+Failure episode identity: browser-episode-initial-conclusive
+Prior episode identity: none
+Episode relationship: initial
+Symptom continuity evidence: exact process evidence proves the control channel is unavailable
+Initial verification result: failed-conclusive
+Recovery attempts: 0
+Recovery attempt 1: not-used because the initial result was conclusive
+Recovery attempt 2: not-used because the initial result was conclusive
+Verification succeeded: no
+Repeated failure remains unresolved: yes
+Conclusive no-progress evidence: yes
+Stall guard: triggered
+Repeated failure evidence: none
+Guard rationale: triggered because the initial result made recovery meaningless
+Evidence preserved: yes
+Browser repair after trigger: none
+Alternative evidence: contract tests for the same route
+Absent verification: rendered gallery layout at the accepted viewport
+Cooperator acceptance required: yes
+Result claimed from missing evidence: none
+EOF
+    validate_browser_stall_guard_fixture "$fixtures/initial-conclusive" || return 1
+
+    sed -e 's/^Recovery attempts: 0$/Recovery attempts: 1/' \
+        -e 's/^Recovery attempt 1: not-used because .*$/Recovery attempt 1: reconnect the same control channel => failed-no-progress/' \
+        "$fixtures/initial-conclusive" > "$fixtures/recovery-after-initial-conclusive"
+    ! validate_browser_stall_guard_fixture \
+        "$fixtures/recovery-after-initial-conclusive" || return 1
+
+    cat > "$fixtures/attempt-1-conclusive" <<'EOF'
+Failure episode identity: browser-episode-attempt-1-conclusive
+Prior episode identity: none
+Episode relationship: initial
+Symptom continuity evidence: exact process evidence became conclusive after the first recovery
+Initial verification result: failed-no-progress
+Recovery attempts: 1
+Recovery attempt 1: reconnect the same control channel => failed-conclusive
+Recovery attempt 2: not-used because the first recovery was conclusive
+Verification succeeded: no
+Repeated failure remains unresolved: yes
+Conclusive no-progress evidence: yes
+Stall guard: triggered
+Repeated failure evidence: exact control-channel failure remained unresolved
+Guard rationale: triggered because the first recovery made another attempt meaningless
+Evidence preserved: yes
+Browser repair after trigger: none
+Alternative evidence: contract tests for the same route
+Absent verification: rendered gallery layout at the accepted viewport
+Cooperator acceptance required: yes
+Result claimed from missing evidence: none
+EOF
+    validate_browser_stall_guard_fixture "$fixtures/attempt-1-conclusive" || return 1
+
+    cat > "$fixtures/attempt-2-conclusive" <<'EOF'
+Failure episode identity: browser-episode-attempt-2-conclusive
+Prior episode identity: none
+Episode relationship: initial
+Symptom continuity evidence: exact control-channel failure remained stable through both recoveries
+Initial verification result: failed-no-progress
+Recovery attempts: 2
+Recovery attempt 1: reconnect the same control channel => failed-no-progress
+Recovery attempt 2: restart the bounded browser adapter => failed-conclusive
+Verification succeeded: no
+Repeated failure remains unresolved: yes
+Conclusive no-progress evidence: yes
+Stall guard: triggered
+Repeated failure evidence: exact control-channel failure remained unresolved
+Guard rationale: triggered because the second recovery was conclusive
+Evidence preserved: yes
+Browser repair after trigger: none
+Alternative evidence: contract tests for the same route
+Absent verification: rendered gallery layout at the accepted viewport
+Cooperator acceptance required: yes
+Result claimed from missing evidence: none
+EOF
+    validate_browser_stall_guard_fixture "$fixtures/attempt-2-conclusive" || return 1
+
+    sed 's/^Recovery attempt 1: reconnect the same control channel => failed-no-progress$/Recovery attempt 1: reconnect the same control channel => failed-conclusive/' \
+        "$fixtures/attempt-2-conclusive" > "$fixtures/recovery-after-attempt-1-conclusive"
+    ! validate_browser_stall_guard_fixture \
+        "$fixtures/recovery-after-attempt-1-conclusive"
+}
+
 test_owner_command_privilege_and_readback_contracts() {
     start="### Owner-Executed Commands and Privileged Sessions"
     end="### Authorized Provider Calls and Continuous Closure"
@@ -5693,6 +6314,8 @@ run_test "model routing fixtures enforce observation, quota, fallback, and refus
 run_test "Plan Mode ownership, routing, and one-cycle budget contracts are enforced" test_plan_mode_ownership_routing_and_cycle_budget_contracts
 run_test "Worker freshness and same-session continuation contracts are enforced" test_worker_freshness_and_same_session_continuation_contracts
 run_test "report, audit, handoff, human governance, and authority-envelope contracts are enforced" test_report_audit_handoff_and_authority_envelope_contracts
+run_test "browser stall guard and amended expectation fixtures are enforced" test_browser_stall_guard_and_amended_acceptance_contracts
+run_test "browser stall guard stops after conclusive evidence" test_browser_stall_guard_conclusive_stop_contracts
 run_test "owner command, privileged session, and readback fixtures are enforced" test_owner_command_privilege_and_readback_contracts
 run_test "provider accounting, closure loop, and fixture-preparation fixtures are enforced" test_provider_accounting_and_continuous_closure_contracts
 run_test "Cooperator routing sovereignty and route-provenance fixtures are enforced" test_cooperator_routing_sovereignty_contracts

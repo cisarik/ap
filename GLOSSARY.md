@@ -542,6 +542,28 @@ A checklist of observable outcomes prepared by the Orchestrator for
 user-visible work. The Cooperator responds with `PASS`, `FAIL`, `NOT TESTED`,
 or status plus `+` commentary.
 
+## Failure Episode
+
+One stably identified verification failure, its symptom-continuity evidence,
+and its recovery attempts. At most two meaningful attempts are permitted;
+success may occur after zero, one, or two. Cosmetic symptom renaming does not
+create a new episode, while a materially different later failure may.
+
+## Browser Verification Stall Guard
+
+The rule that stops repair of a failing verification browser after repeated or
+conclusive unresolved no-progress evidence, preserves evidence, routes remaining
+verification elsewhere, and names what remains absent. It may trigger before
+two attempts; two attempts alone do not trigger it after successful recovery.
+Missing browser evidence never becomes a `PASS`.
+
+## Amended Expectation
+
+A frozen expectation the Cooperator explicitly changes during acceptance.
+Exact decision evidence, Orchestrator recording, narrow Orchestrator issuance,
+exact renewed boundary and Worker recipient, and Worker implementation and
+validation remain distinct. The decision alone grants no mutation authority.
+
 ## Owner-Executed Command Block
 
 One bounded command block a Worker sends for the Cooperator to run, carrying its

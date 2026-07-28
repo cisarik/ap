@@ -647,6 +647,82 @@ tests, report formatting, internal phase labels, deterministic rechecks, and
 continuation inside unchanged authority use `Material phase gate: no`.
 `Unchanged axes reopened: none` is the only accepted value.
 
+## Browser Stall Guard Contract
+
+Internal-browser verification records each failure episode as defined in
+[AP.md](AP.md#browser-verification-stall-guard):
+
+```text
+Failure episode identity: <stable episode identifier>
+Prior episode identity: none | <stable prior identifier>
+Episode relationship: initial | continuation-of-same-episode | materially-different because <evidence>
+Symptom continuity evidence: <exact evidence>
+Initial verification result: succeeded | failed-no-progress | failed-conclusive
+Recovery attempts: 0 | 1 | 2
+Recovery attempt 1: not-used because <reason> | <exact action> => succeeded | <exact action> => failed-no-progress | <exact action> => failed-conclusive
+Recovery attempt 2: not-used because <reason> | <exact action> => succeeded | <exact action> => failed-no-progress | <exact action> => failed-conclusive
+Verification succeeded: yes | no
+Repeated failure remains unresolved: yes | no
+Conclusive no-progress evidence: yes | no
+Stall guard: not-triggered | triggered
+Repeated failure evidence: none | <exact repeated symptom evidence>
+Guard rationale: <why triggered or not triggered>
+Evidence preserved: yes
+Browser repair after trigger: none
+Alternative evidence: not-required | <tests, HTTP or contract evidence, or selective Cooperator observation>
+Absent verification: none | <exact verification that remains missing>
+Cooperator acceptance required: yes | no
+Result claimed from missing evidence: none
+```
+
+`Recovery attempts` above two is invalid. Zero, one, and two attempts may end in
+success without triggering the guard. Repeated or conclusive unresolved
+no-progress triggers it, including before two attempts when another attempt is
+not meaningful. Continuations retain the same episode identity; a new identity
+requires a materially different relationship to the named prior episode. After
+the guard triggers,
+`Browser repair after trigger: none` is the only accepted value, alternative
+evidence must be named, and the absent verification must be stated exactly.
+`Result claimed from missing evidence: none` is the only accepted value, because
+missing browser evidence never becomes a `PASS`.
+
+## Amended Expectation Contract
+
+When the Cooperator changes a frozen expectation during acceptance, the
+amendment is recorded per
+[AP.md](AP.md#amended-cooperator-expectations):
+
+```text
+## Active Amended Expectation Record
+Amendment record: active
+Cooperator decision ownership: COOPERATOR
+Cooperator decision evidence: exact COOPERATOR acceptance evidence <identifier>
+Superseded expectation: <exact prior expectation>
+Amended expectation: <exact new expectation>
+Amendment boundary: <stable boundary identifier>
+Cooperator decision authority effect: decision-only-no-worker-mutation-authority
+Orchestrator superseded-expectation record: recorded by ORCHESTRATOR under <boundary>
+Orchestrator authority issuance: issued by ORCHESTRATOR to <Worker recipient> for <boundary> only
+Renewed task boundary: <boundary> only
+Worker recipient: <exact Worker identifier>
+Worker implementation: implemented <boundary> with <evidence>
+Worker validation: validated <boundary> with <evidence>
+Role sequence: COOPERATOR-decision -> ORCHESTRATOR-record -> ORCHESTRATOR-issuance -> WORKER-implementation -> WORKER-validation
+Superseded expectation reported as failure: no
+Unrelated scope change: none
+Rendered acceptance ownership: COOPERATOR
+## End Active Amended Expectation Record
+```
+
+The exact active record section is mandatory; similarly named fields in an
+example or unrelated section do not satisfy it. Cooperator decision evidence
+changes the expectation but has
+`decision-only-no-worker-mutation-authority`. The Orchestrator record and exact
+issuance must name the same boundary and recipient before Worker implementation
+and validation. Generic renewal prose, unrelated or broadened scope, unilateral
+Worker amendment, and Orchestrator substitution for the product decision are
+invalid.
+
 ## Owner-Executed Command Contract
 
 Commands sent for the Cooperator to execute follow

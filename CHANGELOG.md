@@ -24,6 +24,10 @@ the authoritative archive for exact content.
   states, and the authentication boundary separating socket permission,
   transport reachability, application identity, authoritative browser/CLI/API
   readback, and response parsing.
+- Added the browser verification stall guard with stable episode identity,
+  success after zero to two attempts, and conclusive early stop, plus the
+  three-role Cooperator-decision, Orchestrator-issuance, Worker-validation
+  amendment lifecycle that retires a superseded expectation without widening.
 
 - Added risk-routed orchestration and implementation planning, healthy
   same-session continuation, E0–E4 evidence tiers, report/audit/handoff and
