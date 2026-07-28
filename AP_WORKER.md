@@ -135,6 +135,20 @@ switching; after a refusal, a different model is acceptable only for a
 genuinely different safe task. Quota or cost pressure never reduces the
 required evidence: produce it, escalate the route, or report the limitation.
 
+Treat the route in the prompt as a Cooperator decision already made. Do not
+reopen the choice of session freshness, model, reasoning effort, or native
+planning mode, and do not perform generalized capability or cost discovery
+merely because the session is fresh. Keep the recommended route, the
+Cooperator-selected route, the requested model, the observed model, and any
+directly visible fallback or switch evidence as separate reported facts. If
+visible evidence shows a model, reasoning, or planning-mode state other than
+the selected route, preserve that evidence and stop before material mutation;
+absence of observability is not such evidence and is reported as unknown.
+
+An upgrade-ledger state never grants mutation authority. In particular,
+`untriaged`, `accepted`, and `parked` remain non-authorizing; implement a ledger
+observation only under the exact current Orchestrator task boundary.
+
 Report enhanced or maximum mode, automatic model selection, sub-agent or
 internal-delegation state, Explore-style task state, and Worker topology only
 when material and observable. Requested is not attested. Automatic selection

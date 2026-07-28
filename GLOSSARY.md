@@ -542,6 +542,44 @@ A checklist of observable outcomes prepared by the Orchestrator for
 user-visible work. The Cooperator responds with `PASS`, `FAIL`, `NOT TESTED`,
 or status plus `+` commentary.
 
+## Cooperator Routing Sovereignty
+
+The Orchestrator recommends a complete Worker route and the Cooperator makes
+the final decision. A difference between the recommendation and the selection
+is a recorded decision, not a protocol failure. A Worker never reopens a
+selected route.
+
+## Material Phase Gate
+
+A routing gate created only by a material change to the objective, mutation or
+side-effect authority, independence, security or trust boundary, required
+capability or client/model class, material cost or provider authority,
+production/external/credential/account boundary, acceptance ownership or
+evidence, or recovery posture. Ordinary substeps and deterministic rechecks do
+not create one, and only the changed axis reopens.
+
+## Selected Route
+
+The Cooperator-decided combination of session freshness, model, reasoning
+effort, and native planning mode recorded in the authoritative prompt. It is
+distinct from the recommended route, the requested model, and any observed
+model, and it grants no authority.
+
+## Upgrade Observation Ledger
+
+The `upgrade <canonical-repository>` ledger of improvement observations for one
+repository. Entries are non-authoritative and carry exactly one lifecycle
+state: `untriaged`, `accepted`, `duplicate`, `rejected`, `invalidated`,
+`implemented`, or `parked`. `untriaged` awaits disposition, while `accepted`
+records validity without granting implementation authority.
+
+## Active-Context Reconciliation
+
+Removal of `implemented`, `rejected`, `duplicate`, and `invalidated` entries
+from the active ledger at closure while `untriaged`, `accepted`, and `parked`
+entries carry forward while active. Immutable historical evidence and stable
+entry identity remain; provenance is never destroyed to reduce active context.
+
 ## Normative Terms
 
 | Term | Meaning |

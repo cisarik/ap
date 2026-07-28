@@ -184,6 +184,17 @@ envelope, and
 narrow closure where retained repository understanding reduces implementation
 error. Freshness alone never proves independence.
 
+A new bounded logical whole defaults to a fresh Orchestrator instance and a
+fresh Worker session, because a new boundary is where independent framing is
+cheapest. Inside one healthy logical whole, the same Worker session normally
+continues through an accepted plan, implementation, validation, and bounded
+correction. A fresh Worker remains required wherever material independence is
+valuable. The Cooperator may select a different route, and a material
+departure from these defaults is recorded briefly with its reason. These
+defaults must never produce plan-after-plan or audit-after-audit recursion:
+a fresh boundary justifies fresh framing once, not a repeated restart of work
+that already has a valid evidence chain.
+
 A `current-worker-session` intentionally reuses the exact existing Worker
 execution session under a new authoritative prompt. The prompt must include a
 continuity anchor, state that prior authority expired, grant complete new bounded
@@ -653,6 +664,24 @@ evidence classes; it never names a vendor, client, or model as a requirement.
   model, reasoning effort, session freshness, native planning state,
   permissions, independence, and tool requirements. The Worker reports only
   what is directly observable.
+- **Cooperator routing sovereignty.** At the start of a bounded logical whole
+  and at each material phase gate, the Orchestrator recommends a fresh or
+  current Worker, one currently available model, a reasoning effort, native
+  planning mode on or off, a concise task-specific justification, and any
+  concrete escalation or downgrade gate. The Cooperator makes the final
+  routing decision and may override any part of that recommendation. A
+  difference between the recommendation and the Cooperator's selection is a
+  recorded routing decision, not a protocol failure. The authoritative prompt
+  records the selected route. Opening a fresh session does not authorize a
+  Worker to reopen a route the Cooperator already selected. Universal AP names
+  no model as strongest, preferred, or required; a selected model, higher
+  reasoning effort, or native planning mode never expands authority.
+- **Distinct routing provenance.** Keep the recommended route, the
+  Cooperator-selected route, the requested model, the directly observed model,
+  an inferred model, an unknown model, and directly visible fallback or switch
+  evidence as separate facts. Never collapse a recommendation into a
+  selection, a selection into an observation, or an absence of observability
+  into a confirmed identity.
 - **Requested is not verified.** A requested client, model, or reasoning
   value is not evidence of the effective value. Record requested, observed,
   and independently attested model identity separately; record requested and
@@ -701,6 +730,19 @@ evidence classes; it never names a vendor, client, or model as a requirement.
 Model-suitability observations are dated, project-owned, advisory records.
 They are not universal benchmarks, do not guarantee future capability, and
 never silently change this routing contract.
+
+A material phase gate exists only when at least one of these axes materially
+changes: the primary objective; mutation authority or side-effect class; the
+independence requirement; a security or trust boundary; the required capability
+or client/model class; material cost or provider-call authority; a production,
+external-service, credential, or account boundary; the acceptance owner or
+evidence class; or the recovery or rollback posture.
+
+Ordinary substeps, focused tests, report formatting, internal phase labels,
+deterministic rechecks, and continuation inside unchanged authority are not
+material gates by themselves. Routing reopens only for the changed material
+axis; unchanged axes remain selected. This preserves Cooperator sovereignty
+without creating plan-after-plan or audit-after-audit recursion.
 
 ## 7. Orchestrator Responsibilities
 
@@ -1098,6 +1140,67 @@ deferred work to roadmap artifacts, and security rules to security documents.
 Restoration prompts, Discovery Records, repository handoffs, and durable
 normative documents are distinct artifacts. They must not substitute for one
 another.
+
+### Upgrade Observation Ledger
+
+Improvement work on a protocol, tool, or other durable repository uses an
+upgrade observation ledger named for its target:
+
+```text
+upgrade <canonical-repository>
+```
+
+The name identifies the canonical repository being improved. A list position,
+leading ordinal, or other presentation label never identifies a logical whole
+and must not appear in the ledger name.
+
+A ledger entry is non-authoritative discovery input. Each entry carries exactly
+one lifecycle state:
+
+| State | Meaning |
+|---|---|
+| `untriaged` | Newly discovered observation awaiting disposition; active for triage and non-authorizing |
+| `accepted` | Observation accepted as valid; still non-authorizing |
+| `duplicate` | Already covered by another entry or an existing rule |
+| `rejected` | Deliberately not adopted, with a recorded reason |
+| `invalidated` | Superseded by later evidence, a corrected assumption, or a changed objective |
+| `implemented` | Delivered, with durable repository evidence |
+| `parked` | Retained as unresolved future work carrying no current authority |
+
+At upgrade activation the Orchestrator establishes a bounded snapshot of the
+candidate observations under consideration, so that later additions remain
+distinguishable from the original scope. Every observation discovered after
+activation enters `untriaged`; it is not forced prematurely into `accepted` or
+`parked`.
+
+Transitions are deterministic. Triage moves `untriaged` to `accepted`,
+`duplicate`, `rejected`, `invalidated`, or `parked`, with disposition evidence.
+An `accepted` observation may move to `implemented` only after an exact
+Orchestrator task grant and durable completion evidence; it may instead move to
+`parked`, `rejected`, `duplicate`, or `invalidated` when later disposition
+evidence requires that result. A `parked` observation returns to `untriaged`
+when a later activation reopens it for disposition.
+
+These lifecycle events remain separate. Accepting an observation records that
+it is valid. Retaining unresolved future consideration uses `parked`. Parking
+does not authorize work. Implementation authority comes only from an exact
+current Orchestrator task grant naming the Worker boundary, never from
+`accepted` or any other ledger state. Implementation completion is recorded as
+`implemented` with durable repository evidence. Removing a terminal entry from
+active context is a later reconciliation action and preserves its stable entry
+identity and provenance independently of presentation ordinals.
+
+At closure the Orchestrator performs active-context reconciliation. Entries
+that are `implemented`, `rejected`, `duplicate`, or `invalidated` leave the
+active handoff and context ledger. Entries that are `untriaged`, `accepted`,
+or `parked` carry forward while still active. Immutable historical evidence
+remains in commits, accepted decisions, changelog and history, and closure
+reports.
+
+Reconciliation reduces active context. It is never indiscriminate deletion,
+and provenance must never be destroyed merely to make the active ledger
+smaller. An entry that produced a ledger item still grants no mutation
+authority by itself.
 
 ## 14. Session Rotation and Dynamic Prompts
 

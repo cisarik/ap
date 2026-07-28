@@ -336,10 +336,98 @@ assert_not_contains() {
     esac
 }
 
+# Join harmless soft wrapping only inside one semantic Markdown block. Each
+# emitted line remains an independent search boundary.
+normalize_markdown_blocks() {
+    awk '
+        function clean(value) {
+            gsub(/[[:space:]]+/, " ", value)
+            sub(/^ /, "", value)
+            sub(/ $/, "", value)
+            return value
+        }
+        function flush() {
+            if (block != "") {
+                print clean(block)
+                block = ""
+            }
+            list_item = 0
+        }
+        function append(value) {
+            value = clean(value)
+            if (value == "") return
+            if (block == "") block = value
+            else block = block " " value
+        }
+        /^[[:space:]]*(```|~~~)/ {
+            flush()
+            print clean($0)
+            in_fence = !in_fence
+            next
+        }
+        in_fence {
+            flush()
+            print clean($0)
+            next
+        }
+        /^[[:space:]]*$/ {
+            flush()
+            next
+        }
+        /^[[:space:]]*##*[[:space:]]/ ||
+        /^[[:space:]]*\|/ ||
+        /^[[:space:]]*>/ ||
+        /^[[:space:]]*<!--[[:space:]]/ ||
+        /^[[:space:]]*(---+|\*\*\*+|___+)[[:space:]]*$/ {
+            flush()
+            print clean($0)
+            next
+        }
+        /^[[:space:]]*([-+*][[:space:]]|[0-9]+[.)][[:space:]])/ {
+            flush()
+            append($0)
+            list_item = 1
+            next
+        }
+        list_item && /^[[:space:]]+/ {
+            append($0)
+            next
+        }
+        list_item {
+            flush()
+        }
+        /^    / || /^\t/ ||
+        /^[[:upper:]][[:alnum:]_ /-]*:[[:space:]]/ {
+            label = $0
+            sub(/:.*/, "", label)
+            if (length(label) <= 40) {
+                flush()
+                print clean($0)
+                next
+            }
+        }
+        {
+            append($0)
+        }
+        END {
+            flush()
+        }
+    '
+}
+
+normalize_contract_needle() {
+    normalized=$(normalize_markdown_blocks)
+    [ -n "$normalized" ] || return 1
+    [ "$(printf '%s\n' "$normalized" | wc -l | tr -d ' ')" -eq 1 ] || return 1
+    printf '%s\n' "$normalized"
+}
+
 assert_text_contract() {
     file=$1
     text=$2
-    tr '\n' ' ' < "$file" | grep -F "$text" >/dev/null
+    [ -f "$file" ] && [ -r "$file" ] || return 1
+    text=$(printf '%s' "$text" | normalize_contract_needle) || return 1
+    normalize_markdown_blocks < "$file" | grep -F -- "$text" >/dev/null
 }
 
 extract_bounded_section() {
@@ -374,7 +462,9 @@ assert_section_contract() (
     end_heading=$3
     text=$4
     section_text=$(extract_bounded_section "$file" "$start_heading" "$end_heading") || return 1
-    printf '%s\n' "$section_text" | tr '\n' ' ' | grep -F -- "$text" >/dev/null
+    text=$(printf '%s' "$text" | normalize_contract_needle) || return 1
+    printf '%s\n' "$section_text" | normalize_markdown_blocks |
+        grep -F -- "$text" >/dev/null
 )
 
 semantic_contract_violation() {
@@ -398,7 +488,12 @@ forbid_section_phrase() (
         semantic_contract_violation "$rule_id" "missing or duplicate section boundary in $file"
         return 1
     }
-    if printf '%s\n' "$section_text" | tr '\n' ' ' | grep -F -- "$phrase" >/dev/null; then
+    phrase=$(printf '%s' "$phrase" | normalize_contract_needle) || {
+        semantic_contract_violation "$rule_id" "invalid multi-block contract needle"
+        return 1
+    }
+    if printf '%s\n' "$section_text" | normalize_markdown_blocks |
+        grep -F -- "$phrase" >/dev/null; then
         semantic_contract_violation "$rule_id" "forbidden contradiction in $file: $phrase"
     fi
 )
@@ -855,6 +950,175 @@ validate_evidence_authority_scenario() {
         [ "$combined" = "prohibited" ] || return 1
         [ "$acceptance" = "required-separate-fresh-worker" ] || return 1
     fi
+}
+
+validate_route_selection_fixture() {
+    file=$1
+    for field in \
+        "Recommended route:" \
+        "Recommendation basis:" \
+        "Escalation or downgrade gate:" \
+        "Cooperator-selected route:" \
+        "Route departure:" \
+        "Route departure classification:" \
+        "Route reopened by Worker:" \
+        "Visible fallback or switch evidence:" \
+        "Fallback handling:" \
+        "Routing authority effect:"
+    do
+        [ "$(grep -cF "$field" "$file")" -eq 1 ] || return 1
+        value=$(sed -n "s/^$field //p" "$file")
+        [ -n "$value" ] || return 1
+    done
+
+    [ "$(grep -Ec '^Route departure: (none|recorded)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Route departure classification: (not-applicable|accepted-cooperator-decision)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Route reopened by Worker: prohibited$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Fallback handling: (not-applicable|reported-and-rerouted|reported-and-stopped)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Routing authority effect: none$' "$file")" -eq 1 ] || return 1
+
+    recommended=$(sed -n 's/^Recommended route: //p' "$file")
+    selected=$(sed -n 's/^Cooperator-selected route: //p' "$file")
+    departure=$(sed -n 's/^Route departure: //p' "$file")
+    departure_class=$(sed -n 's/^Route departure classification: //p' "$file")
+    fallback_evidence=$(sed -n 's/^Visible fallback or switch evidence: //p' "$file")
+    fallback_handling=$(sed -n 's/^Fallback handling: //p' "$file")
+
+    if [ "$recommended" = "$selected" ]; then
+        [ "$departure" = "none" ] || return 1
+        [ "$departure_class" = "not-applicable" ] || return 1
+    else
+        [ "$departure" = "recorded" ] || return 1
+        [ "$departure_class" = "accepted-cooperator-decision" ] || return 1
+    fi
+
+    if [ "$fallback_evidence" = "none" ]; then
+        [ "$fallback_handling" = "not-applicable" ] || return 1
+    else
+        case "$fallback_handling" in
+            reported-and-rerouted|reported-and-stopped) ;;
+            *) return 1 ;;
+        esac
+    fi
+}
+
+validate_material_phase_gate_fixture() {
+    file=$1
+    for field in \
+        "Material phase gate:" \
+        "Changed material axis:" \
+        "Ordinary-only trigger:" \
+        "Routing reopened for:" \
+        "Unchanged axes reopened:"
+    do
+        [ "$(grep -cF "$field" "$file")" -eq 1 ] || return 1
+        value=$(sed -n "s/^$field //p" "$file")
+        [ -n "$value" ] || return 1
+    done
+
+    [ "$(grep -Ec '^Material phase gate: (yes|no)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Ordinary-only trigger: (yes|no)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Unchanged axes reopened: none$' "$file")" -eq 1 ] || return 1
+
+    gate=$(sed -n 's/^Material phase gate: //p' "$file")
+    axis=$(sed -n 's/^Changed material axis: //p' "$file")
+    ordinary=$(sed -n 's/^Ordinary-only trigger: //p' "$file")
+    reopened=$(sed -n 's/^Routing reopened for: //p' "$file")
+    valid_axis='primary-objective|mutation-authority-or-side-effect-class|independence-requirement|security-or-trust-boundary|required-capability-or-client-model-class|material-cost-or-provider-call-authority|production-external-service-credential-or-account-boundary|acceptance-owner-or-evidence-class|recovery-or-rollback-posture'
+
+    if [ "$gate" = "yes" ]; then
+        [ "$ordinary" = "no" ] || return 1
+        printf '%s\n' "$axis" | grep -Eq "^($valid_axis)$" || return 1
+        [ "$reopened" = "$axis" ] || return 1
+    else
+        [ "$axis" = "none" ] || return 1
+        [ "$reopened" = "none" ] || return 1
+    fi
+}
+
+validate_upgrade_ledger_fixture() {
+    file=$1
+    for field in \
+        "Upgrade ledger:" \
+        "Activation snapshot:" \
+        "Entry:" \
+        "Entry state:" \
+        "Entry authority:" \
+        "Implementation task grant:" \
+        "Implementation status:" \
+        "Closure action:" \
+        "Historical evidence:" \
+        "Provenance destroyed:"
+    do
+        [ "$(grep -cF "$field" "$file")" -eq 1 ] || return 1
+        value=$(sed -n "s/^$field //p" "$file")
+        [ -n "$value" ] || return 1
+    done
+
+    [ "$(grep -Ec '^Upgrade ledger: upgrade [^ ].*$' "$file")" -eq 1 ] || return 1
+    # A list position is presentation, never a logical-whole identity.
+    ! grep -Eq '^Upgrade ledger: upgrade [0-9]+[.)] ' "$file" || return 1
+    ! grep -Eq '^Upgrade ledger: [0-9]+[.)] ' "$file" || return 1
+    [ "$(grep -Ec '^Entry state: (untriaged|accepted|duplicate|rejected|invalidated|implemented|parked)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Entry authority: non-authorizing$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Closure action: (retain-active|remove-from-active-ledger)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Provenance destroyed: no$' "$file")" -eq 1 ] || return 1
+
+    state=$(sed -n 's/^Entry state: //p' "$file")
+    grant=$(sed -n 's/^Implementation task grant: //p' "$file")
+    implementation=$(sed -n 's/^Implementation status: //p' "$file")
+    closure=$(sed -n 's/^Closure action: //p' "$file")
+    history=$(sed -n 's/^Historical evidence: //p' "$file")
+
+    case "$state" in
+        implemented|rejected|duplicate|invalidated)
+            [ "$closure" = "remove-from-active-ledger" ] || return 1
+            case "$history" in
+                none|not-applicable|unknown) return 1 ;;
+            esac
+            ;;
+        untriaged|accepted|parked)
+            [ "$closure" = "retain-active" ] || return 1
+            ;;
+    esac
+
+    case "$state" in
+        untriaged)
+            [ "$grant" = "none" ] || return 1
+            [ "$implementation" = "not-started" ] || return 1
+            ;;
+        accepted)
+            case "$grant" in
+                none)
+                    [ "$implementation" = "not-started" ] || return 1
+                    ;;
+                "exact Orchestrator task "?*" for "?*)
+                    [ "$implementation" = "authorized" ] || return 1
+                    ;;
+                *)
+                    return 1
+                    ;;
+            esac
+            ;;
+        implemented)
+            case "$grant" in
+                "exact Orchestrator task "?*" for "?*) ;;
+                *) return 1 ;;
+            esac
+            case "$implementation" in
+                "implemented with "?*) ;;
+                *) return 1 ;;
+            esac
+            ;;
+        parked)
+            [ "$grant" = "none" ] || return 1
+            [ "$implementation" = "not-started" ] || return 1
+            ;;
+        duplicate|rejected|invalidated)
+            [ "$grant" = "none" ] || return 1
+            [ "$implementation" = "not-applicable" ] || return 1
+            ;;
+    esac
 }
 
 validate_failure_preservation_fixture() {
@@ -1570,6 +1834,34 @@ phrase inside the intended section
 - fixed phrase beginning with a hyphen
 harmless Markdown line wrapping
 remains normalized
+- **Indented list item.** an indented continuation
+  also remains normalized
+
+first paragraph ends here
+
+second paragraph starts here
+
+- first actor clause
+- second authority clause
+
+### Boundary Heading
+
+heading adjacent prose
+
+before fenced example
+
+```text
+fenced record
+```
+
+after fenced example
+
+Actor: Worker
+Authority: none
+
+forbidden
+
+phrase
 
 ## After
 
@@ -1581,6 +1873,24 @@ EOF
         "- fixed phrase beginning with a hyphen" || return 1
     assert_section_contract "$fixtures/valid.md" "## Intended" "## After" \
         "harmless Markdown line wrapping remains normalized" || return 1
+    assert_section_contract "$fixtures/valid.md" "## Intended" "## After" \
+        "an indented continuation also remains normalized" || return 1
+    ! assert_section_contract "$fixtures/valid.md" "## Intended" "## After" \
+        "first paragraph ends here second paragraph starts here" || return 1
+    ! assert_section_contract "$fixtures/valid.md" "## Intended" "## After" \
+        "first actor clause - second authority clause" || return 1
+    ! assert_section_contract "$fixtures/valid.md" "## Intended" "## After" \
+        "Boundary Heading heading adjacent prose" || return 1
+    ! assert_section_contract "$fixtures/valid.md" "## Intended" "## After" \
+        "before fenced example fenced record" || return 1
+    ! assert_section_contract "$fixtures/valid.md" "## Intended" "## After" \
+        "fenced record after fenced example" || return 1
+    ! assert_section_contract "$fixtures/valid.md" "## Intended" "## After" \
+        "Actor: Worker Authority: none" || return 1
+    ! assert_section_contract "$fixtures/valid.md" "## Intended" "## After" \
+        "forbidden phrase" || return 1
+    forbid_section_phrase "unrelated-blocks" "$fixtures/valid.md" \
+        "## Intended" "## After" "forbidden phrase" || return 1
     ! assert_section_contract "$fixtures/valid.md" "## Missing" "## After" \
         "phrase inside the intended section" || return 1
     ! assert_section_contract "$fixtures/valid.md" "## Intended" "## After" \
@@ -3424,6 +3734,260 @@ EOF
     done
 }
 
+test_cooperator_routing_sovereignty_contracts() {
+    assert_section_contract "$REPO/AP.md" \
+        "### Provider-Neutral Model and Surface Routing" \
+        "## 7. Orchestrator Responsibilities" \
+        "The Cooperator makes the final routing decision and may override any part of that recommendation" || return 1
+    assert_section_contract "$REPO/AP.md" \
+        "### Provider-Neutral Model and Surface Routing" \
+        "## 7. Orchestrator Responsibilities" \
+        "is a recorded routing decision, not a protocol failure" || return 1
+    assert_section_contract "$REPO/AP.md" \
+        "### Provider-Neutral Model and Surface Routing" \
+        "## 7. Orchestrator Responsibilities" \
+        "Opening a fresh session does not authorize a Worker to reopen a route the Cooperator already selected" || return 1
+    assert_section_contract "$REPO/AP.md" \
+        "### Provider-Neutral Model and Surface Routing" \
+        "## 7. Orchestrator Responsibilities" \
+        "Universal AP names no model as strongest, preferred, or required" || return 1
+    assert_section_contract "$REPO/AP.md" \
+        "### Provider-Neutral Model and Surface Routing" \
+        "## 7. Orchestrator Responsibilities" \
+        "Keep the recommended route, the Cooperator-selected route, the requested model, the directly observed model, an inferred model, an unknown model, and directly visible fallback or switch evidence as separate facts" || return 1
+    assert_section_contract "$REPO/AP.md" "### Worker Session Target" "### Fresh Evidence Probe" \
+        "A new bounded logical whole defaults to a fresh Orchestrator instance and a fresh Worker session" || return 1
+    assert_section_contract "$REPO/AP.md" "### Worker Session Target" "### Fresh Evidence Probe" \
+        "These defaults must never produce plan-after-plan or audit-after-audit recursion" || return 1
+    assert_section_contract "$REPO/AP_ORCHESTRATOR.md" \
+        "## Cooperator Routing Sovereignty" "## Worker Session Target Selection" \
+        "A Worker never reopens a route the Cooperator already selected" || return 1
+    assert_section_contract "$REPO/AP_WORKER.md" \
+        "## Capability And Authority Check" "## Session Profile Awareness" \
+        "Do not reopen the choice of session freshness, model, reasoning effort, or native planning mode" || return 1
+    assert_section_contract "$REPO/AP_WORKER.md" \
+        "## Capability And Authority Check" "## Session Profile Awareness" \
+        "absence of observability is not such evidence and is reported as unknown" || return 1
+    grep -F "Cooperator Routing Sovereignty" "$REPO/GLOSSARY.md" >/dev/null || return 1
+    grep -F "Selected Route" "$REPO/GLOSSARY.md" >/dev/null || return 1
+    grep -F "Material Phase Gate" "$REPO/GLOSSARY.md" >/dev/null || return 1
+    assert_section_contract "$REPO/AP.md" \
+        "### Provider-Neutral Model and Surface Routing" \
+        "## 7. Orchestrator Responsibilities" \
+        "A material phase gate exists only when at least one of these axes materially changes" || return 1
+    assert_section_contract "$REPO/AP.md" \
+        "### Provider-Neutral Model and Surface Routing" \
+        "## 7. Orchestrator Responsibilities" \
+        "Ordinary substeps, focused tests, report formatting, internal phase labels, deterministic rechecks, and continuation inside unchanged authority are not material gates by themselves" || return 1
+
+    # Universal AP must never hardcode a temporary strongest model.
+    scan_absent "hardcoded-model-identity" \
+        -n "Opus|Grok|Claude|ChatGPT|Gemini|Sonnet|GPT-[0-9]" \
+        "$REPO/AP.md" "$REPO/AP_ORCHESTRATOR.md" "$REPO/AP_WORKER.md" \
+        "$REPO/PROMPT_CONTRACTS.md" "$REPO/GLOSSARY.md" "$REPO/FAQ.md" \
+        "$REPO/ARTIFACT_LIFECYCLE.md" || return 1
+
+    fixtures=$TMPROOT/route-selection-fixtures
+    mkdir -p "$fixtures"
+    cat > "$fixtures/aligned" <<'EOF'
+Recommended route: current Worker; reasoning-capable model; high reasoning; native planning mode off
+Recommendation basis: accepted plan already establishes the implementation boundary
+Escalation or downgrade gate: escalate to a fresh Worker before independent acceptance
+Cooperator-selected route: current Worker; reasoning-capable model; high reasoning; native planning mode off
+Route departure: none
+Route departure classification: not-applicable
+Route reopened by Worker: prohibited
+Visible fallback or switch evidence: none
+Fallback handling: not-applicable
+Routing authority effect: none
+EOF
+    validate_route_selection_fixture "$fixtures/aligned" || return 1
+
+    sed -e 's/^Cooperator-selected route: .*$/Cooperator-selected route: current Worker; reasoning-capable model; maximum reasoning; native planning mode off/' \
+        -e 's/^Route departure: none$/Route departure: recorded/' \
+        -e 's/^Route departure classification: not-applicable$/Route departure classification: accepted-cooperator-decision/' \
+        "$fixtures/aligned" > "$fixtures/departed"
+    validate_route_selection_fixture "$fixtures/departed" || return 1
+
+    # A Cooperator override is a decision; it must not be recorded as failure.
+    sed 's/^Route departure classification: accepted-cooperator-decision$/Route departure classification: protocol-failure/' \
+        "$fixtures/departed" > "$fixtures/departure-as-failure"
+    ! validate_route_selection_fixture "$fixtures/departure-as-failure" || return 1
+
+    # An override must not be concealed as an aligned route.
+    sed -e 's/^Route departure: recorded$/Route departure: none/' \
+        -e 's/^Route departure classification: accepted-cooperator-decision$/Route departure classification: not-applicable/' \
+        "$fixtures/departed" > "$fixtures/hidden-departure"
+    ! validate_route_selection_fixture "$fixtures/hidden-departure" || return 1
+
+    sed 's/^Route reopened by Worker: prohibited$/Route reopened by Worker: allowed/' \
+        "$fixtures/aligned" > "$fixtures/worker-reopens"
+    ! validate_route_selection_fixture "$fixtures/worker-reopens" || return 1
+
+    sed 's/^Routing authority effect: none$/Routing authority effect: expands allowed paths/' \
+        "$fixtures/aligned" > "$fixtures/routing-grants-authority"
+    ! validate_route_selection_fixture "$fixtures/routing-grants-authority" || return 1
+
+    # Visible fallback evidence can never be left silent.
+    sed 's/^Visible fallback or switch evidence: none$/Visible fallback or switch evidence: interface showed a different model banner/' \
+        "$fixtures/aligned" > "$fixtures/silent-fallback"
+    ! validate_route_selection_fixture "$fixtures/silent-fallback" || return 1
+
+    sed -e 's/^Visible fallback or switch evidence: none$/Visible fallback or switch evidence: interface showed a different model banner/' \
+        -e 's/^Fallback handling: not-applicable$/Fallback handling: reported-and-stopped/' \
+        "$fixtures/aligned" > "$fixtures/reported-fallback"
+    validate_route_selection_fixture "$fixtures/reported-fallback" || return 1
+
+    sed '/^Recommended route:/d' "$fixtures/aligned" > "$fixtures/no-recommendation"
+    ! validate_route_selection_fixture "$fixtures/no-recommendation" || return 1
+
+    gates=$TMPROOT/material-phase-gate-fixtures
+    mkdir -p "$gates"
+    cat > "$gates/material" <<'EOF'
+Material phase gate: yes
+Changed material axis: independence-requirement
+Ordinary-only trigger: no
+Routing reopened for: independence-requirement
+Unchanged axes reopened: none
+EOF
+    validate_material_phase_gate_fixture "$gates/material" || return 1
+
+    cat > "$gates/ordinary" <<'EOF'
+Material phase gate: no
+Changed material axis: none
+Ordinary-only trigger: yes
+Routing reopened for: none
+Unchanged axes reopened: none
+EOF
+    validate_material_phase_gate_fixture "$gates/ordinary" || return 1
+
+    sed -e 's/^Material phase gate: no$/Material phase gate: yes/' \
+        -e 's/^Changed material axis: none$/Changed material axis: internal-phase-label/' \
+        -e 's/^Routing reopened for: none$/Routing reopened for: internal-phase-label/' \
+        "$gates/ordinary" > "$gates/ceremonial"
+    ! validate_material_phase_gate_fixture "$gates/ceremonial" || return 1
+
+    sed 's/^Routing reopened for: independence-requirement$/Routing reopened for: primary-objective/' \
+        "$gates/material" > "$gates/reopened-wrong-axis"
+    ! validate_material_phase_gate_fixture "$gates/reopened-wrong-axis" || return 1
+}
+
+test_upgrade_ledger_lifecycle_contracts() {
+    assert_section_contract "$REPO/AP.md" \
+        "### Upgrade Observation Ledger" "## 14. Session Rotation and Dynamic Prompts" \
+        "upgrade <canonical-repository>" || return 1
+    assert_section_contract "$REPO/AP.md" \
+        "### Upgrade Observation Ledger" "## 14. Session Rotation and Dynamic Prompts" \
+        "A list position, leading ordinal, or other presentation label never identifies a logical whole" || return 1
+    assert_section_contract "$REPO/AP.md" \
+        "### Upgrade Observation Ledger" "## 14. Session Rotation and Dynamic Prompts" \
+        "Every observation discovered after activation enters \`untriaged\`" || return 1
+    assert_section_contract "$REPO/AP.md" \
+        "### Upgrade Observation Ledger" "## 14. Session Rotation and Dynamic Prompts" \
+        "Accepting an observation records that it is valid" || return 1
+    assert_section_contract "$REPO/AP.md" \
+        "### Upgrade Observation Ledger" "## 14. Session Rotation and Dynamic Prompts" \
+        "Implementation authority comes only from an exact current Orchestrator task grant naming the Worker boundary" || return 1
+    assert_section_contract "$REPO/AP.md" \
+        "### Upgrade Observation Ledger" "## 14. Session Rotation and Dynamic Prompts" \
+        "the Orchestrator establishes a bounded snapshot of the candidate observations" || return 1
+    assert_section_contract "$REPO/AP.md" \
+        "### Upgrade Observation Ledger" "## 14. Session Rotation and Dynamic Prompts" \
+        "Reconciliation reduces active context. It is never indiscriminate deletion" || return 1
+    for state in untriaged accepted duplicate rejected invalidated implemented parked
+    do
+        assert_section_contract "$REPO/AP.md" \
+            "### Upgrade Observation Ledger" "## 14. Session Rotation and Dynamic Prompts" \
+            "\`$state\`" || return 1
+    done
+    assert_section_contract "$REPO/ARTIFACT_LIFECYCLE.md" \
+        "## Upgrade Observation Ledgers" "## Protocol Distribution Artifacts" \
+        "shrinking the active ledger never deletes evidence" || return 1
+    grep -F "Upgrade Observation Ledger" "$REPO/GLOSSARY.md" >/dev/null || return 1
+    grep -F "Active-Context Reconciliation" "$REPO/GLOSSARY.md" >/dev/null || return 1
+
+    fixtures=$TMPROOT/upgrade-ledger-fixtures
+    mkdir -p "$fixtures"
+    cat > "$fixtures/implemented" <<'EOF'
+Upgrade ledger: upgrade example-canonical-repository
+Activation snapshot: candidate observations recorded at upgrade activation
+Entry: OBS-14
+Entry state: implemented
+Entry authority: non-authorizing
+Implementation task grant: exact Orchestrator task TASK-14 for Worker boundary OBS-14
+Implementation status: implemented with commit 0123456789abcdef0123456789abcdef01234567
+Closure action: remove-from-active-ledger
+Historical evidence: implementation commit, changelog entry, and closure report
+Provenance destroyed: no
+EOF
+    validate_upgrade_ledger_fixture "$fixtures/implemented" || return 1
+
+    sed -e 's/^Entry state: implemented$/Entry state: accepted/' \
+        -e 's/^Implementation task grant: .*$/Implementation task grant: none/' \
+        -e 's/^Implementation status: .*$/Implementation status: not-started/' \
+        -e 's/^Closure action: remove-from-active-ledger$/Closure action: retain-active/' \
+        "$fixtures/implemented" > "$fixtures/accepted"
+    validate_upgrade_ledger_fixture "$fixtures/accepted" || return 1
+
+    sed -e 's/^Entry state: implemented$/Entry state: untriaged/' \
+        -e 's/^Implementation task grant: .*$/Implementation task grant: none/' \
+        -e 's/^Implementation status: .*$/Implementation status: not-started/' \
+        -e 's/^Closure action: remove-from-active-ledger$/Closure action: retain-active/' \
+        "$fixtures/implemented" > "$fixtures/untriaged"
+    validate_upgrade_ledger_fixture "$fixtures/untriaged" || return 1
+
+    sed -e 's/^Implementation task grant: none$/Implementation task grant: exact Orchestrator task TASK-14 for Worker boundary OBS-14/' \
+        -e 's/^Implementation status: not-started$/Implementation status: authorized/' \
+        "$fixtures/accepted" > "$fixtures/accepted-authorized"
+    validate_upgrade_ledger_fixture "$fixtures/accepted-authorized" || return 1
+
+    sed -e 's/^Entry state: implemented$/Entry state: parked/' \
+        -e 's/^Implementation task grant: .*$/Implementation task grant: none/' \
+        -e 's/^Implementation status: .*$/Implementation status: not-started/' \
+        -e 's/^Closure action: remove-from-active-ledger$/Closure action: retain-active/' \
+        "$fixtures/implemented" > "$fixtures/parked"
+    validate_upgrade_ledger_fixture "$fixtures/parked" || return 1
+
+    # A resolved entry must leave the active ledger.
+    sed 's/^Closure action: remove-from-active-ledger$/Closure action: retain-active/' \
+        "$fixtures/implemented" > "$fixtures/implemented-retained"
+    ! validate_upgrade_ledger_fixture "$fixtures/implemented-retained" || return 1
+
+    # A parked entry must not be dropped from the active ledger.
+    sed 's/^Closure action: retain-active$/Closure action: remove-from-active-ledger/' \
+        "$fixtures/parked" > "$fixtures/parked-dropped"
+    ! validate_upgrade_ledger_fixture "$fixtures/parked-dropped" || return 1
+
+    # Removal from the active ledger requires surviving provenance.
+    sed 's/^Historical evidence: .*$/Historical evidence: none/' \
+        "$fixtures/implemented" > "$fixtures/no-history"
+    ! validate_upgrade_ledger_fixture "$fixtures/no-history" || return 1
+
+    sed 's/^Provenance destroyed: no$/Provenance destroyed: yes/' \
+        "$fixtures/implemented" > "$fixtures/provenance-destroyed"
+    ! validate_upgrade_ledger_fixture "$fixtures/provenance-destroyed" || return 1
+
+    # Acceptance is valid without mutation authority, and generic renewal text
+    # is never an exact later task grant.
+    sed -e 's/^Implementation task grant: none$/Implementation task grant: authority renewed/' \
+        -e 's/^Implementation status: not-started$/Implementation status: authorized/' \
+        "$fixtures/accepted" > "$fixtures/generic-renewal"
+    ! validate_upgrade_ledger_fixture "$fixtures/generic-renewal" || return 1
+
+    sed 's/^Implementation task grant: none$/Implementation task grant: exact Orchestrator task TASK-14 for Worker boundary OBS-14/' \
+        "$fixtures/untriaged" > "$fixtures/untriaged-authority"
+    ! validate_upgrade_ledger_fixture "$fixtures/untriaged-authority" || return 1
+
+    sed 's/^Entry state: implemented$/Entry state: interesting/' \
+        "$fixtures/implemented" > "$fixtures/unknown-state"
+    ! validate_upgrade_ledger_fixture "$fixtures/unknown-state" || return 1
+
+    # An ordinal label is presentation, not a ledger identity.
+    sed 's/^Upgrade ledger: upgrade example-canonical-repository$/Upgrade ledger: 2. upgrade example-canonical-repository/' \
+        "$fixtures/implemented" > "$fixtures/ordinal-name"
+    ! validate_upgrade_ledger_fixture "$fixtures/ordinal-name" || return 1
+}
+
 test_evidence_tiers_activation_and_surface_routing_contracts() {
     for tier in E0 E1 E2 E3 E4
     do
@@ -3763,6 +4327,8 @@ run_test "model routing fixtures enforce observation, quota, fallback, and refus
 run_test "Plan Mode ownership, routing, and one-cycle budget contracts are enforced" test_plan_mode_ownership_routing_and_cycle_budget_contracts
 run_test "Worker freshness and same-session continuation contracts are enforced" test_worker_freshness_and_same_session_continuation_contracts
 run_test "report, audit, handoff, human governance, and authority-envelope contracts are enforced" test_report_audit_handoff_and_authority_envelope_contracts
+run_test "Cooperator routing sovereignty and route-provenance fixtures are enforced" test_cooperator_routing_sovereignty_contracts
+run_test "upgrade ledger lifecycle and reconciliation fixtures are enforced" test_upgrade_ledger_lifecycle_contracts
 run_test "evidence tiers, activation, and surface-routing contracts are enforced" test_evidence_tiers_activation_and_surface_routing_contracts
 run_test "evidence tiers and implementation/acceptance envelopes enforce scenario relationships" test_evidence_tier_and_implementation_envelope_scenarios
 run_test "first-causal-error, privilege, parser, and cleanup contracts are enforced" test_failure_preservation_privilege_and_cleanup_contracts

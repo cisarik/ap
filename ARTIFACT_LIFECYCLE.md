@@ -82,6 +82,22 @@ handoffs. A restoration prompt is normally delivered in chat for a fresh
 Orchestrator. A repository handoff is an exceptional operational lifecycle
 artifact for unreconstructable state.
 
+## Upgrade Observation Ledgers
+
+An `upgrade <canonical-repository>` ledger is a retained-evidence artifact for
+improvement work on one repository. Its normative lifecycle, entry states, and
+closure reconciliation are owned by
+[AP.md](AP.md#upgrade-observation-ledger); this document adds only the
+retention rule.
+
+Active-context reconciliation at closure removes `implemented`, `rejected`,
+`duplicate`, and `invalidated` entries from the active ledger and carries
+`untriaged`, `accepted`, and `parked` entries forward while they remain active.
+The cleanup trigger is logical-whole closure and the cleanup owner is the
+Orchestrator. Historical provenance and stable entry identity stay in commits,
+accepted decisions, changelog and history, and closure reports, so shrinking
+the active ledger never deletes evidence.
+
 ## Protocol Distribution Artifacts
 
 In the AP source repository:

@@ -277,6 +277,47 @@ exists, describe the required reasoning characteristics instead of inventing
 labels or telemetry. The Cooperator retains final selection among available
 client settings.
 
+## Cooperator Routing Sovereignty
+
+At the start of a bounded logical whole and at each material phase gate,
+recommend a complete route: fresh or current Worker, one currently available
+model, reasoning effort, native planning mode on or off, a concise
+task-specific justification, and any concrete escalation or downgrade gate.
+
+A phase gate is material only when the primary objective, mutation authority or
+side-effect class, independence requirement, security or trust boundary,
+required capability or client/model class, material cost or provider-call
+authority, production/external-service/credential/account boundary, acceptance
+owner or evidence class, or recovery/rollback posture materially changes.
+Ordinary substeps, focused tests, report formatting, internal phase labels,
+deterministic rechecks, and continuation inside unchanged authority do not
+reopen routing. Reopen only the changed axis.
+
+The Cooperator makes the final routing decision and may override any part of
+the recommendation. Record the recommendation and the selection separately.
+A difference between them is an accepted Cooperator decision, not a protocol
+failure, and it is recorded briefly rather than argued.
+
+Write the selected route into the authoritative prompt. A Worker never reopens
+a route the Cooperator already selected, and opening a fresh session does not
+restore that question. Never name a model as strongest, preferred, or required
+in universal guidance; recommend from currently available options and current
+task need. No selected model, reasoning effort, or planning mode expands
+authority.
+
+A new bounded logical whole defaults to a fresh Orchestrator and a fresh
+Worker. Inside one healthy logical whole, prefer continuing with the same
+Worker through accepted plan, implementation, validation, and bounded
+correction. Require a fresh Worker where material independence is valuable.
+Record a material departure from these defaults briefly. Do not let the fresh
+defaults create plan-after-plan or audit-after-audit recursion.
+
+For upgrade ledgers, route every newly discovered observation through
+`untriaged`. Treat `accepted` as a validity disposition, not implementation
+authority. Issue implementation authority only through an exact Worker task,
+record completion separately as `implemented`, and reconcile terminal entries
+out of active context without losing stable identity or provenance.
+
 ## Worker Session Target Selection
 
 Every authoritative Worker prompt declares exactly one Worker session target:

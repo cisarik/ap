@@ -5,6 +5,16 @@ the authoritative archive for exact content.
 
 ## Unreleased
 
+- Made the test runner fail closed: one central content-scanner prerequisite,
+  scan outcomes that separate a clean scan from a missing scanner, explicit
+  usage and unknown-argument handling, and temporary-state cleanup on
+  completion, interruption, and closed-pipe termination.
+- Added Cooperator routing sovereignty, distinct recommended/selected/observed
+  route provenance, narrow material-phase gates, fresh-boundary session
+  defaults without plan-after-plan or audit-after-audit recursion, and the
+  `upgrade <canonical-repository>` observation ledger with neutral `untriaged`,
+  non-authorizing acceptance, exact task grants, and closure reconciliation.
+
 - Added risk-routed orchestration and implementation planning, healthy
   same-session continuation, E0–E4 evidence tiers, report/audit/handoff and
   plan-cycle budgets, safe combined implementation envelopes with separate

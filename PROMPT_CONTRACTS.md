@@ -336,6 +336,8 @@ A routing decision records the material rows only:
 
 | Routing row | Required shape |
 |---|---|
+| Recommended route | Orchestrator recommendation with its concise task-specific justification |
+| Cooperator-selected route | final selected route and any recorded departure from the recommendation |
 | Client and Worker surface | requested value; observed value or unknown |
 | Model | requested value; observed value or unknown; independent identity attestation with source/scope or none; never verified from selection alone |
 | Reasoning effort | requested value; observed value or unknown; independent enforcement attestation with source/scope or none |
@@ -376,6 +378,31 @@ Worker topology: <single-active | parallel-exception reference>
 Required tools: <material requirements>
 Quota/cost routing note: <constraint acknowledged; evidence unchanged>
 ```
+
+At a logical-whole start or a material phase gate, the recommendation and the
+Cooperator's decision are recorded as separate facts:
+
+```text
+Recommended route: <fresh|current Worker; model; reasoning effort; native planning mode>
+Recommendation basis: <concise task-specific justification>
+Escalation or downgrade gate: <concrete gate | none>
+Cooperator-selected route: <selected values>
+Route departure: none | recorded
+Route departure classification: not-applicable | accepted-cooperator-decision
+Route reopened by Worker: prohibited
+Visible fallback or switch evidence: none | <directly visible evidence>
+Fallback handling: not-applicable | reported-and-rerouted | reported-and-stopped
+Routing authority effect: none
+```
+
+`Route departure: recorded` with
+`Route departure classification: accepted-cooperator-decision` is the correct
+shape when the selection differs from the recommendation; the difference is a
+decision, never a protocol failure. `Route departure: none` requires the
+selection to match the recommendation. Any visible fallback or switch evidence
+requires an explicit `Fallback handling` value, because a fallback is never
+silent. The Worker records the selected route as given and does not reopen it,
+and no routing value changes task authority.
 
 When identity or enforcement claims matter, add the exact separation fields:
 
@@ -600,6 +627,63 @@ Brainstorming is decision input, not automatic mutation authority. An
 agent-only default that bypasses the Cooperator is invalid. Human governance
 does not require microapproval of deterministic stages already inside a bounded
 authority envelope.
+
+## Material Phase Gate Contract
+
+Routing is reconsidered only at the narrow material gate defined in
+[AP.md](AP.md#provider-neutral-model-and-surface-routing):
+
+```text
+Material phase gate: yes | no
+Changed material axis: none | primary-objective | mutation-authority-or-side-effect-class | independence-requirement | security-or-trust-boundary | required-capability-or-client-model-class | material-cost-or-provider-call-authority | production-external-service-credential-or-account-boundary | acceptance-owner-or-evidence-class | recovery-or-rollback-posture
+Ordinary-only trigger: yes | no
+Routing reopened for: none | <the one changed material axis>
+Unchanged axes reopened: none
+```
+
+`Material phase gate: yes` requires one listed changed axis, cannot use an
+ordinary-only trigger, and reopens routing only for that same axis. Focused
+tests, report formatting, internal phase labels, deterministic rechecks, and
+continuation inside unchanged authority use `Material phase gate: no`.
+`Unchanged axes reopened: none` is the only accepted value.
+
+## Upgrade Observation Ledger Contract
+
+Improvement work on a canonical repository uses the ledger defined in
+[AP.md](AP.md#upgrade-observation-ledger). The ledger name carries no ordinal:
+
+```text
+Upgrade ledger: upgrade <canonical-repository>
+Activation snapshot: <bounded identity of the candidate observations at activation>
+```
+
+Every entry records exactly one lifecycle state and its reconciliation
+outcome:
+
+```text
+Entry: <stable entry identifier>
+Entry state: untriaged | accepted | duplicate | rejected | invalidated | implemented | parked
+Entry authority: non-authorizing
+Implementation task grant: none | exact Orchestrator task <task-id> for <Worker boundary>
+Implementation status: not-started | authorized | not-applicable | implemented with <durable evidence>
+Closure action: retain-active | remove-from-active-ledger
+Historical evidence: <commit, decision, changelog, or closure report holding the provenance>
+Provenance destroyed: no
+```
+
+`Entry authority: non-authorizing` is the only accepted value. `untriaged` is
+active, awaiting disposition, and uses no task grant. `accepted` records
+validity only: it remains non-authorizing unless the separate
+`Implementation task grant` names one exact current Orchestrator task and
+Worker boundary. Generic renewal text is invalid. An `implemented` entry names
+both the exact task grant and durable completion evidence.
+
+An `implemented`, `rejected`, `duplicate`, or `invalidated` entry uses
+`Closure action: remove-from-active-ledger` and must name where its immutable
+historical evidence remains. An `untriaged`, `accepted`, or `parked` entry uses
+`Closure action: retain-active`. New observations enter `untriaged`, and
+terminal removal never changes stable entry identity or deletes provenance.
+`Provenance destroyed: no` is the only valid value.
 
 ## Worker Session Profile Contracts
 
