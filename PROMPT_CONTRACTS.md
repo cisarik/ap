@@ -647,6 +647,104 @@ tests, report formatting, internal phase labels, deterministic rechecks, and
 continuation inside unchanged authority use `Material phase gate: no`.
 `Unchanged axes reopened: none` is the only accepted value.
 
+## Provider Accounting Contract
+
+Work that involves authorized external provider calls reports the bounded
+authority defined in
+[AP.md](AP.md#authorized-provider-calls-and-continuous-closure):
+
+```text
+Provider call authority: none | authorized for <exact purpose>
+Numerical call cap: none imposed | <count> because <cost|billing|privacy|rate-limit|abuse|safety reason>
+Unlimited call authority: no
+Concurrency: single-call-in-flight | authorized concurrent because <concrete requirement>
+Terminal outcome before next call: required
+Additional call purpose: <evidence-derived purpose per call>
+Retry inventory requirement: not-required-inside-authorized-loop
+Stop conditions: uncontrolled duplication, credential exposure, unexpected billing, destructive risk, unexplained unrelated mutation, material scope expansion, loss of fixture or privacy guarantee
+```
+
+`Numerical call cap: none imposed` is valid and never implies unlimited
+authority, which is why `Unlimited call authority: no` is the only accepted
+value. A numeric cap requires its explicit reason in the same line.
+
+An activated accounting record first bounds its evidence:
+
+```text
+Provider accounting record: activated
+Task or acceptance scope: <exact scope>
+Bounded time window: <start and end or exact bounded interval>
+Subject identity: <fixture, media, or subject identity> | not applicable because <reason>
+Run or correlation boundary: <exact run or correlation identity>
+Evidence source: <authoritative records used>
+Evidence freshness: current for <bounded time window> | stale because <reason>
+Reconciliation status: fully-reconciled | open
+Accounting authority effect: none
+```
+
+Every metric then records one validated state and one relationship:
+
+```text
+Intended UI submissions: <count> | unknown because <missing evidence> | not applicable because <reason>
+Intended UI submissions relationship: one-to-one with actual external provider invocations | independently varying metric because <local mechanism and evidence> | not applicable because <reason>
+Actual external provider invocations: <count> | unknown because <missing evidence> | not applicable because <reason>
+Actual external provider invocations relationship: total | not applicable because <reason>
+Retry attempts: <count> | unknown because <missing evidence> | not applicable because <reason>
+Retry attempts relationship: subset of actual external provider invocations | overlapping subset of actual external provider invocations | not applicable because <reason>
+Defect-driven duplicate invocations: <count> | unknown because <missing evidence> | not applicable because <reason>
+Defect-driven duplicate invocations relationship: subset of actual external provider invocations | overlapping subset of actual external provider invocations | not applicable because <reason>
+Retry/duplicate overlap: <count> | unknown because <missing evidence> | not applicable because <reason>
+Terminal outcomes: completed=<count> failed=<count> refused=<count> cancelled=<count> | unknown because <missing evidence> | not applicable because <reason>
+Terminal outcomes relationship: one-to-one with actual external provider invocations | not applicable because <reason>
+In-flight invocations: <count>
+Unresolved invocations: <count>
+Durable provider-submission rows: <count> | unknown because <missing evidence> | not applicable because <reason>
+Durable provider-submission rows relationship: one-to-one with actual external provider invocations | subset of actual external provider invocations | independently varying metric because <local mechanism and evidence> | not applicable because <reason>
+Analysis-run rows: <count> | unknown because <missing evidence> | not applicable because <reason>
+Analysis-run rows relationship: one-to-one with actual external provider invocations | subset of actual external provider invocations | independently varying metric because <local mechanism and evidence> | not applicable because <reason>
+Security-audit events: <count> | unknown because <missing evidence> | not applicable because <reason>
+Security-audit events relationship: one-to-one with actual external provider invocations | subset of actual external provider invocations | independently varying metric because <local mechanism and evidence> | not applicable because <reason>
+Canonical save events: <count> | unknown because <missing evidence> | not applicable because <reason>
+Canonical save events relationship: one-to-one with actual external provider invocations | subset of actual external provider invocations | independently varying metric because <local mechanism and evidence> | not applicable because <reason>
+Count divergence: none | <explained difference between declared relationships>
+```
+
+For every unknown metric, add exactly one line:
+
+```text
+Unknown closure for <metric>: accepted by <acceptance owner> for <billing|privacy|safety|acceptance> because <bounded rationale> | non-closure because <missing evidence>
+```
+
+An observed `0` is never interchangeable with `unknown`. Fully reconciled
+records require current evidence, numerical actual invocations, zero in-flight
+and unresolved invocations, and terminal classes that total actual
+invocations. Retry and defect-duplicate counts cannot exceed invocations; their
+overlap cannot exceed either subset, and the combined union cannot exceed
+invocations. A `none` divergence claim is valid only after these declared
+relationships reconcile. Independently varying metrics may legitimately differ
+when their local mechanism and evidence are recorded. Accounting authority
+effect is always `none`.
+
+Authorized fixture preparation inside the same acceptance cycle records its
+preconditions:
+
+```text
+Fixture identity: <immutable identifier>
+Prior values proven: yes
+Mutation authority: <exact authorized mutation>
+Write mode: fail-closed-transactional
+Affected rows: <exact count>
+Postconditions verified: yes
+Unrelated state preserved: verified
+Counted as provider call: no
+Manual repair after provider result: none
+New logical whole required: no
+```
+
+Every field above is mandatory for fixture preparation, and
+`Manual repair after provider result: none` is the only accepted value, because
+manual repair after a provider result destroys the acceptance evidence.
+
 ## Upgrade Observation Ledger Contract
 
 Improvement work on a canonical repository uses the ledger defined in

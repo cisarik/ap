@@ -277,6 +277,36 @@ exists, describe the required reasoning characteristics instead of inventing
 labels or telemetry. The Cooperator retains final selection among available
 client settings.
 
+## Provider Call Authority And Continuous Closure
+
+Authorize external provider calls by exact purpose, fixture, credential, and
+privacy boundary. Do not add a numerical call ceiling by reflex. Impose a
+numeric cap only with an explicit cost, billing, privacy, rate-limit, abuse, or
+safety reason recorded beside it, and state that removing a cap grants no
+unlimited call authority.
+
+Require single-call-in-flight sequencing unless concurrency is concretely
+required, a classified terminal outcome before each next sequential call, and a
+concrete evidence-derived purpose for every additional call. Do not require a
+complete database, deployment, and security inventory before an ordinary retry
+inside an authorized closure loop.
+
+Require one scoped reconciliation record with a bounded time and run boundary,
+subject identity, evidence source and freshness, a relationship class for every
+metric, explicit retry/duplicate overlap, and closure disposition for every
+unknown. Treat an observed zero as a count, never as unknown. Do not accept
+fully reconciled closure while an invocation is in flight or unresolved, while
+terminal classifications do not total actual invocations, or while a material
+unknown lacks explicit acceptance-owner disposition. Independently varying
+local metrics need their exact mechanism and evidence, not a false equality.
+The accounting record grants no provider-call authority.
+
+Keep ordinary diagnosis, a smallest bounded correction, authorized fixture
+preparation, and a retry of the same acceptance inside the continuous closure
+loop. Do not open a new logical whole, a fresh broad audit, a plan-only cycle,
+or a new Orchestrator session for them. Still require fresh independence at
+genuine audit, security, evidence-authority, and logical-whole boundaries.
+
 ## Cooperator Routing Sovereignty
 
 At the start of a bounded logical whole and at each material phase gate,

@@ -14,6 +14,11 @@ the authoritative archive for exact content.
   defaults without plan-after-plan or audit-after-audit recursion, and the
   `upgrade <canonical-repository>` observation ledger with neutral `untriaged`,
   non-authorizing acceptance, exact task grants, and closure reconciliation.
+- Added bounded provider-call accounting: no universal numerical ceiling,
+  reason-bound caps, single-call-in-flight sequencing, nine separate accounting
+  metrics with explicit relationships and observed, explained-unknown, and
+  not-applicable states, the continuous closure loop, authorized in-cycle
+  fixture preparation, and billable-side-effect awareness.
 
 - Added risk-routed orchestration and implementation planning, healthy
   same-session continuation, E0–E4 evidence tiers, report/audit/handoff and

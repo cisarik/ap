@@ -952,6 +952,367 @@ validate_evidence_authority_scenario() {
     fi
 }
 
+provider_is_count() {
+    printf '%s\n' "$1" | grep -Eq '^(0|[1-9][0-9]{0,8})$'
+}
+
+provider_value_state() {
+    case "$1" in
+        "unknown because "?*) printf '%s\n' unknown ;;
+        "not applicable because "?*) printf '%s\n' not-applicable ;;
+        *)
+            provider_is_count "$1" || return 1
+            printf '%s\n' count
+            ;;
+    esac
+}
+
+provider_unknown_closure_is_valid() {
+    value=$1
+    status=$2
+    case "$value" in
+        "non-closure because "?*)
+            [ "$status" = open ]
+            ;;
+        *)
+            printf '%s\n' "$value" |
+                grep -Eq '^accepted by .+ for (billing|privacy|safety|acceptance) because .+$'
+            ;;
+    esac
+}
+
+validate_provider_accounting_fixture() {
+    file=$1
+    for field in \
+        "Provider accounting record:" \
+        "Task or acceptance scope:" \
+        "Bounded time window:" \
+        "Subject identity:" \
+        "Run or correlation boundary:" \
+        "Evidence source:" \
+        "Evidence freshness:" \
+        "Reconciliation status:" \
+        "Accounting authority effect:" \
+        "Provider call authority:" \
+        "Numerical call cap:" \
+        "Unlimited call authority:" \
+        "Concurrency:" \
+        "Terminal outcome before next call:" \
+        "Retry inventory requirement:" \
+        "Intended UI submissions:" \
+        "Intended UI submissions relationship:" \
+        "Actual external provider invocations:" \
+        "Actual external provider invocations relationship:" \
+        "Retry attempts:" \
+        "Retry attempts relationship:" \
+        "Defect-driven duplicate invocations:" \
+        "Defect-driven duplicate invocations relationship:" \
+        "Retry/duplicate overlap:" \
+        "Terminal outcomes:" \
+        "Terminal outcomes relationship:" \
+        "In-flight invocations:" \
+        "Unresolved invocations:" \
+        "Durable provider-submission rows:" \
+        "Durable provider-submission rows relationship:" \
+        "Analysis-run rows:" \
+        "Analysis-run rows relationship:" \
+        "Security-audit events:" \
+        "Security-audit events relationship:" \
+        "Canonical save events:" \
+        "Canonical save events relationship:" \
+        "Count divergence:"
+    do
+        field_count=$(awk -v prefix="$field " \
+            'index($0, prefix) == 1 { count++ } END { print count + 0 }' "$file")
+        [ "$field_count" -eq 1 ] || return 1
+        value=$(awk -v prefix="$field " \
+            'index($0, prefix) == 1 { print substr($0, length(prefix) + 1) }' "$file")
+        [ -n "$value" ] || return 1
+    done
+
+    [ "$(grep -Ec '^Provider accounting record: activated$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Accounting authority effect: none$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Reconciliation status: (fully-reconciled|open)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Evidence freshness: (current for .+|stale because .+)$' "$file")" -eq 1 ] || return 1
+    status=$(sed -n 's/^Reconciliation status: //p' "$file")
+    freshness=$(sed -n 's/^Evidence freshness: //p' "$file")
+    if [ "$status" = fully-reconciled ]; then
+        case "$freshness" in "current for "?*) ;; *) return 1 ;; esac
+    fi
+
+    subject=$(sed -n 's/^Subject identity: //p' "$file")
+    case "$subject" in
+        unknown|none|"not applicable") return 1 ;;
+        "not applicable because "?*|?*) ;;
+        *) return 1 ;;
+    esac
+
+    # Removing a default ceiling never creates unlimited authority.
+    [ "$(grep -Ec '^Unlimited call authority: no$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Terminal outcome before next call: required$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Retry inventory requirement: not-required-inside-authorized-loop$' "$file")" -eq 1 ] || return 1
+
+    cap=$(sed -n 's/^Numerical call cap: //p' "$file")
+    case "$cap" in
+        "none imposed") ;;
+        *because\ *)
+            case "$cap" in
+                *cost*|*billing*|*privacy*|*rate-limit*|*abuse*|*safety*) ;;
+                *) return 1 ;;
+            esac
+            ;;
+        *) return 1 ;;
+    esac
+
+    concurrency=$(sed -n 's/^Concurrency: //p' "$file")
+    case "$concurrency" in
+        single-call-in-flight|"authorized concurrent because "?*) ;;
+        *) return 1 ;;
+    esac
+
+    authority=$(sed -n 's/^Provider call authority: //p' "$file")
+    case "$authority" in
+        none|"authorized for "?*) ;;
+        *) return 1 ;;
+    esac
+
+    has_unknown=no
+    for metric in \
+        "Intended UI submissions" \
+        "Actual external provider invocations" \
+        "Retry attempts" \
+        "Defect-driven duplicate invocations" \
+        "Durable provider-submission rows" \
+        "Analysis-run rows" \
+        "Security-audit events" \
+        "Canonical save events"
+    do
+        metric_value=$(sed -n "s/^$metric: //p" "$file")
+        metric_state=$(provider_value_state "$metric_value") || return 1
+        relationship=$(sed -n "s/^$metric relationship: //p" "$file")
+        case "$relationship" in
+            total|"subset of actual external provider invocations"|"overlapping subset of actual external provider invocations"|"one-to-one with actual external provider invocations") ;;
+            "independently varying metric because "*evidence*) ;;
+            "not applicable because "?*) ;;
+            *) return 1 ;;
+        esac
+        case "$metric_state:$relationship" in
+            not-applicable:"not applicable because "*) ;;
+            not-applicable:*) return 1 ;;
+            *:"not applicable because "*) return 1 ;;
+        esac
+
+        closure_count=$(grep -cF "Unknown closure for $metric:" "$file")
+        if [ "$metric_state" = unknown ]; then
+            [ "$closure_count" -eq 1 ] || return 1
+            closure=$(sed -n "s/^Unknown closure for $metric: //p" "$file")
+            provider_unknown_closure_is_valid "$closure" "$status" || return 1
+            has_unknown=yes
+        else
+            [ "$closure_count" -eq 0 ] || return 1
+        fi
+
+        case "$metric" in
+            "Actual external provider invocations")
+                case "$relationship" in total|"not applicable because "?*) ;; *) return 1 ;; esac
+                ;;
+            "Intended UI submissions")
+                case "$relationship" in
+                    "one-to-one with actual external provider invocations"|"independently varying metric because "*evidence*|"not applicable because "?*) ;;
+                    *) return 1 ;;
+                esac
+                ;;
+            "Retry attempts"|"Defect-driven duplicate invocations")
+                case "$relationship" in
+                    "subset of actual external provider invocations"|"overlapping subset of actual external provider invocations"|"not applicable because "?*) ;;
+                    *) return 1 ;;
+                esac
+                ;;
+            *)
+                case "$relationship" in
+                    "one-to-one with actual external provider invocations"|"subset of actual external provider invocations"|"independently varying metric because "*evidence*|"not applicable because "?*) ;;
+                    *) return 1 ;;
+                esac
+                ;;
+        esac
+    done
+
+    invocations=$(sed -n 's/^Actual external provider invocations: //p' "$file")
+    invocation_state=$(provider_value_state "$invocations") || return 1
+    retries=$(sed -n 's/^Retry attempts: //p' "$file")
+    retry_state=$(provider_value_state "$retries") || return 1
+    duplicates=$(sed -n 's/^Defect-driven duplicate invocations: //p' "$file")
+    duplicate_state=$(provider_value_state "$duplicates") || return 1
+    overlap=$(sed -n 's/^Retry\/duplicate overlap: //p' "$file")
+    overlap_state=$(provider_value_state "$overlap") || return 1
+
+    overlap_closure_count=$(grep -cF "Unknown closure for Retry/duplicate overlap:" "$file")
+    if [ "$overlap_state" = unknown ]; then
+        [ "$overlap_closure_count" -eq 1 ] || return 1
+        overlap_closure=$(sed -n 's/^Unknown closure for Retry\/duplicate overlap: //p' "$file")
+        provider_unknown_closure_is_valid "$overlap_closure" "$status" || return 1
+        has_unknown=yes
+    else
+        [ "$overlap_closure_count" -eq 0 ] || return 1
+    fi
+
+    if [ "$invocation_state" = count ] && [ "$retry_state" = count ]; then
+        [ "$retries" -le "$invocations" ] || return 1
+    fi
+    if [ "$invocation_state" = count ] && [ "$duplicate_state" = count ]; then
+        [ "$duplicates" -le "$invocations" ] || return 1
+    fi
+    if [ "$retry_state" = count ] && [ "$duplicate_state" = count ]; then
+        [ "$overlap_state" = count ] || return 1
+        [ "$overlap" -le "$retries" ] || return 1
+        [ "$overlap" -le "$duplicates" ] || return 1
+        if [ "$invocation_state" = count ]; then
+            [ $((retries + duplicates - overlap)) -le "$invocations" ] || return 1
+        fi
+    fi
+
+    in_flight=$(sed -n 's/^In-flight invocations: //p' "$file")
+    unresolved=$(sed -n 's/^Unresolved invocations: //p' "$file")
+    provider_is_count "$in_flight" || return 1
+    provider_is_count "$unresolved" || return 1
+
+    outcomes=$(sed -n 's/^Terminal outcomes: //p' "$file")
+    outcome_relationship=$(sed -n 's/^Terminal outcomes relationship: //p' "$file")
+    terminal_state=breakdown
+    if printf '%s\n' "$outcomes" |
+        grep -Eq '^completed=(0|[1-9][0-9]{0,8}) failed=(0|[1-9][0-9]{0,8}) refused=(0|[1-9][0-9]{0,8}) cancelled=(0|[1-9][0-9]{0,8})$'; then
+        completed=$(printf '%s\n' "$outcomes" | sed -n 's/^completed=\([0-9]*\) .*/\1/p')
+        failed=$(printf '%s\n' "$outcomes" | sed -n 's/.* failed=\([0-9]*\) .*/\1/p')
+        refused=$(printf '%s\n' "$outcomes" | sed -n 's/.* refused=\([0-9]*\) .*/\1/p')
+        cancelled=$(printf '%s\n' "$outcomes" | sed -n 's/.* cancelled=\([0-9]*\)$/\1/p')
+        terminal_total=$((completed + failed + refused + cancelled))
+        [ "$outcome_relationship" = "one-to-one with actual external provider invocations" ] || return 1
+    else
+        case "$outcomes" in
+            "unknown because "?*) terminal_state=unknown ;;
+            "not applicable because "?*) terminal_state=not-applicable ;;
+            *) return 1 ;;
+        esac
+        case "$terminal_state:$outcome_relationship" in
+            not-applicable:"not applicable because "*) ;;
+            unknown:"one-to-one with actual external provider invocations") ;;
+            *) return 1 ;;
+        esac
+    fi
+
+    terminal_closure_count=$(grep -cF "Unknown closure for Terminal outcomes:" "$file")
+    if [ "$terminal_state" = unknown ]; then
+        [ "$terminal_closure_count" -eq 1 ] || return 1
+        terminal_closure=$(sed -n 's/^Unknown closure for Terminal outcomes: //p' "$file")
+        provider_unknown_closure_is_valid "$terminal_closure" "$status" || return 1
+        has_unknown=yes
+    else
+        [ "$terminal_closure_count" -eq 0 ] || return 1
+    fi
+
+    if [ "$invocation_state" = count ] && [ "$terminal_state" = breakdown ]; then
+        [ $((terminal_total + in_flight + unresolved)) -eq "$invocations" ] || return 1
+    fi
+
+    if [ "$invocations" = 0 ]; then
+        [ "$retries" = 0 ] || return 1
+        [ "$duplicates" = 0 ] || return 1
+        [ "$overlap" = 0 ] || return 1
+        [ "$terminal_state" = breakdown ] || return 1
+        [ "$terminal_total" -eq 0 ] || return 1
+        [ "$in_flight" -eq 0 ] || return 1
+        [ "$unresolved" -eq 0 ] || return 1
+    fi
+
+    # Numeric one-to-one/subset declarations reconcile against actual calls.
+    if [ "$invocation_state" = count ]; then
+        for metric in \
+            "Intended UI submissions" \
+            "Durable provider-submission rows" \
+            "Analysis-run rows" \
+            "Security-audit events" \
+            "Canonical save events"
+        do
+            metric_value=$(sed -n "s/^$metric: //p" "$file")
+            metric_state=$(provider_value_state "$metric_value") || return 1
+            relationship=$(sed -n "s/^$metric relationship: //p" "$file")
+            if [ "$metric_state" = count ]; then
+                case "$relationship" in
+                    "one-to-one with actual external provider invocations")
+                        [ "$metric_value" -eq "$invocations" ] || return 1
+                        ;;
+                    "subset of actual external provider invocations")
+                        [ "$metric_value" -le "$invocations" ] || return 1
+                        ;;
+                esac
+            fi
+            if [ "$invocations" -eq 0 ] && [ "$metric_state" = count ] &&
+                [ "$metric_value" -gt 0 ]; then
+                case "$relationship" in
+                    "independently varying metric because "*evidence*) ;;
+                    *) return 1 ;;
+                esac
+            fi
+        done
+    fi
+
+    divergence=$(sed -n 's/^Count divergence: //p' "$file")
+    if [ "$divergence" = none ]; then
+        [ "$has_unknown" = no ] || return 1
+        [ "$invocation_state" = count ] || return 1
+        [ "$terminal_state" = breakdown ] || return 1
+    fi
+
+    if [ "$status" = fully-reconciled ]; then
+        [ "$invocation_state" = count ] || return 1
+        [ "$terminal_state" = breakdown ] || return 1
+        [ "$in_flight" -eq 0 ] || return 1
+        [ "$unresolved" -eq 0 ] || return 1
+        [ "$terminal_total" -eq "$invocations" ] || return 1
+    fi
+
+    if [ "$authority" = none ]; then
+        [ "$invocations" = 0 ] || return 1
+    fi
+}
+
+validate_fixture_preparation_fixture() {
+    file=$1
+    for field in \
+        "Fixture identity:" \
+        "Prior values proven:" \
+        "Mutation authority:" \
+        "Write mode:" \
+        "Affected rows:" \
+        "Postconditions verified:" \
+        "Unrelated state preserved:" \
+        "Counted as provider call:" \
+        "Manual repair after provider result:" \
+        "New logical whole required:"
+    do
+        [ "$(grep -cF "$field" "$file")" -eq 1 ] || return 1
+        value=$(sed -n "s/^$field //p" "$file")
+        [ -n "$value" ] || return 1
+    done
+
+    [ "$(grep -Ec '^Prior values proven: yes$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Write mode: fail-closed-transactional$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Affected rows: [0-9]+$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Postconditions verified: yes$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Unrelated state preserved: verified$' "$file")" -eq 1 ] || return 1
+    # Restoration of an authorized fixture is not a provider call.
+    [ "$(grep -Ec '^Counted as provider call: no$' "$file")" -eq 1 ] || return 1
+    # Manual repair after a provider result destroys the acceptance evidence.
+    [ "$(grep -Ec '^Manual repair after provider result: none$' "$file")" -eq 1 ] || return 1
+    # Authorized fixture preparation is ordinary work, not a new logical whole.
+    [ "$(grep -Ec '^New logical whole required: no$' "$file")" -eq 1 ] || return 1
+
+    identity=$(sed -n 's/^Fixture identity: //p' "$file")
+    case "$identity" in
+        unknown|none|not-applicable) return 1 ;;
+    esac
+}
+
 validate_route_selection_fixture() {
     file=$1
     for field in \
@@ -3734,6 +4095,395 @@ EOF
     done
 }
 
+test_provider_accounting_and_continuous_closure_contracts() {
+    start="### Authorized Provider Calls and Continuous Closure"
+    end="### Defensive-Security Task Anchor"
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "the number of calls is accounting evidence rather than an automatic default blocker" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "AP imposes no universal fixed numerical ceiling on explicitly authorized development or acceptance provider calls" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "A numerical cap is valid only when it is tied to an explicit cost, billing, privacy, rate-limit, abuse, or safety reason" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "Removing a default cap creates no unlimited call authority" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "\"No numerical ceiling imposed\" never means that any call is authorized" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "only one call may be in flight unless concurrency is concretely required and explicitly authorized" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "every call must reach a classified terminal outcome before the next sequential call begins" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "an ordinary retry inside an authorized closure loop does not require a complete database, deployment, and security inventory each time" || return 1
+    for stop_condition in \
+        "uncontrolled duplication of calls" \
+        "credential exposure" \
+        "unexpected billing" \
+        "destructive risk" \
+        "unexplained unrelated mutation" \
+        "material scope expansion"
+    do
+        assert_section_contract "$REPO/AP.md" "$start" "$end" "$stop_condition" || return 1
+    done
+
+    for metric in \
+        "Intended UI submissions" \
+        "Actual external provider invocations" \
+        "Retry attempts" \
+        "Defect-driven duplicate invocations" \
+        "Terminal outcomes" \
+        "Durable provider-submission rows" \
+        "Analysis-run rows" \
+        "Security-audit events" \
+        "Canonical save events"
+    do
+        assert_section_contract "$REPO/AP.md" "$start" "$end" "| $metric |" || return 1
+        grep -F "$metric:" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
+    done
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "Provider accounting is an activated, scoped reconciliation record" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "Every metric declares exactly one relationship class" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "their numerical overlap is declared explicitly" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "Reports must not invent integer values" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "Representability of \`unknown\` is never permission to close" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "Zero actual calls remains distinct from unknown and requires zero retries, duplicates, overlap, and terminal outcomes" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "Fully reconciled closure requires current evidence, zero in-flight and unresolved invocations" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "Non-zero durable rows, analysis rows, security events, or canonical saves with zero invocations therefore require an exact independent/local relationship and its evidence" || return 1
+
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "does not automatically require a new logical whole, a fresh broad audit, a new plan-only cycle, or a new Orchestrator session" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "Fresh independence remains required at genuine audit, security, evidence-authority, and logical-whole boundaries" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "it never removes an independence boundary" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "restoration is not counted as a provider call" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "no manual repair occurs after the provider result" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "does not open a new logical whole" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "mocks and contract tests reduce predictable duplicate calls but never replace necessary live acceptance" || return 1
+    assert_section_contract "$REPO/AP.md" "$start" "$end" \
+        "serialization boundaries receive coverage, not only persistence" || return 1
+
+    assert_section_contract "$REPO/AP.md" "## 6. Adaptive Orchestration Lifecycle" \
+        "### Provider-Neutral Model and Surface Routing" \
+        "stay inside that loop rather than restarting the lifecycle" || return 1
+    grep -F "Continuous Closure Loop" "$REPO/GLOSSARY.md" >/dev/null || return 1
+    grep -F "Provider Accounting" "$REPO/GLOSSARY.md" >/dev/null || return 1
+
+    # A default numerical ceiling must not be reintroduced as universal AP.
+    scan_absent "default-provider-call-ceiling" \
+        -n "at most [0-9]+ provider call|maximum of [0-9]+ provider call|no more than [0-9]+ provider call|provider call (limit|ceiling) of [0-9]+" \
+        "$REPO/AP.md" "$REPO/AP_ORCHESTRATOR.md" "$REPO/AP_WORKER.md" \
+        "$REPO/PROMPT_CONTRACTS.md" "$REPO/GLOSSARY.md" "$REPO/INFOSEC.md" || return 1
+
+    fixtures=$TMPROOT/provider-accounting-fixtures
+    mkdir -p "$fixtures"
+    cat > "$fixtures/valid" <<'EOF'
+Provider accounting record: activated
+Task or acceptance scope: acceptance of the bounded suggestion fixture
+Bounded time window: 2026-07-28T10:00Z through 2026-07-28T10:05Z
+Subject identity: fixture suggestion-fixture-17
+Run or correlation boundary: acceptance-run-42
+Evidence source: immutable transport event IDs and local row IDs for acceptance-run-42
+Evidence freshness: current for 2026-07-28T10:00Z through 2026-07-28T10:05Z
+Reconciliation status: fully-reconciled
+Accounting authority effect: none
+Provider call authority: authorized for one acceptance submission against the approved fixture
+Numerical call cap: none imposed
+Unlimited call authority: no
+Concurrency: single-call-in-flight
+Terminal outcome before next call: required
+Retry inventory requirement: not-required-inside-authorized-loop
+Intended UI submissions: 3
+Intended UI submissions relationship: independently varying metric because client-rejection evidence is event client-3
+Actual external provider invocations: 2
+Actual external provider invocations relationship: total
+Retry attempts: 1
+Retry attempts relationship: subset of actual external provider invocations
+Defect-driven duplicate invocations: 1
+Defect-driven duplicate invocations relationship: overlapping subset of actual external provider invocations
+Retry/duplicate overlap: 1
+Terminal outcomes: completed=1 failed=1 refused=0 cancelled=0
+Terminal outcomes relationship: one-to-one with actual external provider invocations
+In-flight invocations: 0
+Unresolved invocations: 0
+Durable provider-submission rows: 2
+Durable provider-submission rows relationship: one-to-one with actual external provider invocations
+Analysis-run rows: 1
+Analysis-run rows relationship: subset of actual external provider invocations
+Security-audit events: 4
+Security-audit events relationship: independently varying metric because start-and-finish event evidence is audit-event-9
+Canonical save events: 1
+Canonical save events relationship: subset of actual external provider invocations
+Count divergence: none
+EOF
+    validate_provider_accounting_fixture "$fixtures/valid" || return 1
+
+    # A capped variant is valid when the cap carries its explicit reason.
+    sed 's/^Numerical call cap: none imposed$/Numerical call cap: 2 because billing exposure on this provider is metered per call/' \
+        "$fixtures/valid" > "$fixtures/capped"
+    validate_provider_accounting_fixture "$fixtures/capped" || return 1
+
+    # A numeric cap without an explicit reason is invalid.
+    sed 's/^Numerical call cap: none imposed$/Numerical call cap: 2/' \
+        "$fixtures/valid" > "$fixtures/cap-without-reason"
+    ! validate_provider_accounting_fixture "$fixtures/cap-without-reason" || return 1
+
+    sed 's/^Numerical call cap: none imposed$/Numerical call cap: 2 because it feels safer/' \
+        "$fixtures/valid" > "$fixtures/cap-without-recognized-reason"
+    ! validate_provider_accounting_fixture "$fixtures/cap-without-recognized-reason" || return 1
+
+    # Removing the ceiling must not be reported as unlimited authority.
+    sed 's/^Unlimited call authority: no$/Unlimited call authority: yes/' \
+        "$fixtures/valid" > "$fixtures/unlimited"
+    ! validate_provider_accounting_fixture "$fixtures/unlimited" || return 1
+
+    sed 's/^Terminal outcome before next call: required$/Terminal outcome before next call: optional/' \
+        "$fixtures/valid" > "$fixtures/no-terminal-gate"
+    ! validate_provider_accounting_fixture "$fixtures/no-terminal-gate" || return 1
+
+    sed 's/^Concurrency: single-call-in-flight$/Concurrency: authorized concurrent/' \
+        "$fixtures/valid" > "$fixtures/concurrency-without-reason"
+    ! validate_provider_accounting_fixture "$fixtures/concurrency-without-reason" || return 1
+
+    sed 's/^Concurrency: single-call-in-flight$/Concurrency: authorized concurrent because the acceptance plan requires two independent fixtures/' \
+        "$fixtures/valid" > "$fixtures/authorized-concurrency"
+    validate_provider_accounting_fixture "$fixtures/authorized-concurrency" || return 1
+
+    # An unknown count must name both missing evidence and its closure.
+    sed 's/^Retry attempts: 1$/Retry attempts: unknown/' \
+        "$fixtures/valid" > "$fixtures/bare-unknown"
+    ! validate_provider_accounting_fixture "$fixtures/bare-unknown" || return 1
+
+    {
+        sed -e 's/^Retry attempts: 1$/Retry attempts: unknown because the client does not expose retry telemetry/' \
+            -e 's/^Retry\/duplicate overlap: 1$/Retry\/duplicate overlap: unknown because retry telemetry is unavailable/' \
+            -e 's/^Reconciliation status: fully-reconciled$/Reconciliation status: open/' \
+            -e 's/^Count divergence: none$/Count divergence: retry and overlap remain open/' \
+            "$fixtures/valid"
+        printf '%s\n' \
+            'Unknown closure for Retry attempts: non-closure because retry telemetry remains unavailable' \
+            'Unknown closure for Retry/duplicate overlap: non-closure because retry telemetry remains unavailable'
+    } > "$fixtures/explained-unknown"
+    validate_provider_accounting_fixture "$fixtures/explained-unknown" || return 1
+
+    sed 's/^Reconciliation status: open$/Reconciliation status: fully-reconciled/' \
+        "$fixtures/explained-unknown" > "$fixtures/unknown-falsely-closed"
+    ! validate_provider_accounting_fixture "$fixtures/unknown-falsely-closed" || return 1
+
+    {
+        sed -e 's/^Security-audit events: 4$/Security-audit events: unknown because the bounded audit index is temporarily unavailable/' \
+            -e 's/^Count divergence: none$/Count divergence: security events accepted as an explicit acceptance limitation/' \
+            "$fixtures/valid"
+        printf '%s\n' \
+            'Unknown closure for Security-audit events: accepted by acceptance owner for acceptance because provider invocation closure is independently complete'
+    } > "$fixtures/accepted-material-unknown"
+    validate_provider_accounting_fixture "$fixtures/accepted-material-unknown" || return 1
+
+    sed 's/^Analysis-run rows: 1$/Analysis-run rows: not applicable/' \
+        "$fixtures/valid" > "$fixtures/bare-not-applicable"
+    ! validate_provider_accounting_fixture "$fixtures/bare-not-applicable" || return 1
+
+    # Zero calls require zero invocation-derived facts, while independent local
+    # evidence can legitimately remain non-zero.
+    sed -e 's/^Actual external provider invocations: 2$/Actual external provider invocations: 0/' \
+        -e 's/^Retry attempts: 1$/Retry attempts: 0/' \
+        -e 's/^Defect-driven duplicate invocations: 1$/Defect-driven duplicate invocations: 0/' \
+        -e 's/^Retry\/duplicate overlap: 1$/Retry\/duplicate overlap: 0/' \
+        -e 's/^Terminal outcomes: .*$/Terminal outcomes: completed=0 failed=0 refused=0 cancelled=0/' \
+        -e 's/^Durable provider-submission rows: 2$/Durable provider-submission rows: 0/' \
+        -e 's/^Analysis-run rows: 1$/Analysis-run rows: 0/' \
+        -e 's/^Canonical save events: 1$/Canonical save events: 0/' \
+        "$fixtures/valid" > "$fixtures/zero-calls"
+    validate_provider_accounting_fixture "$fixtures/zero-calls" || return 1
+
+    # Terminal outcomes require a classified breakdown, not a bare total.
+    sed 's/^Terminal outcomes: completed=1 failed=1 refused=0 cancelled=0$/Terminal outcomes: 2/' \
+        "$fixtures/valid" > "$fixtures/unclassified-outcomes"
+    ! validate_provider_accounting_fixture "$fixtures/unclassified-outcomes" || return 1
+
+    # A single classified result class is a valid breakdown.
+    sed 's/^Terminal outcomes: completed=1 failed=1 refused=0 cancelled=0$/Terminal outcomes: completed=2 failed=0 refused=0 cancelled=0/' \
+        "$fixtures/valid" > "$fixtures/single-class-outcomes"
+    validate_provider_accounting_fixture "$fixtures/single-class-outcomes" || return 1
+
+    sed 's/^Terminal outcomes: completed=1 failed=1 refused=0 cancelled=0$/Terminal outcomes: completed=1 failed=0 refused=0 cancelled=0/' \
+        "$fixtures/valid" > "$fixtures/missing-terminal"
+    ! validate_provider_accounting_fixture "$fixtures/missing-terminal" || return 1
+
+    sed -e 's/^Terminal outcomes: completed=1 failed=1 refused=0 cancelled=0$/Terminal outcomes: completed=1 failed=0 refused=0 cancelled=0/' \
+        -e 's/^In-flight invocations: 0$/In-flight invocations: 1/' \
+        -e 's/^Reconciliation status: fully-reconciled$/Reconciliation status: open/' \
+        "$fixtures/valid" > "$fixtures/open-in-flight"
+    validate_provider_accounting_fixture "$fixtures/open-in-flight" || return 1
+    sed 's/^Reconciliation status: open$/Reconciliation status: fully-reconciled/' \
+        "$fixtures/open-in-flight" > "$fixtures/closed-in-flight"
+    ! validate_provider_accounting_fixture "$fixtures/closed-in-flight" || return 1
+
+    sed -e 's/^Terminal outcomes: completed=1 failed=1 refused=0 cancelled=0$/Terminal outcomes: completed=1 failed=0 refused=0 cancelled=0/' \
+        -e 's/^Unresolved invocations: 0$/Unresolved invocations: 1/' \
+        -e 's/^Reconciliation status: fully-reconciled$/Reconciliation status: open/' \
+        "$fixtures/valid" > "$fixtures/open-unresolved"
+    validate_provider_accounting_fixture "$fixtures/open-unresolved" || return 1
+    sed 's/^Reconciliation status: open$/Reconciliation status: fully-reconciled/' \
+        "$fixtures/open-unresolved" > "$fixtures/closed-unresolved"
+    ! validate_provider_accounting_fixture "$fixtures/closed-unresolved" || return 1
+
+    sed -e 's/^Retry attempts: 1$/Retry attempts: 2/' \
+        -e 's/^Defect-driven duplicate invocations: 1$/Defect-driven duplicate invocations: 2/' \
+        -e 's/^Retry\/duplicate overlap: 1$/Retry\/duplicate overlap: 1/' \
+        "$fixtures/valid" > "$fixtures/union-too-large"
+    ! validate_provider_accounting_fixture "$fixtures/union-too-large" || return 1
+
+    sed 's/^Retry\/duplicate overlap: 1$/Retry\/duplicate overlap: 2/' \
+        "$fixtures/valid" > "$fixtures/overlap-too-large"
+    ! validate_provider_accounting_fixture "$fixtures/overlap-too-large" || return 1
+
+    sed 's/^Analysis-run rows relationship: subset of actual external provider invocations$/Analysis-run rows relationship: one-to-one with actual external provider invocations/' \
+        "$fixtures/valid" > "$fixtures/false-one-to-one"
+    ! validate_provider_accounting_fixture "$fixtures/false-one-to-one" || return 1
+
+    # Work with no provider authority reports an explicit zero, not unknown.
+    cat > "$fixtures/no-authority" <<'EOF'
+Provider accounting record: activated
+Task or acceptance scope: verify that no provider call occurred
+Bounded time window: task start through task closure
+Subject identity: not applicable because no provider fixture was used
+Run or correlation boundary: no-provider-run-1
+Evidence source: local transport-denial evidence for no-provider-run-1
+Evidence freshness: current for task start through task closure
+Reconciliation status: fully-reconciled
+Accounting authority effect: none
+Provider call authority: none
+Numerical call cap: none imposed
+Unlimited call authority: no
+Concurrency: single-call-in-flight
+Terminal outcome before next call: required
+Retry inventory requirement: not-required-inside-authorized-loop
+Intended UI submissions: 0
+Intended UI submissions relationship: one-to-one with actual external provider invocations
+Actual external provider invocations: 0
+Actual external provider invocations relationship: total
+Retry attempts: 0
+Retry attempts relationship: subset of actual external provider invocations
+Defect-driven duplicate invocations: 0
+Defect-driven duplicate invocations relationship: subset of actual external provider invocations
+Retry/duplicate overlap: 0
+Terminal outcomes: completed=0 failed=0 refused=0 cancelled=0
+Terminal outcomes relationship: one-to-one with actual external provider invocations
+In-flight invocations: 0
+Unresolved invocations: 0
+Durable provider-submission rows: 0
+Durable provider-submission rows relationship: one-to-one with actual external provider invocations
+Analysis-run rows: 0
+Analysis-run rows relationship: one-to-one with actual external provider invocations
+Security-audit events: 0
+Security-audit events relationship: one-to-one with actual external provider invocations
+Canonical save events: 0
+Canonical save events relationship: one-to-one with actual external provider invocations
+Count divergence: none
+EOF
+    validate_provider_accounting_fixture "$fixtures/no-authority" || return 1
+
+    # No authority means no invocations may be reported.
+    sed 's/^Provider call authority: .*$/Provider call authority: none/' \
+        "$fixtures/valid" > "$fixtures/calls-without-authority"
+    ! validate_provider_accounting_fixture "$fixtures/calls-without-authority" || return 1
+
+    sed '/^Count divergence:/d' "$fixtures/valid" > "$fixtures/no-divergence-field"
+    ! validate_provider_accounting_fixture "$fixtures/no-divergence-field" || return 1
+
+    # The accepted audit counterexample remains impossible even when it tries
+    # to label unrelated local rows as independently varying.
+    sed -e 's/^Actual external provider invocations: 2$/Actual external provider invocations: 0/' \
+        -e 's/^Retry attempts: 1$/Retry attempts: 7/' \
+        -e 's/^Defect-driven duplicate invocations: 1$/Defect-driven duplicate invocations: 9/' \
+        -e 's/^Retry\/duplicate overlap: 1$/Retry\/duplicate overlap: 0/' \
+        -e 's/^Terminal outcomes: .*$/Terminal outcomes: completed=4 failed=3 refused=0 cancelled=0/' \
+        -e 's/^Durable provider-submission rows: 2$/Durable provider-submission rows: 12/' \
+        -e 's/^Durable provider-submission rows relationship: .*$/Durable provider-submission rows relationship: independently varying metric because local-row evidence is durable-row-index/' \
+        -e 's/^Analysis-run rows: 1$/Analysis-run rows: 8/' \
+        -e 's/^Analysis-run rows relationship: .*$/Analysis-run rows relationship: independently varying metric because local-run evidence is analysis-index/' \
+        -e 's/^Security-audit events: 4$/Security-audit events: 2/' \
+        -e 's/^Canonical save events: 1$/Canonical save events: 5/' \
+        -e 's/^Canonical save events relationship: .*$/Canonical save events relationship: independently varying metric because local-save evidence is save-index/' \
+        "$fixtures/valid" > "$fixtures/impossible-audit-example"
+    ! validate_provider_accounting_fixture "$fixtures/impossible-audit-example" || return 1
+
+    for missing_boundary in \
+        "Task or acceptance scope:" \
+        "Bounded time window:" \
+        "Subject identity:" \
+        "Run or correlation boundary:" \
+        "Evidence source:" \
+        "Evidence freshness:"
+    do
+        sed "\\|^$missing_boundary|d" "$fixtures/valid" > "$fixtures/missing-boundary"
+        ! validate_provider_accounting_fixture "$fixtures/missing-boundary" || return 1
+    done
+
+    sed 's/^Evidence freshness: current for /Evidence freshness: stale because superseded window /' \
+        "$fixtures/valid" > "$fixtures/stale-closed"
+    ! validate_provider_accounting_fixture "$fixtures/stale-closed" || return 1
+
+    sed 's/^Accounting authority effect: none$/Accounting authority effect: authorizes one retry/' \
+        "$fixtures/valid" > "$fixtures/count-grants-authority"
+    ! validate_provider_accounting_fixture "$fixtures/count-grants-authority" || return 1
+
+    prep=$TMPROOT/fixture-preparation-fixtures
+    mkdir -p "$prep"
+    cat > "$prep/valid" <<'EOF'
+Fixture identity: catalog row identified by its immutable primary key
+Prior values proven: yes
+Mutation authority: reset the single authorized fixture column to its documented baseline
+Write mode: fail-closed-transactional
+Affected rows: 1
+Postconditions verified: yes
+Unrelated state preserved: verified
+Counted as provider call: no
+Manual repair after provider result: none
+New logical whole required: no
+EOF
+    validate_fixture_preparation_fixture "$prep/valid" || return 1
+
+    sed 's/^Write mode: fail-closed-transactional$/Write mode: best-effort/' \
+        "$prep/valid" > "$prep/best-effort-write"
+    ! validate_fixture_preparation_fixture "$prep/best-effort-write" || return 1
+
+    sed 's/^Affected rows: 1$/Affected rows: approximately one/' \
+        "$prep/valid" > "$prep/inexact-rows"
+    ! validate_fixture_preparation_fixture "$prep/inexact-rows" || return 1
+
+    sed 's/^Counted as provider call: no$/Counted as provider call: yes/' \
+        "$prep/valid" > "$prep/restoration-counted"
+    ! validate_fixture_preparation_fixture "$prep/restoration-counted" || return 1
+
+    sed 's/^Manual repair after provider result: none$/Manual repair after provider result: corrected the row by hand/' \
+        "$prep/valid" > "$prep/manual-repair"
+    ! validate_fixture_preparation_fixture "$prep/manual-repair" || return 1
+
+    # Ordinary authorized fixture preparation must not escalate governance.
+    sed 's/^New logical whole required: no$/New logical whole required: yes/' \
+        "$prep/valid" > "$prep/escalating-preparation"
+    ! validate_fixture_preparation_fixture "$prep/escalating-preparation" || return 1
+
+    sed 's/^Fixture identity: .*$/Fixture identity: unknown/' \
+        "$prep/valid" > "$prep/mutable-identity"
+    ! validate_fixture_preparation_fixture "$prep/mutable-identity" || return 1
+
+    sed '/^Unrelated state preserved:/d' "$prep/valid" > "$prep/no-unrelated-check"
+    ! validate_fixture_preparation_fixture "$prep/no-unrelated-check" || return 1
+}
+
 test_cooperator_routing_sovereignty_contracts() {
     assert_section_contract "$REPO/AP.md" \
         "### Provider-Neutral Model and Surface Routing" \
@@ -4327,6 +5077,7 @@ run_test "model routing fixtures enforce observation, quota, fallback, and refus
 run_test "Plan Mode ownership, routing, and one-cycle budget contracts are enforced" test_plan_mode_ownership_routing_and_cycle_budget_contracts
 run_test "Worker freshness and same-session continuation contracts are enforced" test_worker_freshness_and_same_session_continuation_contracts
 run_test "report, audit, handoff, human governance, and authority-envelope contracts are enforced" test_report_audit_handoff_and_authority_envelope_contracts
+run_test "provider accounting, closure loop, and fixture-preparation fixtures are enforced" test_provider_accounting_and_continuous_closure_contracts
 run_test "Cooperator routing sovereignty and route-provenance fixtures are enforced" test_cooperator_routing_sovereignty_contracts
 run_test "upgrade ledger lifecycle and reconciliation fixtures are enforced" test_upgrade_ledger_lifecycle_contracts
 run_test "evidence tiers, activation, and surface-routing contracts are enforced" test_evidence_tiers_activation_and_surface_routing_contracts

@@ -542,6 +542,25 @@ A checklist of observable outcomes prepared by the Orchestrator for
 user-visible work. The Cooperator responds with `PASS`, `FAIL`, `NOT TESTED`,
 or status plus `+` commentary.
 
+## Continuous Closure Loop
+
+The bounded lifecycle that carries authorized acceptance from fixture readiness
+through a live call, terminal result, diagnosis, smallest bounded correction,
+tests, required deployment, retry of the same acceptance, and durable
+reconciliation to `PASS`. Work inside the loop needs no new logical whole,
+fresh broad audit, plan-only cycle, or new Orchestrator session; independence
+boundaries still apply.
+
+## Provider Accounting
+
+An activated, scoped reconciliation record for intended submissions, actual
+external invocations, retries, defect duplicates, terminal outcomes, durable
+rows, analysis rows, security events, and canonical saves. Each metric declares
+whether it is a total, subset, overlapping subset, one-to-one, independently
+varying, or not applicable fact. The record bounds time, subject, run, evidence,
+freshness, overlap, unknown closure, and reconciliation; it grants no call
+authority.
+
 ## Cooperator Routing Sovereignty
 
 The Orchestrator recommends a complete Worker route and the Cooperator makes

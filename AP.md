@@ -506,6 +506,12 @@ The standard phases are:
 7. **Restoration**: synthesize state for a fresh Orchestrator instance at a
    coherent boundary.
 
+Acceptance that depends on authorized external provider calls uses the bounded
+continuous closure loop defined in
+[Authorized Provider Calls and Continuous Closure](#authorized-provider-calls-and-continuous-closure).
+Diagnosis, a smallest bounded correction, and a retry of the same acceptance
+stay inside that loop rather than restarting the lifecycle.
+
 Phase names describe work mode; they do not grant authority. Only the current
 authoritative Orchestrator task prompt grants Worker authority. A task still
 needs one coherent primary outcome even when it combines related inspection,
@@ -928,6 +934,137 @@ synthetic fixtures, verification, remediation, and responsible reporting. It
 does not imply offensive deployment authority. Prompt wording and delimiters
 may reduce ambiguity but do not constitute complete prompt-injection or
 disclosure prevention; use layered technical and human controls.
+
+### Authorized Provider Calls and Continuous Closure
+
+External provider calls always require explicit authority. Within that
+authority, the number of calls is accounting evidence rather than an automatic
+default blocker.
+
+AP imposes no universal fixed numerical ceiling on explicitly authorized
+development or acceptance provider calls. A numerical cap is valid only when it
+is tied to an explicit cost, billing, privacy, rate-limit, abuse, or safety
+reason, and that reason is recorded with the cap.
+
+Removing a default cap creates no unlimited call authority. "No numerical
+ceiling imposed" never means that any call is authorized. Every call must stay
+inside the task's purpose, fixture, credential, privacy, authority, and
+stop-condition boundaries.
+
+Sequencing is bounded even without a numerical cap:
+
+- only one call may be in flight unless concurrency is concretely required and
+  explicitly authorized;
+- every call must reach a classified terminal outcome before the next
+  sequential call begins;
+- every additional call requires a concrete evidence-derived purpose;
+- an ordinary retry inside an authorized closure loop does not require a
+  complete database, deployment, and security inventory each time.
+
+Stop and return evidence when any of the following appears: uncontrolled
+duplication of calls, credential exposure, unexpected billing, destructive
+risk, unexplained unrelated mutation, material scope expansion, or loss of a
+fixture or privacy guarantee.
+
+#### Provider Accounting Taxonomy
+
+Provider accounting is an activated, scoped reconciliation record, never nine
+unrelated integers and never provider-call authority. Every record identifies
+the task or acceptance scope, bounded time window, fixture, media, or subject
+identity when applicable, run or correlation boundary, evidence source,
+evidence freshness, reconciliation status, and the closure disposition of
+every unknown.
+
+Provider accounting metrics remain distinct facts:
+
+| Metric | Meaning | Normal relationship |
+|---|---|---|
+| Intended UI submissions | Submissions a person or client intended to make | independently varying or one-to-one |
+| Actual external provider invocations | Calls that actually left the system | total |
+| Retry attempts | Repeats of an already attempted call | subset of invocations |
+| Defect-driven duplicate invocations | Repeats caused by a defect rather than a new purpose | subset or overlapping subset of invocations |
+| Terminal outcomes | Exactly one terminal class per invocation | one-to-one with invocations |
+| Durable provider-submission rows | Persisted submission records | declared per implementation |
+| Analysis-run rows | Persisted analysis-run records | declared per implementation |
+| Security-audit events | Recorded security-relevant events | declared per implementation |
+| Canonical save events | Recorded canonical persistence events | declared per implementation |
+
+Every metric declares exactly one relationship class: `total`, `subset`,
+`overlapping subset`, `one-to-one`, `independently varying metric`, or
+`not applicable`. An independently varying relationship states the local
+mechanism and evidence that explain the difference; it is never forced into a
+false universal equality. Retry and defect-duplicate classifications each stay
+within actual invocations, and their numerical overlap is declared explicitly
+so the same invocation is not silently double-counted.
+
+Reports must not invent integer values. Each metric records exactly one
+validated state: an observed value; `unknown` with the missing evidence
+identified; `not applicable` with the reason; or, for terminal outcomes, an
+exact classified breakdown. Every unknown has a separate acceptance-owner
+disposition or keeps the record open. Representability of `unknown` is never
+permission to close, especially for billing, privacy, safety, or acceptance.
+Zero actual calls remains distinct from unknown and requires zero retries,
+duplicates, overlap, and terminal outcomes.
+
+Actual invocations are partitioned into terminal, in-flight, and unresolved
+classes. Fully reconciled closure requires current evidence, zero in-flight and
+unresolved invocations, and exactly one terminal classification for every
+actual invocation. A claimed `Count divergence: none` means that all declared
+relationships reconcile; it does not mean that independently varying metrics
+must have equal counts. Non-zero durable rows, analysis rows, security events,
+or canonical saves with zero invocations therefore require an exact
+independent/local relationship and its evidence.
+
+#### Continuous Closure Loop
+
+One bounded continuous lifecycle carries authorized acceptance work from
+readiness to a passing result:
+
+```text
+fixture readiness -> acceptance -> live call -> terminal result -> diagnosis
+-> smallest bounded correction -> focused and full tests
+-> immutable deployment when required -> retry of the same acceptance
+-> durable reconciliation -> PASS
+```
+
+A low-risk correction or provider attempt already inside this authorized loop
+does not automatically require a new logical whole, a fresh broad audit, a new
+plan-only cycle, or a new Orchestrator session. The loop exists so that
+ordinary diagnosis and retry do not restart governance.
+
+Fresh independence remains required at genuine audit, security,
+evidence-authority, and logical-whole boundaries. The loop shortens ceremony
+inside an authorized boundary; it never removes an independence boundary.
+
+#### Fixture Preparation Inside an Acceptance Cycle
+
+Preparing or restoring an already authorized controlled fixture inside the same
+acceptance cycle is permitted only when every one of these holds:
+
+- the fixture is identified immutably;
+- prior values and invariants are proven before the write;
+- the exact mutation is authorized;
+- the write is fail-closed and transactional;
+- the affected-row count is exact;
+- postconditions are verified;
+- unrelated-state preservation is verified;
+- restoration is not counted as a provider call;
+- no manual repair occurs after the provider result.
+
+Fixture preparation under these conditions is ordinary authorized work and does
+not open a new logical whole.
+
+#### Billable Side-Effect Awareness
+
+Before billable acceptance, obtain the cheapest authoritative contract evidence
+reasonably available:
+
+- list and detail payloads include every field used by client eligibility
+  predicates;
+- serialization boundaries receive coverage, not only persistence;
+- client completeness predicates are compared with the API contract;
+- mocks and contract tests reduce predictable duplicate calls but never replace
+  necessary live acceptance.
 
 ### Defensive-Security Task Anchor
 
