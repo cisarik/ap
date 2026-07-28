@@ -115,7 +115,7 @@ reviewed and committed by an explicit project task.
 | [UPDATING.md](UPDATING.md) | Explicit update, compatibility review, and rollback workflow |
 | [CHANGELOG.md](CHANGELOG.md) | Human-readable protocol distribution changes |
 | [ap](ap) | Dependency-free integration tool |
-| [tests/](tests/) | Dependency-free tests for the integration tool and repository structure |
+| [tests/](tests/) | Tests for the integration tool and repository structure; evidence-bearing scans resolve trusted `rg`, ignore arbitrary scanner overrides, and fail closed on execution errors |
 | [docs/adr/](docs/adr/) | Accepted architecture decisions |
 
 ## Project-Specific Rules

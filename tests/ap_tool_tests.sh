@@ -1,12 +1,146 @@
 #!/bin/sh
 set -eu
 
+# Only shell builtins may run before the argument gate resolves, so that
+# --help and --self-check-scanner stay usable in an environment where no
+# external command can be found on PATH. Evidence-bearing suite execution
+# always resolves rg itself; an environment variable cannot replace it.
+SCANNER=
+
+usage() {
+    printf '%s\n' \
+        'Usage: ap_tool_tests.sh [option]' \
+        '' \
+        'Run the Analytic Programming repository and integration-tool tests.' \
+        '' \
+        'Options:' \
+        '  (no option)           run the complete suite' \
+        '  -h, --help            print this usage text and exit without running the suite' \
+        '  --self-check-scanner  check only that trusted rg resolves' \
+        '  --self-check-cleanup  announce a temporary root, then stream output until closed' \
+        '  --probe-scan-absent <scanner> <needle> <file>' \
+        '                        isolate scanner failure testing from suite evidence' \
+        '' \
+        'The prohibited-content scans use the rg executable resolved by the runner.' \
+        'The complete suite ignores AP_TESTS_SCANNER and fails closed without rg.'
+}
+
+resolve_trusted_scanner() {
+    scanner_path=$(command -v rg 2>/dev/null || true)
+    case "$scanner_path" in
+        /*)
+            [ -x "$scanner_path" ] || scanner_path=
+            ;;
+        *)
+            scanner_path=
+            ;;
+    esac
+    if [ -n "$scanner_path" ]; then
+        SCANNER=$scanner_path
+        return 0
+    fi
+    printf 'ap-tool-tests: required trusted content scanner "rg" was not found.\n' >&2
+    printf 'ap-tool-tests: prohibited-content scans cannot run, so the runner fails closed.\n' >&2
+    return 1
+}
+
+probe_scan_absent() {
+    candidate=$1
+    needle=$2
+    target=$3
+
+    [ -f "$target" ] && [ -r "$target" ] || {
+        printf 'ap-tool-tests-probe: target is missing or unreadable: %s\n' "$target" >&2
+        return 1
+    }
+
+    "$candidate" -n -F -- "$needle" "$target" >/dev/null 2>&1 &&
+        candidate_status=0 || candidate_status=$?
+    case "$candidate_status" in
+        0)
+            printf 'ap-tool-tests-probe: candidate reported a match\n' >&2
+            return 1
+            ;;
+        1)
+            "$SCANNER" -n -F -- "$needle" "$target" >/dev/null 2>&1 &&
+                trusted_status=0 || trusted_status=$?
+            case "$trusted_status" in
+                0)
+                    printf 'ap-tool-tests-probe: candidate manufactured a clean no-match\n' >&2
+                    return 1
+                    ;;
+                1)
+                    printf 'ap-tool-tests-probe: clean no-match confirmed\n'
+                    return 0
+                    ;;
+                *)
+                    printf 'ap-tool-tests-probe: trusted scanner failed with status %s\n' \
+                        "$trusted_status" >&2
+                    return 1
+                    ;;
+            esac
+            ;;
+        *)
+            printf 'ap-tool-tests-probe: candidate scanner failed with status %s\n' \
+                "$candidate_status" >&2
+            return 1
+            ;;
+    esac
+}
+
+MODE=suite
+
+case "${1-}" in
+    '')
+        [ "$#" -eq 0 ] || exit 2
+        ;;
+    -h|--help)
+        [ "$#" -eq 1 ] || {
+            printf 'ap-tool-tests: unsupported argument: %s\n' "$2" >&2
+            usage >&2
+            exit 2
+        }
+        usage
+        exit 0
+        ;;
+    --self-check-scanner)
+        [ "$#" -eq 1 ] || exit 2
+        if resolve_trusted_scanner; then
+            printf 'ap-tool-tests: content scanner available: %s\n' "$SCANNER"
+            exit 0
+        fi
+        exit 1
+        ;;
+    --self-check-cleanup)
+        [ "$#" -eq 1 ] || exit 2
+        MODE=self-check-cleanup
+        ;;
+    --probe-scan-absent)
+        [ "$#" -eq 4 ] || {
+            printf 'ap-tool-tests: --probe-scan-absent requires scanner, needle, and file\n' >&2
+            exit 2
+        }
+        resolve_trusted_scanner || exit 1
+        if probe_scan_absent "$2" "$3" "$4"; then
+            exit 0
+        fi
+        exit 1
+        ;;
+    *)
+        printf 'ap-tool-tests: unsupported argument: %s\n' "$1" >&2
+        usage >&2
+        exit 2
+        ;;
+esac
+
 REPO=$(cd "$(dirname "$0")/.." && pwd -P)
+SH_BIN=$(command -v sh)
 TMPROOT=$(mktemp -d "${TMPDIR:-/tmp}/ap-tool-tests.XXXXXX")
 SOURCE=$TMPROOT/source
 SOURCE_URL=file://$SOURCE
 OUT=$TMPROOT/out
 ERR=$TMPROOT/err
+SCAN_ERR=$TMPROOT/scan-err
 
 pass_count=0
 fail_count=0
@@ -36,6 +170,12 @@ run_test() {
 }
 
 cleanup() {
+    # Remove only a path this runner created: it must still carry the mktemp
+    # template basename and sit under a temporary-directory prefix.
+    case "${TMPROOT:-}" in
+        */ap-tool-tests.*) ;;
+        *) return 0 ;;
+    esac
     case "$TMPROOT" in
         /tmp/*|/private/tmp/*|/var/folders/*|/private/var/folders/*)
             rm -rf "$TMPROOT"
@@ -43,7 +183,57 @@ cleanup() {
     esac
 }
 
-trap cleanup EXIT HUP INT TERM
+# A bare signal trap would resume the suite against a deleted temporary root,
+# so every early-termination path cleans up and exits.
+cleanup_and_exit() {
+    cleanup
+    trap - EXIT
+    printf 'ap-tool-tests: terminated early by %s; temporary state removed\n' "$1" >&2 || true
+    exit 130
+}
+
+trap cleanup EXIT
+trap 'cleanup_and_exit HUP' HUP
+trap 'cleanup_and_exit INT' INT
+trap 'cleanup_and_exit TERM' TERM
+trap 'cleanup_and_exit PIPE' PIPE
+
+if [ "$MODE" = self-check-cleanup ]; then
+    printf 'temporary root: %s\n' "$TMPROOT"
+    filler=0
+    while [ "$filler" -lt 5000 ]
+    do
+        printf 'self-check-cleanup filler line %s\n' "$filler"
+        filler=$((filler + 1))
+    done
+    exit 0
+fi
+
+resolve_trusted_scanner || exit 1
+
+# Assert that a required content scan actually ran and matched nothing.
+# A bare "! rg ..." conflates three different outcomes; this separates them.
+scan_absent() {
+    scan_rule=$1
+    shift
+    scan_output=$("$SCANNER" "$@" 2>"$SCAN_ERR") && scan_status=0 || scan_status=$?
+    case "$scan_status" in
+        0)
+            printf 'prohibited content found [%s]:\n' "$scan_rule" >&2
+            printf '%s\n' "$scan_output" >&2
+            return 1
+            ;;
+        1)
+            return 0
+            ;;
+        *)
+            printf 'required scan did not execute [%s]: "%s" exited with status %s\n' \
+                "$scan_rule" "$SCANNER" "$scan_status" >&2
+            sed 's/^/  /' "$SCAN_ERR" >&2 || true
+            return 1
+            ;;
+    esac
+}
 
 run_ok() {
     : > "$OUT"
@@ -123,13 +313,27 @@ advance_source() {
 assert_contains() {
     file=$1
     text=$2
-    grep -F "$text" "$file" >/dev/null
+    [ -f "$file" ] && [ -r "$file" ] || return 1
+    grep -F -- "$text" "$file" >/dev/null 2>&1 &&
+        grep_status=0 || grep_status=$?
+    case "$grep_status" in
+        0) return 0 ;;
+        1) return 1 ;;
+        *) return 1 ;;
+    esac
 }
 
 assert_not_contains() {
     file=$1
     text=$2
-    ! grep -F "$text" "$file" >/dev/null
+    [ -f "$file" ] && [ -r "$file" ] || return 1
+    grep -F -- "$text" "$file" >/dev/null 2>&1 &&
+        grep_status=0 || grep_status=$?
+    case "$grep_status" in
+        0) return 1 ;;
+        1) return 0 ;;
+        *) return 1 ;;
+    esac
 }
 
 assert_text_contract() {
@@ -1227,6 +1431,130 @@ assert_pattern_schema_fixture_rejected() {
     }
 }
 
+test_runner_argument_handling() {
+    run_ok "$SH_BIN" "$REPO/tests/ap_tool_tests.sh" --help || return 1
+    assert_contains "$OUT" "Usage: ap_tool_tests.sh" || return 1
+    assert_contains "$OUT" "  --self-check-scanner  check only" || return 1
+    assert_not_contains "$OUT" "passed:" || return 1
+
+    run_ok "$SH_BIN" "$REPO/tests/ap_tool_tests.sh" -h || return 1
+    assert_contains "$OUT" "Usage: ap_tool_tests.sh" || return 1
+
+    run_fail "$SH_BIN" "$REPO/tests/ap_tool_tests.sh" --not-a-real-option || return 1
+    assert_contains "$ERR" "unsupported argument: --not-a-real-option" || return 1
+    assert_not_contains "$OUT" "passed:" || return 1
+
+    run_fail "$SH_BIN" "$REPO/tests/ap_tool_tests.sh" --help extra-argument || return 1
+    assert_contains "$ERR" "unsupported argument: extra-argument" || return 1
+    assert_not_contains "$OUT" "passed:" || return 1
+}
+
+test_runner_fails_closed_without_content_scanner() {
+    run_ok "$SH_BIN" "$REPO/tests/ap_tool_tests.sh" --self-check-scanner || return 1
+    assert_contains "$OUT" "content scanner available" || return 1
+
+    # An environment in which no external command, including the scanner,
+    # can be resolved must fail non-zero with a precise diagnostic.
+    run_fail env PATH= "$SH_BIN" "$REPO/tests/ap_tool_tests.sh" --self-check-scanner || return 1
+    assert_contains "$ERR" "required trusted content scanner" || return 1
+    assert_contains "$ERR" "fails closed" || return 1
+    assert_not_contains "$OUT" "content scanner available" || return 1
+
+    # A required scan that executed and matched nothing must be
+    # distinguishable from a scan command that never existed.
+    scan_absent "self-check-clean" -n -F "token-that-must-not-appear-in-this-repository" \
+        "$REPO/README.md" || return 1
+    ! scan_absent "self-check-match" -n -F "Analytic Programming" "$REPO/README.md" || return 1
+
+    scanner_fixtures=$TMPROOT/scanner-fixtures
+    mkdir -p "$scanner_fixtures"
+    fake=$scanner_fixtures/fake-rg
+    error_scanner=$scanner_fixtures/error-rg
+    exit_127_scanner=$scanner_fixtures/exit-127-rg
+    non_executable=$scanner_fixtures/non-executable-rg
+    printf '%s\n' \
+        '#!/bin/sh' \
+        'case "${1-}" in --version) exit 0 ;; esac' \
+        'exit 1' > "$fake"
+    printf '%s\n' '#!/bin/sh' 'exit 2' > "$error_scanner"
+    printf '%s\n' '#!/bin/sh' 'exit 127' > "$exit_127_scanner"
+    printf '%s\n' '#!/bin/sh' 'exit 1' > "$non_executable"
+    chmod 700 "$fake" "$error_scanner" "$exit_127_scanner"
+    chmod 600 "$non_executable"
+
+    # The environment hook is ignored by normal trusted-scanner resolution.
+    run_ok env AP_TESTS_SCANNER="$fake" "$SH_BIN" \
+        "$REPO/tests/ap_tool_tests.sh" --self-check-scanner || return 1
+    assert_not_contains "$OUT" "$fake" || return 1
+    assert_not_contains "$OUT" "passed:" || return 1
+
+    # Probe mode is isolated from suite PASS and cross-checks a candidate
+    # scanner against trusted rg for the same evidence.
+    run_fail "$SH_BIN" "$REPO/tests/ap_tool_tests.sh" --probe-scan-absent \
+        "$fake" "Analytic Programming" "$REPO/README.md" || return 1
+    assert_contains "$ERR" "manufactured a clean no-match" || return 1
+    assert_not_contains "$OUT" "passed:" || return 1
+
+    run_ok "$SH_BIN" "$REPO/tests/ap_tool_tests.sh" --probe-scan-absent \
+        "$SCANNER" "token-that-must-not-appear-in-this-repository" \
+        "$REPO/README.md" || return 1
+    assert_contains "$OUT" "clean no-match confirmed" || return 1
+
+    run_fail "$SH_BIN" "$REPO/tests/ap_tool_tests.sh" --probe-scan-absent \
+        ap-tests-absent-scanner "Analytic Programming" "$REPO/README.md" || return 1
+    assert_contains "$ERR" "status 127" || return 1
+    run_fail "$SH_BIN" "$REPO/tests/ap_tool_tests.sh" --probe-scan-absent \
+        "$error_scanner" "Analytic Programming" "$REPO/README.md" || return 1
+    assert_contains "$ERR" "status 2" || return 1
+    run_fail "$SH_BIN" "$REPO/tests/ap_tool_tests.sh" --probe-scan-absent \
+        "$non_executable" "Analytic Programming" "$REPO/README.md" || return 1
+    assert_contains "$ERR" "status 126" || return 1
+    run_fail "$SH_BIN" "$REPO/tests/ap_tool_tests.sh" --probe-scan-absent \
+        "$exit_127_scanner" "Analytic Programming" "$REPO/README.md" || return 1
+    assert_contains "$ERR" "status 127" || return 1
+    run_fail "$SH_BIN" "$REPO/tests/ap_tool_tests.sh" --probe-scan-absent \
+        "$SCANNER" "Analytic Programming" "$REPO/README.md" || return 1
+    assert_contains "$ERR" "candidate reported a match" || return 1
+    run_fail "$SH_BIN" "$REPO/tests/ap_tool_tests.sh" --probe-scan-absent \
+        "$SCANNER" "anything" "$scanner_fixtures/missing" || return 1
+    assert_contains "$ERR" "missing or unreadable" || return 1
+}
+
+test_shared_grep_assertions_fail_closed() {
+    fixture=$TMPROOT/shared-grep-assertions
+    printf '%s\n' '--option-like-needle' 'present value' > "$fixture"
+
+    assert_contains "$fixture" "--option-like-needle" || return 1
+    assert_contains "$fixture" "present value" || return 1
+    ! assert_contains "$fixture" "absent value" || return 1
+    assert_not_contains "$fixture" "absent value" || return 1
+    ! assert_not_contains "$fixture" "present value" || return 1
+
+    ! assert_contains "$TMPROOT/missing-grep-target" "anything" || return 1
+    ! assert_not_contains "$TMPROOT/missing-grep-target" "anything" || return 1
+    mkdir -p "$TMPROOT/directory-grep-target"
+    ! assert_contains "$TMPROOT/directory-grep-target" "anything" || return 1
+    ! assert_not_contains "$TMPROOT/directory-grep-target" "anything" || return 1
+}
+
+test_runner_removes_temporary_state_on_early_termination() {
+    run_ok "$SH_BIN" "$REPO/tests/ap_tool_tests.sh" --self-check-cleanup || return 1
+    completed_root=$(sed -n '1s/^temporary root: //p' "$OUT")
+    [ -n "$completed_root" ] || return 1
+    [ ! -e "$completed_root" ] || return 1
+
+    # Reproduce the closed-pipe termination that a truncated read causes.
+    truncated_root=$("$SH_BIN" "$REPO/tests/ap_tool_tests.sh" --self-check-cleanup 2>/dev/null |
+        sed -n '1{s/^temporary root: //p;q;}')
+    [ -n "$truncated_root" ] || return 1
+    case "$truncated_root" in
+        */ap-tool-tests.*) ;;
+        *) return 1 ;;
+    esac
+    [ "$truncated_root" != "$completed_root" ] || return 1
+    [ ! -e "$truncated_root" ] || return 1
+}
+
 test_section_contract_helper_boundaries() {
     fixtures=$TMPROOT/section-contract-fixtures
     mkdir -p "$fixtures"
@@ -1285,6 +1613,17 @@ hash_file() {
     cksum "$1"
 }
 
+portable_file_mode() {
+    file=$1
+    if mode=$(stat -c %a "$file" 2>/dev/null); then
+        printf '%s\n' "$mode"
+    elif mode=$(stat -f %Lp "$file" 2>/dev/null); then
+        printf '%s\n' "$mode"
+    else
+        return 1
+    fi
+}
+
 refs_snapshot() {
     dir=$1
     git -C "$dir" for-each-ref --format='%(refname) %(objectname)' | sort
@@ -1321,10 +1660,10 @@ test_init_preserves_existing_content_mode_and_idempotent() {
     super=$(new_super init_idempotent)
     printf '%s\n' "# Host Rules" "" "Keep this project rule." > "$super/AGENTS.md"
     chmod 600 "$super/AGENTS.md"
-    mode_before=$(stat -f %Lp "$super/AGENTS.md" 2>/dev/null || stat -c %a "$super/AGENTS.md")
+    mode_before=$(portable_file_mode "$super/AGENTS.md")
     run_ok "$super/.ap/ap" init
     assert_contains "$super/AGENTS.md" "Keep this project rule." || return 1
-    mode_after=$(stat -f %Lp "$super/AGENTS.md" 2>/dev/null || stat -c %a "$super/AGENTS.md")
+    mode_after=$(portable_file_mode "$super/AGENTS.md")
     [ "$mode_before" = "$mode_after" ] || return 1
     before=$(hash_file "$super/AGENTS.md")
     run_ok "$super/.ap/ap" init
@@ -1727,8 +2066,11 @@ test_repository_structure_and_scans() {
     [ ! -e "$REPO/WORKERS.md" ] || return 1
     [ ! -e "$REPO/AGENTS.md" ] || return 1
     [ ! -d "$REPO/templates/project" ] || [ -z "$(find "$REPO/templates/project" -type f -print 2>/dev/null)" ] || return 1
-    ! rg -n "copy .*APv3|APv3.md.*to.*AP.md|rename .*APv|choose AP v[0-9]|initialize .*Worker_1|create permanent NEXT|use permanent NEXT as default" "$REPO" --glob '!/.git/**' --glob '!tests/**' || return 1
-    ! rg -n "FrameNest|/Users/agile|Michal|Toto pošli|Worker_1|AP version 3|active generation" \
+    scan_absent "legacy-generation-instructions" \
+        -n "copy .*APv3|APv3.md.*to.*AP.md|rename .*APv|choose AP v[0-9]|initialize .*Worker_1|create permanent NEXT|use permanent NEXT as default" \
+        "$REPO" --glob '!/.git/**' --glob '!tests/**' || return 1
+    scan_absent "project-specific-nouns" \
+        -n "FrameNest|/Users/agile|Michal|Toto pošli|Worker_1|AP version 3|active generation" \
         "$REPO/AP.md" "$REPO/AP_ORCHESTRATOR.md" "$REPO/AP_WORKER.md" \
         "$REPO/PROMPT_CONTRACTS.md" "$REPO/ARTIFACT_LIFECYCLE.md" || return 1
     [ -f "$REPO/docs/adr/0006-adaptive-orchestration-and-preflight-lifecycle.md" ] || return 1
@@ -1906,8 +2248,10 @@ test_worker_session_profile_and_evidence_contracts() {
     grep -F "Independent Re-Audit is a Worker session profile and a form of Independent" "$REPO/AP.md" >/dev/null || return 1
     grep -F "Audit, not a permanent role and not a new AP phase" "$REPO/AP.md" >/dev/null || return 1
     grep -F "Re-audit is not universally mandatory" "$REPO/AP.md" >/dev/null || return 1
-    ! rg -n "Discovery Worker" "$REPO" --glob '!/.git/**' --glob '!tests/**' || return 1
-    ! rg -n "Persistent protocol role:.*(Fresh|Evidence|Correction|Audit|Probe)" \
+    scan_absent "discovery-worker-role" \
+        -n "Discovery Worker" "$REPO" --glob '!/.git/**' --glob '!tests/**' || return 1
+    scan_absent "persistent-profile-roles" \
+        -n "Persistent protocol role:.*(Fresh|Evidence|Correction|Audit|Probe)" \
         "$REPO/AP.md" "$REPO/GLOSSARY.md" || return 1
     awk '
         /^## Adaptive Phase Contracts/ { in_phases = 1 }
@@ -1989,15 +2333,19 @@ test_evidence_ladder_closure_and_negative_scope_contracts() {
     grep -F "Remaining context is not continuing authority" "$REPO/AP.md" >/dev/null || return 1
     grep -F "The Orchestrator owns the logical-block closure decision" "$REPO/AP.md" >/dev/null || return 1
     grep -F "Closure does not mean the complete feature is finished" "$REPO/AP.md" >/dev/null || return 1
-    ! rg -n "exceptional risk|exceptionally high-risk" \
+    scan_absent "exceptional-risk-wording" \
+        -n "exceptional risk|exceptionally high-risk" \
         "$REPO/AP.md" "$REPO/AP_ORCHESTRATOR.md" "$REPO/AP_WORKER.md" \
         "$REPO/PROMPT_CONTRACTS.md" "$REPO/FAQ.md" "$REPO/GLOSSARY.md" || return 1
-    ! rg -n "must .*independent audit.*every commit|audit.*mandatory.*every commit|required .*independent audit.*every commit" \
+    scan_absent "mandatory-audit-every-commit" \
+        -n "must .*independent audit.*every commit|audit.*mandatory.*every commit|required .*independent audit.*every commit" \
         "$REPO/AP.md" "$REPO/AP_ORCHESTRATOR.md" "$REPO/AP_WORKER.md" \
         "$REPO/PROMPT_CONTRACTS.md" "$REPO/FAQ.md" "$REPO/GLOSSARY.md" || return 1
-    ! rg -n "Worker manager|parallel autonomous|must run.*Workers.*parallel|parallel Worker requirement" \
+    scan_absent "parallel-worker-requirement" \
+        -n "Worker manager|parallel autonomous|must run.*Workers.*parallel|parallel Worker requirement" \
         "$REPO" --glob '!/.git/**' --glob '!tests/**' || return 1
-    ! rg -n "minimum prompt length|required prompt length|must rotate after every commit|[0-9]+%.*context" \
+    scan_absent "numeric-prompt-and-context-thresholds" \
+        -n "minimum prompt length|required prompt length|must rotate after every commit|[0-9]+%.*context" \
         "$REPO/AP.md" "$REPO/AP_ORCHESTRATOR.md" "$REPO/PROMPT_CONTRACTS.md" "$REPO/FAQ.md" || return 1
     grep -F "Permanent session-state files are not a default AP distribution artifact" "$REPO/AP.md" >/dev/null || return 1
 }
@@ -2022,7 +2370,8 @@ test_restoration_readiness_and_routing_contracts() {
     grep -F "Consuming project rules, normally in a project-owned file such as \`AGENTS.md\`" "$REPO/AP.md" >/dev/null || return 1
     grep -F "Universal AP does not hardcode" "$REPO/AP.md" >/dev/null || return 1
     grep -F "restoration readiness classification" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
-    ! rg -n "FrameNest|Michal|Slovak|Cursor|Codex|Toto pošli" \
+    scan_absent "project-specific-routing-values" \
+        -n "FrameNest|Michal|Slovak|Cursor|Codex|Toto pošli" \
         "$REPO/AP.md" "$REPO/AP_ORCHESTRATOR.md" "$REPO/AP_WORKER.md" \
         "$REPO/PROMPT_CONTRACTS.md" "$REPO/FAQ.md" "$REPO/GLOSSARY.md" || return 1
 }
@@ -2030,8 +2379,12 @@ test_restoration_readiness_and_routing_contracts() {
 test_vendor_and_secret_scans() {
     grep -F "AP is vendor-neutral" "$REPO/AP.md" >/dev/null || return 1
     grep -F "model family, or hosted service" "$REPO/AP.md" >/dev/null || return 1
-    ! rg -n "must use (OpenAI|ChatGPT|Claude|Gemini|GPT-[0-9])|requires (OpenAI|ChatGPT|Claude|Gemini|GPT-[0-9])" "$REPO" --glob '!/.git/**' || return 1
-    ! rg -n "BEGIN (RSA|OPENSSH|EC|DSA) PRIVATE KEY|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9_]{20,}|xox[baprs]-" "$REPO" --glob '!/.git/**' || return 1
+    scan_absent "vendor-mandate" \
+        -n "must use (OpenAI|ChatGPT|Claude|Gemini|GPT-[0-9])|requires (OpenAI|ChatGPT|Claude|Gemini|GPT-[0-9])" \
+        "$REPO" --glob '!/.git/**' || return 1
+    scan_absent "secret-shaped-content" \
+        -n "BEGIN (RSA|OPENSSH|EC|DSA) PRIVATE KEY|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9_]{20,}|xox[baprs]-" \
+        "$REPO" --glob '!/.git/**' || return 1
 }
 
 test_pattern_library_schema_and_metadata() {
@@ -2364,7 +2717,8 @@ test_rotation_compaction_and_evidence_equivalence_contracts() {
         "## Communication Routing Fields" \
         "Repository/public anchor" || return 1
     grep -F "Evidence Equivalence" "$REPO/GLOSSARY.md" >/dev/null || return 1
-    ! rg -n "rotate at [0-9]+%|[0-9]+% context|must rotate.*[0-9]+ tokens" \
+    scan_absent "numeric-rotation-thresholds" \
+        -n "rotate at [0-9]+%|[0-9]+% context|must rotate.*[0-9]+ tokens" \
         "$REPO/AP.md" "$REPO/AP_ORCHESTRATOR.md" "$REPO/AP_WORKER.md" \
         "$REPO/PROMPT_CONTRACTS.md" "$REPO/PROMPT_ENGINEERING_PATTERNS.md"
 }
@@ -2434,10 +2788,12 @@ test_pattern_anti_patterns_sources_and_security_scans() {
     done
     ! find "$REPO" -maxdepth 2 \( -name 'HACKS.md' -o -name 'NEXT_*' -o \
         -name 'BOOT_*' -o -name 'WORKERS.md' \) -print | grep . >/dev/null || return 1
-    ! rg -n "must use (OpenAI|ChatGPT|Claude|Gemini|GPT-[0-9])|requires (OpenAI|ChatGPT|Claude|Gemini|GPT-[0-9])|[0-9]+%.*context" \
+    scan_absent "vendor-mandate-and-context-percentage" \
+        -n "must use (OpenAI|ChatGPT|Claude|Gemini|GPT-[0-9])|requires (OpenAI|ChatGPT|Claude|Gemini|GPT-[0-9])|[0-9]+%.*context" \
         "$REPO/AP.md" "$REPO/AP_ORCHESTRATOR.md" "$REPO/AP_WORKER.md" \
         "$REPO/PROMPT_CONTRACTS.md" "$library" "$REPO/FAQ.md" "$REPO/GLOSSARY.md" || return 1
-    ! rg -n "BEGIN (RSA|OPENSSH|EC|DSA) PRIVATE KEY|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9_]{20,}|xox[baprs]-" \
+    scan_absent "secret-shaped-content-repository" \
+        -n "BEGIN (RSA|OPENSSH|EC|DSA) PRIVATE KEY|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9_]{20,}|xox[baprs]-" \
         "$REPO" --glob '!/.git/**'
 }
 
@@ -2987,7 +3343,7 @@ test_worker_freshness_and_same_session_continuation_contracts() {
         grep -F "$label" "$REPO/AP_ORCHESTRATOR.md" >/dev/null || return 1
     done
     [ "$(grep -Ec '^[1-4]\. `Prompt pre .+`$' "$REPO/AP_ORCHESTRATOR.md")" -eq 4 ] || return 1
-    ! rg -n -F \
+    scan_absent "stale-plan-mode-labels" -n -F \
         -e "Prompt pre fresh Workera — s Plan mode" \
         -e "Prompt pre fresh Workera — bez Plan mode" \
         -e "Prompt pre aktuálneho Workera — s Plan mode" \
@@ -3283,7 +3639,7 @@ EOF
         "$fixtures/infosec-override" > "$fixtures/infosec-ignored"
     ! validate_evidence_authority_scenario "$fixtures/infosec-ignored" || return 1
 
-    ! rg -n -F 'non-terminal' \
+    scan_absent "non-terminal-report-wording" -n -F 'non-terminal' \
         "$REPO/AP.md" "$REPO/AP_ORCHESTRATOR.md" "$REPO/AP_WORKER.md" \
         "$REPO/PROMPT_CONTRACTS.md" "$REPO/PROMPT_ENGINEERING_PATTERNS.md" \
         "$REPO/README.md" "$REPO/FAQ.md" "$REPO/GLOSSARY.md" \
@@ -3342,6 +3698,10 @@ EOF
 
 copy_worktree_to_source
 
+run_test "runner rejects unknown arguments and prints usage for --help" test_runner_argument_handling
+run_test "runner fails closed when the content scanner cannot be resolved" test_runner_fails_closed_without_content_scanner
+run_test "shared grep assertions distinguish matches, no-match, and evidence errors" test_shared_grep_assertions_fail_closed
+run_test "runner removes temporary state on completion and closed-pipe termination" test_runner_removes_temporary_state_on_early_termination
 run_test "section contract helper enforces exact boundaries" test_section_contract_helper_boundaries
 run_test "init creates missing AGENTS.md without commit" test_init_creates_agents
 run_test "init preserves existing AGENTS.md content, mode, and idempotence" test_init_preserves_existing_content_mode_and_idempotent
