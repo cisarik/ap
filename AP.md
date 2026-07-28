@@ -837,6 +837,49 @@ evidence. “More analysis” is not a closure decision. Human-governed closure
 keeps the Cooperator informed about material risk and acceptance while avoiding
 microapproval of deterministic stages already inside authority.
 
+“Logical whole” and “logical block” name the same bounded unit of work.
+“Logical whole” is the preferred term; “logical block” remains valid for
+compatibility with existing prompts, projects, and history.
+
+#### Closure Signal
+
+Closure must be signalled prominently rather than inferred. A project declares
+exactly one exact closure signal string in its own project-owned rules, so the
+signal can be localized to the project's working language. Universal AP defines
+the mechanism and ownership and hardcodes no particular signal text.
+
+The declared closure signal is owned by the Orchestrator. Only the Orchestrator
+may emit it, and only once accepted evidence, active-context reconciliation, and
+closure authority all exist. A Worker must never emit the project's
+authoritative closure signal, in any form, including inside a quoted example,
+because emitting it would claim an authority the Worker does not hold. A Worker
+signals its own completion through its terminal report status.
+
+These states remain distinct and must never be substituted for one another:
+
+- implementation completion;
+- audit completion;
+- publication;
+- public Git equality;
+- Orchestrator acceptance;
+- logical-whole closure.
+
+A terminal Worker report, a green test suite, a completed audit, and a
+successful push are each evidence toward closure. None of them is closure.
+
+#### Independence Without Audit Recursion
+
+Independent verification remains required for security-boundary and
+evidence-authority changes.
+
+Within that requirement, a bounded correction normally returns to the
+implementing Worker rather than to a new auditor. Another fresh audit is
+required only when a correction changes a security boundary, an evidence
+validator, an auditor assumption, or another materially independent fact. An
+audit that produced findings does not by itself entitle the next correction to a
+further audit; that would create audit-after-audit recursion without new
+independent facts.
+
 ## 8. Worker Responsibilities
 
 The Worker must:
@@ -894,6 +937,51 @@ repository name, branch, and refs. Cosmetic spelling differences such as an
 optional `.git` suffix should not fail a gate unless the task requires exact URL
 text for a specific reason. Workers must not modify Git configuration merely to
 normalize spelling.
+
+### Recovery-Candidate Classification
+
+When local state, public state, or owner files differ from the expected
+baseline, the divergence is classified before any mutation. The canonical
+recovery-candidate classes are exactly these five:
+
+| Class | Definition |
+|---|---|
+| `accepted-continuation` | The difference is authorized work already inside the active task or logical whole |
+| `unrelated-owner-work` | The difference belongs to the Cooperator or another task and is outside current authority |
+| `stale-clone` | The local checkout is behind or otherwise outdated relative to the authoritative source |
+| `unpublished-candidate` | Local commits exist that were deliberately not published yet |
+| `unexplained-divergence` | The provenance or ownership of the difference cannot be established from available evidence |
+
+These names are canonical. Do not invent, rename, or substitute a class. They
+describe different recovery dimensions and are not mutually exclusive.
+
+Every record first identifies one exact classification unit: repository,
+worktree, commit range, path set, or individual difference. It evaluates all
+five classes against that same unit, records one deterministic primary class
+that controls the immediate action, and preserves every other proven applicable
+class as a secondary fact. A primary class never erases publication status,
+owner provenance, location, or accepted authority.
+
+Primary-action precedence is:
+
+1. `unexplained-divergence`: stop and return evidence before mutation;
+2. `unrelated-owner-work`: preserve owner work and avoid overlap;
+3. `stale-clone`: refresh or replace only the stale unit under authority;
+4. `accepted-continuation`: continue only within the accepted authority;
+5. `unpublished-candidate`: preserve the candidate and route publication
+   separately.
+
+This precedence selects an action; it does not discard lower-precedence facts.
+Any unclassified material remainder activates `unexplained-divergence` as the
+fail-closed primary. A recovery gate must honor the explicit multidimensional
+record rather than silently treating only the expected baseline commit as
+authoritative or accepting an omitted, contradictory, wrong-unit, or merely
+asserted classification.
+
+An `unexplained-divergence` primary, or any classification the available
+evidence cannot support, stops work and returns the evidence to the Orchestrator
+before mutation. Recovery never uses reset, clean, checkout, stash, delete, or
+force operations to remove a difference it has not classified.
 
 ## 10. Security Boundaries
 
@@ -1371,6 +1459,46 @@ the repository contents API can return content for a named commit, branch, or
 tag. Those fallbacks complement, but do not replace, direct Git evidence such as
 `git ls-remote`, `git fetch`, or a clean clone when direct Git is available.
 Do not prescribe cache-busting query parameters as evidence.
+
+### Pre-Existing Failure Classification
+
+Calling a failure “pre-existing” is a classification claim, not a description.
+A report may use it only when it states all of the following:
+
+- the exact comparison baseline commit;
+- whether that baseline predates only the latest correction or the whole logical
+  whole;
+- the exact test identity;
+- the exact failure signature;
+- whether the failure is topically related to the touched behavior;
+- whether accepted Cooperator or design authority superseded the test;
+- the evidence proving the candidate did not introduce a regression;
+- whether the debt blocks closure or is explicitly parked.
+
+A failure that predates only the newest correction may still belong to the
+active logical whole. Only a baseline that predates the whole logical whole
+supports calling a failure external to it.
+
+### Evidence-Probe Failure Classification
+
+A probe that returns nothing useful has several possible causes, and they must
+stay distinct:
+
+- the intended system fact;
+- the probe construction;
+- the command execution;
+- the returned system evidence;
+- whether prior still-valid evidence or immutable configuration already proves
+  the fact;
+- whether a fresh probe is materially necessary.
+
+A paste, quoting, parser, or probe-construction failure is a failure of the
+diagnostic method. It is not automatically a product or security failure, and it
+is not evidence about the intended fact.
+
+This rule never licenses dismissal of an unresolved fact. Where the fact is
+genuinely mutable, security-critical, or otherwise unresolved, a working probe
+is still required, and the fact remains unknown until real evidence returns.
 
 ## 13. Artifact Lifecycle and Repository Hygiene
 

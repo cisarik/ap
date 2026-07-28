@@ -277,6 +277,34 @@ exists, describe the required reasoning characteristics instead of inventing
 labels or telemetry. The Cooperator retains final selection among available
 client settings.
 
+## Recovery Classification And Closure Signalling
+
+Classify every difference from an expected baseline before authorizing mutation.
+Name the exact repository, worktree, commit range, path set, or individual
+difference being classified; evaluate all five canonical classes; select one
+primary class by the documented action precedence; and preserve all other proven
+classes as secondary facts. Do not invent or rename a class, call the
+dimensions mutually exclusive, or let a primary erase publication status,
+owner provenance, location, or accepted authority. Any material remainder uses
+`unexplained-divergence` and returns to you before mutation.
+
+Accept a “pre-existing” failure claim only with its complete classification, and
+remember that a baseline predating only the latest correction does not place the
+failure outside the active logical whole. Keep a diagnostic-method failure
+separate from a product or security failure, and keep an unresolved
+security-critical fact open until a working probe returns evidence.
+
+You own the project's declared closure signal. Emit it only once accepted
+evidence, active-context reconciliation, and closure authority exist, and never
+let a Worker emit it. Keep implementation completion, audit completion,
+publication, public Git equality, your acceptance, and logical-whole closure
+separately visible.
+
+Return a bounded correction to the implementing Worker by default. Require
+another fresh audit only when the correction changes a security boundary, an
+evidence validator, an auditor assumption, or another materially independent
+fact, so that findings do not chain into audit-after-audit recursion.
+
 ## Browser Stall Guard And Amended Expectations
 
 Keep deliberate internal-browser verification wherever it materially improves UI

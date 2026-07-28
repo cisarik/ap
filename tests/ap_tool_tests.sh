@@ -981,6 +981,300 @@ provider_unknown_closure_is_valid() {
     esac
 }
 
+validate_recovery_candidate_fixture() {
+    file=$1
+    for field in \
+        "Classification unit type:" \
+        "Classification unit identity:" \
+        "Observed difference:" \
+        "Classification accepted-continuation:" \
+        "Classification unrelated-owner-work:" \
+        "Classification stale-clone:" \
+        "Classification unpublished-candidate:" \
+        "Classification unexplained-divergence:" \
+        "Primary recovery classification:" \
+        "Secondary recovery classifications:" \
+        "Primary precedence basis:" \
+        "Immediate recovery action:" \
+        "Publication status:" \
+        "Owner provenance:" \
+        "Location status:" \
+        "Accepted authority:" \
+        "Other-unit context:" \
+        "Unclassified material remainder:" \
+        "Secondary facts preserved:" \
+        "Recovery gate:" \
+        "Baseline fallback:" \
+        "Mutation before classification:" \
+        "Destructive recovery operation:" \
+        "Returned to Orchestrator:"
+    do
+        field_count=$(awk -v prefix="$field " \
+            'index($0, prefix) == 1 { count++ } END { print count + 0 }' "$file")
+        [ "$field_count" -eq 1 ] || return 1
+        value=$(awk -v prefix="$field " \
+            'index($0, prefix) == 1 { print substr($0, length(prefix) + 1) }' "$file")
+        [ -n "$value" ] || return 1
+    done
+
+    [ "$(grep -Ec '^Classification unit type: (repository|worktree|commit-range|path-set|individual-difference)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Primary recovery classification: (accepted-continuation|unrelated-owner-work|stale-clone|unpublished-candidate|unexplained-divergence)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Primary precedence basis: unexplained-divergence > unrelated-owner-work > stale-clone > accepted-continuation > unpublished-candidate$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Secondary facts preserved: yes$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Recovery gate: honored-explicit-classification$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Baseline fallback: none$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Mutation before classification: none$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Destructive recovery operation: none$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Returned to Orchestrator: (yes|no)$' "$file")" -eq 1 ] || return 1
+
+    unit=$(sed -n 's/^Classification unit identity: //p' "$file")
+    case "$unit" in none|unknown|"not applicable") return 1 ;; esac
+    primary=$(sed -n 's/^Primary recovery classification: //p' "$file")
+    secondary=$(sed -n 's/^Secondary recovery classifications: //p' "$file")
+    remainder=$(sed -n 's/^Unclassified material remainder: //p' "$file")
+    returned=$(sed -n 's/^Returned to Orchestrator: //p' "$file")
+
+    accepted_applicable=no
+    unrelated_applicable=no
+    stale_applicable=no
+    unpublished_applicable=no
+    unexplained_applicable=no
+    for label in \
+        accepted-continuation \
+        unrelated-owner-work \
+        stale-clone \
+        unpublished-candidate \
+        unexplained-divergence
+    do
+        classification=$(sed -n "s/^Classification $label: //p" "$file")
+        case "$classification" in
+            "applicable because "?*)
+                printf '%s\n' "$classification" | grep -F "for $unit" >/dev/null || return 1
+                case "$label" in
+                    accepted-continuation) accepted_applicable=yes ;;
+                    unrelated-owner-work) unrelated_applicable=yes ;;
+                    stale-clone) stale_applicable=yes ;;
+                    unpublished-candidate) unpublished_applicable=yes ;;
+                    unexplained-divergence) unexplained_applicable=yes ;;
+                esac
+                ;;
+            "not-applicable because "?*) ;;
+            *) return 1 ;;
+        esac
+    done
+
+    if [ "$unexplained_applicable" = yes ]; then
+        expected_primary=unexplained-divergence
+    elif [ "$unrelated_applicable" = yes ]; then
+        expected_primary=unrelated-owner-work
+    elif [ "$stale_applicable" = yes ]; then
+        expected_primary=stale-clone
+    elif [ "$accepted_applicable" = yes ]; then
+        expected_primary=accepted-continuation
+    elif [ "$unpublished_applicable" = yes ]; then
+        expected_primary=unpublished-candidate
+    else
+        return 1
+    fi
+    [ "$primary" = "$expected_primary" ] || return 1
+
+    expected_secondary=
+    for label in \
+        accepted-continuation \
+        unrelated-owner-work \
+        stale-clone \
+        unpublished-candidate \
+        unexplained-divergence
+    do
+        [ "$label" = "$primary" ] && continue
+        applicable=no
+        case "$label" in
+            accepted-continuation) applicable=$accepted_applicable ;;
+            unrelated-owner-work) applicable=$unrelated_applicable ;;
+            stale-clone) applicable=$stale_applicable ;;
+            unpublished-candidate) applicable=$unpublished_applicable ;;
+            unexplained-divergence) applicable=$unexplained_applicable ;;
+        esac
+        if [ "$applicable" = yes ]; then
+            if [ -n "$expected_secondary" ]; then
+                expected_secondary="$expected_secondary, $label"
+            else
+                expected_secondary=$label
+            fi
+        fi
+    done
+    [ -n "$expected_secondary" ] || expected_secondary=none
+    [ "$secondary" = "$expected_secondary" ] || return 1
+
+    action=$(sed -n 's/^Immediate recovery action: //p' "$file")
+    case "$primary" in
+        unexplained-divergence)
+            [ "$action" = "stop and return evidence before mutation" ] || return 1
+            [ "$returned" = yes ] || return 1
+            ;;
+        unrelated-owner-work)
+            [ "$action" = "preserve owner work and continue only on a non-overlapping authorized unit" ] || return 1
+            ;;
+        stale-clone)
+            [ "$action" = "refresh or replace only the stale unit under explicit authority" ] || return 1
+            ;;
+        accepted-continuation)
+            [ "$action" = "continue only within accepted authority" ] || return 1
+            ;;
+        unpublished-candidate)
+            [ "$action" = "preserve candidate and route publication separately" ] || return 1
+            ;;
+    esac
+
+    publication=$(sed -n 's/^Publication status: //p' "$file")
+    if [ "$unpublished_applicable" = yes ]; then
+        [ "$publication" = "unpublished-candidate-present for $unit" ] || return 1
+    else
+        [ "$publication" != "unpublished-candidate-present for $unit" ] || return 1
+    fi
+
+    owner=$(sed -n 's/^Owner provenance: //p' "$file")
+    if [ "$unrelated_applicable" = yes ]; then
+        [ "$owner" = "unrelated owner evidence for $unit" ] || return 1
+    fi
+    location=$(sed -n 's/^Location status: //p' "$file")
+    if [ "$stale_applicable" = yes ]; then
+        [ "$location" = "stale location evidence for $unit" ] || return 1
+    fi
+    authority=$(sed -n 's/^Accepted authority: //p' "$file")
+    if [ "$accepted_applicable" = yes ]; then
+        [ "$authority" = "exact accepted authority for $unit" ] || return 1
+    else
+        [ "$authority" = none ] || return 1
+    fi
+
+    if [ "$remainder" = none ]; then
+        [ "$unexplained_applicable" = no ] || return 1
+    else
+        [ "$unexplained_applicable" = yes ] || return 1
+    fi
+}
+
+validate_preexisting_failure_fixture() {
+    file=$1
+    for field in \
+        "Pre-existing claim:" \
+        "Comparison baseline commit:" \
+        "Baseline predates:" \
+        "Test identity:" \
+        "Failure signature:" \
+        "Topically related to touched behavior:" \
+        "Superseded by accepted authority:" \
+        "Regression exclusion evidence:" \
+        "Closure impact:"
+    do
+        [ "$(grep -cF "$field" "$file")" -eq 1 ] || return 1
+        value=$(sed -n "s/^$field //p" "$file")
+        [ -n "$value" ] || return 1
+    done
+
+    [ "$(grep -Ec '^Pre-existing claim: (none|asserted)$' "$file")" -eq 1 ] || return 1
+    claim=$(sed -n 's/^Pre-existing claim: //p' "$file")
+    [ "$claim" = "asserted" ] || return 0
+
+    [ "$(grep -Ec '^Comparison baseline commit: [0-9a-f]{7,40}$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Baseline predates: (latest-correction-only|whole-logical-whole)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Topically related to touched behavior: (yes|no)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Closure impact: (blocks-closure|explicitly-parked)$' "$file")" -eq 1 ] || return 1
+
+    for required in "Test identity" "Failure signature" "Regression exclusion evidence"
+    do
+        case "$(sed -n "s/^$required: //p" "$file")" in
+            none|unknown|unclear|"not applicable") return 1 ;;
+        esac
+    done
+}
+
+validate_evidence_probe_fixture() {
+    file=$1
+    for field in \
+        "Intended system fact:" \
+        "Probe construction:" \
+        "Command execution:" \
+        "Returned system evidence:" \
+        "Prior valid evidence:" \
+        "Fresh probe necessary:" \
+        "Failure classification:" \
+        "Fact status:"
+    do
+        [ "$(grep -cF "$field" "$file")" -eq 1 ] || return 1
+        value=$(sed -n "s/^$field //p" "$file")
+        [ -n "$value" ] || return 1
+    done
+
+    [ "$(grep -Ec '^Probe construction: (sound|defective)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Command execution: (executed|not-executed)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Fresh probe necessary: (yes|no)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Failure classification: (diagnostic-method-failure|product-or-security-failure|no-failure)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Fact status: (proven|unknown)$' "$file")" -eq 1 ] || return 1
+
+    construction=$(sed -n 's/^Probe construction: //p' "$file")
+    execution=$(sed -n 's/^Command execution: //p' "$file")
+    prior=$(sed -n 's/^Prior valid evidence: //p' "$file")
+    classification=$(sed -n 's/^Failure classification: //p' "$file")
+    fact_status=$(sed -n 's/^Fact status: //p' "$file")
+    fresh_probe=$(sed -n 's/^Fresh probe necessary: //p' "$file")
+
+    # A broken diagnostic is a method failure, not a product finding.
+    if [ "$construction" = "defective" ] || [ "$execution" = "not-executed" ]; then
+        [ "$classification" = "diagnostic-method-failure" ] || return 1
+        if [ "$prior" = "none" ]; then
+            [ "$fact_status" = "unknown" ] || return 1
+        fi
+    fi
+
+    [ "$classification" != "no-failure" ] || [ "$fact_status" = "proven" ] || return 1
+
+    # An unresolved fact stays open and still requires a working probe.
+    if [ "$fact_status" = "unknown" ]; then
+        [ "$fresh_probe" = "yes" ] || return 1
+    fi
+}
+
+validate_closure_signal_fixture() {
+    file=$1
+    for field in \
+        "Declared closure signal:" \
+        "Signal owner:" \
+        "Worker emission of closure signal:" \
+        "Accepted evidence:" \
+        "Active-context reconciliation:" \
+        "Closure authority:" \
+        "Implementation completion:" \
+        "Audit completion:" \
+        "Publication:" \
+        "Public Git equality:" \
+        "Orchestrator acceptance:" \
+        "Logical-whole closure:"
+    do
+        [ "$(grep -cF "$field" "$file")" -eq 1 ] || return 1
+        value=$(sed -n "s/^$field //p" "$file")
+        [ -n "$value" ] || return 1
+    done
+
+    # Closure signalling is Orchestrator-owned and never Worker-emitted.
+    [ "$(grep -Ec '^Signal owner: orchestrator$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Worker emission of closure signal: prohibited$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Active-context reconciliation: (complete|incomplete)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Closure authority: (present|absent)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Logical-whole closure: (closed|not-closed)$' "$file")" -eq 1 ] || return 1
+
+    closure=$(sed -n 's/^Logical-whole closure: //p' "$file")
+    if [ "$closure" = "closed" ]; then
+        [ "$(sed -n 's/^Active-context reconciliation: //p' "$file")" = "complete" ] || return 1
+        [ "$(sed -n 's/^Closure authority: //p' "$file")" = "present" ] || return 1
+    fi
+
+    case "$(sed -n 's/^Declared closure signal: //p' "$file")" in
+        none|unknown) return 1 ;;
+    esac
+}
+
 validate_browser_stall_guard_fixture() {
     file=$1
     for field in \
@@ -4567,6 +4861,451 @@ EOF
     done
 }
 
+test_recovery_classification_and_closure_signalling_contracts() {
+    recovery_start="### Recovery-Candidate Classification"
+    recovery_end="## 10. Security Boundaries"
+    for class in accepted-continuation unrelated-owner-work stale-clone \
+        unpublished-candidate unexplained-divergence
+    do
+        assert_section_contract "$REPO/AP.md" "$recovery_start" "$recovery_end" \
+            "\`$class\`" || return 1
+        assert_section_contract "$REPO/PROMPT_CONTRACTS.md" \
+            "## Repository Recovery-Candidate Classification Contract" \
+            "## Pre-Existing Failure Classification Contract" \
+            "$class" || return 1
+        grep -F "\`$class\`" "$REPO/GLOSSARY.md" >/dev/null || return 1
+    done
+    assert_section_contract "$REPO/AP.md" "$recovery_start" "$recovery_end" \
+        "These names are canonical. Do not invent, rename, or substitute a class" || return 1
+    assert_section_contract "$REPO/AP.md" "$recovery_start" "$recovery_end" \
+        "They describe different recovery dimensions and are not mutually exclusive" || return 1
+    assert_section_contract "$REPO/AP.md" "$recovery_start" "$recovery_end" \
+        "Every record first identifies one exact classification unit: repository, worktree, commit range, path set, or individual difference" || return 1
+    assert_section_contract "$REPO/AP.md" "$recovery_start" "$recovery_end" \
+        "records one deterministic primary class that controls the immediate action, and preserves every other proven applicable class as a secondary fact" || return 1
+    assert_section_contract "$REPO/AP.md" "$recovery_start" "$recovery_end" \
+        "This precedence selects an action; it does not discard lower-precedence facts" || return 1
+    assert_section_contract "$REPO/AP.md" "$recovery_start" "$recovery_end" \
+        "Any unclassified material remainder activates \`unexplained-divergence\` as the fail-closed primary" || return 1
+
+    closure_start="### Logical-Block Closure"
+    closure_end="## 8. Worker Responsibilities"
+    assert_section_contract "$REPO/AP.md" "$closure_start" "$closure_end" \
+        "“Logical whole” and “logical block” name the same bounded unit of work" || return 1
+    assert_section_contract "$REPO/AP.md" "$closure_start" "$closure_end" \
+        "remains valid for compatibility with existing prompts, projects, and history" || return 1
+    assert_section_contract "$REPO/AP.md" "$closure_start" "$closure_end" \
+        "A project declares exactly one exact closure signal string in its own project-owned rules" || return 1
+    assert_section_contract "$REPO/AP.md" "$closure_start" "$closure_end" \
+        "Universal AP defines the mechanism and ownership and hardcodes no particular signal text" || return 1
+    assert_section_contract "$REPO/AP.md" "$closure_start" "$closure_end" \
+        "Only the Orchestrator may emit it, and only once accepted evidence, active-context reconciliation, and closure authority all exist" || return 1
+    assert_section_contract "$REPO/AP.md" "$closure_start" "$closure_end" \
+        "A Worker must never emit the project's authoritative closure signal" || return 1
+    # All six states must stay listed as distinct Markdown blocks.
+    for closure_state in \
+        "implementation completion" \
+        "audit completion" \
+        "publication" \
+        "public Git equality" \
+        "Orchestrator acceptance"
+    do
+        assert_section_contract "$REPO/AP.md" "$closure_start" "$closure_end" \
+            "- $closure_state;" || return 1
+    done
+    assert_section_contract "$REPO/AP.md" "$closure_start" "$closure_end" \
+        "- logical-whole closure." || return 1
+    assert_section_contract "$REPO/AP.md" "$closure_start" "$closure_end" \
+        "None of them is closure" || return 1
+    assert_section_contract "$REPO/AP.md" "$closure_start" "$closure_end" \
+        "a bounded correction normally returns to the implementing Worker rather than to a new auditor" || return 1
+    assert_section_contract "$REPO/AP.md" "$closure_start" "$closure_end" \
+        "Another fresh audit is required only when a correction changes a security boundary, an evidence validator, an auditor assumption, or another materially independent fact" || return 1
+    assert_section_contract "$REPO/AP.md" "$closure_start" "$closure_end" \
+        "that would create audit-after-audit recursion without new independent facts" || return 1
+    # The compatible legacy sentence must remain for existing consumers.
+    assert_section_contract "$REPO/AP.md" "$closure_start" "$closure_end" \
+        "The Orchestrator owns the logical-block closure decision" || return 1
+
+    failure_start="### Pre-Existing Failure Classification"
+    failure_end="### Evidence-Probe Failure Classification"
+    for requirement in \
+        "the exact comparison baseline commit" \
+        "whether that baseline predates only the latest correction or the whole logical whole" \
+        "the exact test identity" \
+        "the exact failure signature" \
+        "whether the failure is topically related to the touched behavior" \
+        "whether accepted Cooperator or design authority superseded the test" \
+        "the evidence proving the candidate did not introduce a regression" \
+        "whether the debt blocks closure or is explicitly parked"
+    do
+        assert_section_contract "$REPO/AP.md" "$failure_start" "$failure_end" \
+            "$requirement" || return 1
+    done
+    assert_section_contract "$REPO/AP.md" "$failure_start" "$failure_end" \
+        "A failure that predates only the newest correction may still belong to the active logical whole" || return 1
+
+    probe_start="### Evidence-Probe Failure Classification"
+    probe_end="## 13. Artifact Lifecycle and Repository Hygiene"
+    assert_section_contract "$REPO/AP.md" "$probe_start" "$probe_end" \
+        "It is not automatically a product or security failure" || return 1
+    assert_section_contract "$REPO/AP.md" "$probe_start" "$probe_end" \
+        "This rule never licenses dismissal of an unresolved fact" || return 1
+    assert_section_contract "$REPO/AP.md" "$probe_start" "$probe_end" \
+        "a working probe is still required, and the fact remains unknown until real evidence returns" || return 1
+
+    assert_section_contract "$REPO/PROMPT_CONTRACTS.md" "## Worker Report Header" \
+        "## Common Worker Task Fields" \
+        "Resolved Execution Issues / Near-Misses: none |" || return 1
+    assert_section_contract "$REPO/PROMPT_CONTRACTS.md" "## Worker Report Header" \
+        "## Common Worker Task Fields" \
+        "\`none\` is a valid and expected value for both" || return 1
+    for term in "Recovery Candidate" "Logical Whole" "Closure Signal" "Near-Miss Record"
+    do
+        grep -F "## $term" "$REPO/GLOSSARY.md" >/dev/null || return 1
+    done
+
+    # Universal AP must not hardcode any project's localized closure signal.
+    scan_absent "hardcoded-closure-signal" \
+        -n "UZATVOREN|LOGICAL WHOLE JE" \
+        "$REPO/AP.md" "$REPO/AP_ORCHESTRATOR.md" "$REPO/AP_WORKER.md" \
+        "$REPO/PROMPT_CONTRACTS.md" "$REPO/GLOSSARY.md" "$REPO/FAQ.md" \
+        "$REPO/README.md" "$REPO/CHANGELOG.md" || return 1
+
+    recovery=$TMPROOT/recovery-candidate-fixtures
+    mkdir -p "$recovery"
+    cat > "$recovery/accepted-unpublished" <<'EOF'
+Classification unit type: commit-range
+Classification unit identity: commits:base..candidate
+Observed difference: two accepted local commits are not published
+Classification accepted-continuation: applicable because accepted task evidence exists for commits:base..candidate
+Classification unrelated-owner-work: not-applicable because the commits belong to the active task
+Classification stale-clone: not-applicable because the checkout matches the selected local candidate
+Classification unpublished-candidate: applicable because publication evidence is absent for commits:base..candidate
+Classification unexplained-divergence: not-applicable because no material remainder exists
+Primary recovery classification: accepted-continuation
+Secondary recovery classifications: unpublished-candidate
+Primary precedence basis: unexplained-divergence > unrelated-owner-work > stale-clone > accepted-continuation > unpublished-candidate
+Immediate recovery action: continue only within accepted authority
+Publication status: unpublished-candidate-present for commits:base..candidate
+Owner provenance: active task owner for commits:base..candidate
+Location status: current local location for commits:base..candidate
+Accepted authority: exact accepted authority for commits:base..candidate
+Other-unit context: none
+Unclassified material remainder: none
+Secondary facts preserved: yes
+Recovery gate: honored-explicit-classification
+Baseline fallback: none
+Mutation before classification: none
+Destructive recovery operation: none
+Returned to Orchestrator: no
+EOF
+    validate_recovery_candidate_fixture "$recovery/accepted-unpublished" || return 1
+
+    cat > "$recovery/owner-unpublished" <<'EOF'
+Classification unit type: path-set
+Classification unit identity: paths:owner-notes
+Observed difference: owner paths contain unpublished local edits
+Classification accepted-continuation: not-applicable because no active-task authority covers the path set
+Classification unrelated-owner-work: applicable because owner provenance evidence exists for paths:owner-notes
+Classification stale-clone: not-applicable because checkout age does not explain the edits
+Classification unpublished-candidate: applicable because unpublished commit evidence exists for paths:owner-notes
+Classification unexplained-divergence: not-applicable because no material remainder exists
+Primary recovery classification: unrelated-owner-work
+Secondary recovery classifications: unpublished-candidate
+Primary precedence basis: unexplained-divergence > unrelated-owner-work > stale-clone > accepted-continuation > unpublished-candidate
+Immediate recovery action: preserve owner work and continue only on a non-overlapping authorized unit
+Publication status: unpublished-candidate-present for paths:owner-notes
+Owner provenance: unrelated owner evidence for paths:owner-notes
+Location status: current local location for paths:owner-notes
+Accepted authority: none
+Other-unit context: none
+Unclassified material remainder: none
+Secondary facts preserved: yes
+Recovery gate: honored-explicit-classification
+Baseline fallback: none
+Mutation before classification: none
+Destructive recovery operation: none
+Returned to Orchestrator: no
+EOF
+    validate_recovery_candidate_fixture "$recovery/owner-unpublished" || return 1
+
+    cat > "$recovery/stale-owner" <<'EOF'
+Classification unit type: worktree
+Classification unit identity: worktree:legacy-owner
+Observed difference: an owner worktree is stale and contains unrelated edits
+Classification accepted-continuation: not-applicable because no active authority covers this worktree
+Classification unrelated-owner-work: applicable because owner provenance evidence exists for worktree:legacy-owner
+Classification stale-clone: applicable because stale ref evidence exists for worktree:legacy-owner
+Classification unpublished-candidate: not-applicable because no local commit is awaiting publication
+Classification unexplained-divergence: not-applicable because no material remainder exists
+Primary recovery classification: unrelated-owner-work
+Secondary recovery classifications: stale-clone
+Primary precedence basis: unexplained-divergence > unrelated-owner-work > stale-clone > accepted-continuation > unpublished-candidate
+Immediate recovery action: preserve owner work and continue only on a non-overlapping authorized unit
+Publication status: no-candidate for worktree:legacy-owner
+Owner provenance: unrelated owner evidence for worktree:legacy-owner
+Location status: stale location evidence for worktree:legacy-owner
+Accepted authority: none
+Other-unit context: none
+Unclassified material remainder: none
+Secondary facts preserved: yes
+Recovery gate: honored-explicit-classification
+Baseline fallback: none
+Mutation before classification: none
+Destructive recovery operation: none
+Returned to Orchestrator: no
+EOF
+    validate_recovery_candidate_fixture "$recovery/stale-owner" || return 1
+
+    cat > "$recovery/stale-with-other-continuation" <<'EOF'
+Classification unit type: worktree
+Classification unit identity: worktree:stale-checkout
+Observed difference: the selected checkout is behind the authoritative ref
+Classification accepted-continuation: not-applicable because accepted authority belongs to a different worktree
+Classification unrelated-owner-work: not-applicable because no unrelated owner edits exist
+Classification stale-clone: applicable because stale ref evidence exists for worktree:stale-checkout
+Classification unpublished-candidate: not-applicable because no local commit exists
+Classification unexplained-divergence: not-applicable because no material remainder exists
+Primary recovery classification: stale-clone
+Secondary recovery classifications: none
+Primary precedence basis: unexplained-divergence > unrelated-owner-work > stale-clone > accepted-continuation > unpublished-candidate
+Immediate recovery action: refresh or replace only the stale unit under explicit authority
+Publication status: no-candidate for worktree:stale-checkout
+Owner provenance: active owner evidence for worktree:stale-checkout
+Location status: stale location evidence for worktree:stale-checkout
+Accepted authority: none
+Other-unit context: accepted-continuation exists for worktree:active-candidate and is not classified as worktree:stale-checkout
+Unclassified material remainder: none
+Secondary facts preserved: yes
+Recovery gate: honored-explicit-classification
+Baseline fallback: none
+Mutation before classification: none
+Destructive recovery operation: none
+Returned to Orchestrator: no
+EOF
+    validate_recovery_candidate_fixture "$recovery/stale-with-other-continuation" || return 1
+
+    sed 's/^Primary recovery classification: accepted-continuation$/Primary recovery classification: probably-fine/' \
+        "$recovery/accepted-unpublished" > "$recovery/invented-class"
+    ! validate_recovery_candidate_fixture "$recovery/invented-class" || return 1
+
+    sed 's/^Primary recovery classification: accepted-continuation$/Primary recovery classification: stale clone/' \
+        "$recovery/accepted-unpublished" > "$recovery/renamed-class"
+    ! validate_recovery_candidate_fixture "$recovery/renamed-class" || return 1
+
+    sed '/^Classification stale-clone:/d' \
+        "$recovery/stale-owner" > "$recovery/omitted-classification"
+    ! validate_recovery_candidate_fixture "$recovery/omitted-classification" || return 1
+
+    sed 's/^Classification stale-clone: applicable because .*$/Classification stale-clone: stale clone appears in an irrelevant note/' \
+        "$recovery/stale-owner" > "$recovery/irrelevant-assertion"
+    ! validate_recovery_candidate_fixture "$recovery/irrelevant-assertion" || return 1
+
+    sed 's/^Primary recovery classification: unrelated-owner-work$/Primary recovery classification: stale-clone/' \
+        "$recovery/stale-owner" > "$recovery/wrong-precedence"
+    ! validate_recovery_candidate_fixture "$recovery/wrong-precedence" || return 1
+
+    sed 's/^Immediate recovery action: preserve owner work and continue only on a non-overlapping authorized unit$/Immediate recovery action: refresh or replace only the stale unit under explicit authority/' \
+        "$recovery/stale-owner" > "$recovery/contradictory-action"
+    ! validate_recovery_candidate_fixture "$recovery/contradictory-action" || return 1
+
+    sed 's/^Classification accepted-continuation: applicable because accepted task evidence exists for commits:base..candidate$/Classification accepted-continuation: applicable because accepted task evidence exists for worktree:other/' \
+        "$recovery/accepted-unpublished" > "$recovery/wrong-unit"
+    ! validate_recovery_candidate_fixture "$recovery/wrong-unit" || return 1
+
+    sed 's/^Secondary recovery classifications: unpublished-candidate$/Secondary recovery classifications: none/' \
+        "$recovery/accepted-unpublished" > "$recovery/secondary-omitted"
+    ! validate_recovery_candidate_fixture "$recovery/secondary-omitted" || return 1
+
+    sed 's/^Publication status: unpublished-candidate-present for commits:base..candidate$/Publication status: published for commits:base..candidate/' \
+        "$recovery/accepted-unpublished" > "$recovery/publication-erased"
+    ! validate_recovery_candidate_fixture "$recovery/publication-erased" || return 1
+
+    # The gate must not fall back to the baseline commit.
+    sed 's/^Baseline fallback: none$/Baseline fallback: treated the accepted baseline HEAD as authoritative/' \
+        "$recovery/owner-unpublished" > "$recovery/baseline-fallback"
+    ! validate_recovery_candidate_fixture "$recovery/baseline-fallback" || return 1
+
+    sed 's/^Recovery gate: honored-explicit-classification$/Recovery gate: assumed the default/' \
+        "$recovery/owner-unpublished" > "$recovery/ignored-classification"
+    ! validate_recovery_candidate_fixture "$recovery/ignored-classification" || return 1
+
+    sed 's/^Mutation before classification: none$/Mutation before classification: checked out the expected baseline/' \
+        "$recovery/owner-unpublished" > "$recovery/premature-mutation"
+    ! validate_recovery_candidate_fixture "$recovery/premature-mutation" || return 1
+
+    sed 's/^Destructive recovery operation: none$/Destructive recovery operation: git clean -fd/' \
+        "$recovery/owner-unpublished" > "$recovery/destructive-recovery"
+    ! validate_recovery_candidate_fixture "$recovery/destructive-recovery" || return 1
+
+    sed -e 's/^Classification unexplained-divergence: not-applicable because no material remainder exists$/Classification unexplained-divergence: applicable because unexplained path evidence remains for paths:owner-notes/' \
+        -e 's/^Primary recovery classification: unrelated-owner-work$/Primary recovery classification: unexplained-divergence/' \
+        -e 's/^Secondary recovery classifications: unpublished-candidate$/Secondary recovery classifications: unrelated-owner-work, unpublished-candidate/' \
+        -e 's/^Immediate recovery action: .*$/Immediate recovery action: stop and return evidence before mutation/' \
+        -e 's/^Unclassified material remainder: none$/Unclassified material remainder: unexplained path remains/' \
+        -e 's/^Returned to Orchestrator: no$/Returned to Orchestrator: yes/' \
+        "$recovery/owner-unpublished" > "$recovery/unexplained"
+    validate_recovery_candidate_fixture "$recovery/unexplained" || return 1
+
+    sed 's/^Returned to Orchestrator: yes$/Returned to Orchestrator: no/' \
+        "$recovery/unexplained" > "$recovery/divergence-not-returned"
+    ! validate_recovery_candidate_fixture "$recovery/divergence-not-returned" || return 1
+
+    sed -e 's/^Unclassified material remainder: none$/Unclassified material remainder: one unexplained path remains/' \
+        "$recovery/owner-unpublished" > "$recovery/remainder-without-fallback"
+    ! validate_recovery_candidate_fixture "$recovery/remainder-without-fallback" || return 1
+
+    failures=$TMPROOT/preexisting-failure-fixtures
+    mkdir -p "$failures"
+    cat > "$failures/valid" <<'EOF'
+Pre-existing claim: asserted
+Comparison baseline commit: 0123456789abcdef0123456789abcdef01234567
+Baseline predates: whole-logical-whole
+Test identity: suite case "catalog card renders quick action"
+Failure signature: assertion on missing eligibility field
+Topically related to touched behavior: no
+Superseded by accepted authority: none
+Regression exclusion evidence: the same failure reproduces at the baseline commit before any candidate change
+Closure impact: explicitly-parked
+EOF
+    validate_preexisting_failure_fixture "$failures/valid" || return 1
+
+    cat > "$failures/no-claim" <<'EOF'
+Pre-existing claim: none
+Comparison baseline commit: not applicable
+Baseline predates: not applicable
+Test identity: not applicable
+Failure signature: not applicable
+Topically related to touched behavior: not applicable
+Superseded by accepted authority: not applicable
+Regression exclusion evidence: not applicable
+Closure impact: not applicable
+EOF
+    validate_preexisting_failure_fixture "$failures/no-claim" || return 1
+
+    sed 's/^Comparison baseline commit: .*$/Comparison baseline commit: an earlier state/' \
+        "$failures/valid" > "$failures/vague-baseline"
+    ! validate_preexisting_failure_fixture "$failures/vague-baseline" || return 1
+
+    sed 's/^Baseline predates: whole-logical-whole$/Baseline predates: some earlier point/' \
+        "$failures/valid" > "$failures/unclassified-baseline"
+    ! validate_preexisting_failure_fixture "$failures/unclassified-baseline" || return 1
+
+    # A correction-only baseline is still a valid record; it just does not
+    # place the failure outside the active logical whole.
+    sed 's/^Baseline predates: whole-logical-whole$/Baseline predates: latest-correction-only/' \
+        "$failures/valid" > "$failures/correction-only"
+    validate_preexisting_failure_fixture "$failures/correction-only" || return 1
+
+    sed 's/^Regression exclusion evidence: .*$/Regression exclusion evidence: none/' \
+        "$failures/valid" > "$failures/no-regression-evidence"
+    ! validate_preexisting_failure_fixture "$failures/no-regression-evidence" || return 1
+
+    sed 's/^Failure signature: .*$/Failure signature: unclear/' \
+        "$failures/valid" > "$failures/vague-signature"
+    ! validate_preexisting_failure_fixture "$failures/vague-signature" || return 1
+
+    sed '/^Closure impact:/d' "$failures/valid" > "$failures/no-closure-impact"
+    ! validate_preexisting_failure_fixture "$failures/no-closure-impact" || return 1
+
+    probes=$TMPROOT/evidence-probe-fixtures
+    mkdir -p "$probes"
+    cat > "$probes/method-failure" <<'EOF'
+Intended system fact: the service listens only on the loopback interface
+Probe construction: defective
+Command execution: executed
+Returned system evidence: none
+Prior valid evidence: none
+Fresh probe necessary: yes
+Failure classification: diagnostic-method-failure
+Fact status: unknown
+EOF
+    validate_evidence_probe_fixture "$probes/method-failure" || return 1
+
+    # A broken probe must not be reported as a product or security failure.
+    sed 's/^Failure classification: diagnostic-method-failure$/Failure classification: product-or-security-failure/' \
+        "$probes/method-failure" > "$probes/misattributed"
+    ! validate_evidence_probe_fixture "$probes/misattributed" || return 1
+
+    # A broken probe must not silently prove the fact either.
+    sed -e 's/^Fact status: unknown$/Fact status: proven/' \
+        -e 's/^Fresh probe necessary: yes$/Fresh probe necessary: no/' \
+        "$probes/method-failure" > "$probes/false-proof"
+    ! validate_evidence_probe_fixture "$probes/false-proof" || return 1
+
+    # An unresolved fact must keep requiring a working probe.
+    sed 's/^Fresh probe necessary: yes$/Fresh probe necessary: no/' \
+        "$probes/method-failure" > "$probes/dismissed-fact"
+    ! validate_evidence_probe_fixture "$probes/dismissed-fact" || return 1
+
+    # Immutable prior evidence may legitimately prove the fact.
+    sed -e 's/^Prior valid evidence: none$/Prior valid evidence: immutable unit configuration binding the socket to loopback/' \
+        -e 's/^Fresh probe necessary: yes$/Fresh probe necessary: no/' \
+        -e 's/^Fact status: unknown$/Fact status: proven/' \
+        "$probes/method-failure" > "$probes/prior-evidence"
+    validate_evidence_probe_fixture "$probes/prior-evidence" || return 1
+
+    sed -e 's/^Probe construction: defective$/Probe construction: sound/' \
+        -e 's/^Returned system evidence: none$/Returned system evidence: listener bound to the loopback address/' \
+        -e 's/^Fresh probe necessary: yes$/Fresh probe necessary: no/' \
+        -e 's/^Failure classification: diagnostic-method-failure$/Failure classification: no-failure/' \
+        -e 's/^Fact status: unknown$/Fact status: proven/' \
+        "$probes/method-failure" > "$probes/clean-probe"
+    validate_evidence_probe_fixture "$probes/clean-probe" || return 1
+
+    sed 's/^Fact status: proven$/Fact status: unknown/' \
+        "$probes/clean-probe" > "$probes/no-failure-unproven"
+    ! validate_evidence_probe_fixture "$probes/no-failure-unproven" || return 1
+
+    signals=$TMPROOT/closure-signal-fixtures
+    mkdir -p "$signals"
+    cat > "$signals/closed" <<'EOF'
+Declared closure signal: PROJECT DECLARED CLOSURE STRING
+Signal owner: orchestrator
+Worker emission of closure signal: prohibited
+Accepted evidence: accepted implementation, audit, and public verification records
+Active-context reconciliation: complete
+Closure authority: present
+Implementation completion: complete
+Audit completion: complete
+Publication: complete
+Public Git equality: verified
+Orchestrator acceptance: granted
+Logical-whole closure: closed
+EOF
+    validate_closure_signal_fixture "$signals/closed" || return 1
+
+    # A Worker may never hold the closure signal.
+    sed 's/^Signal owner: orchestrator$/Signal owner: worker/' \
+        "$signals/closed" > "$signals/worker-owner"
+    ! validate_closure_signal_fixture "$signals/worker-owner" || return 1
+
+    sed 's/^Worker emission of closure signal: prohibited$/Worker emission of closure signal: allowed in the terminal report/' \
+        "$signals/closed" > "$signals/worker-emits"
+    ! validate_closure_signal_fixture "$signals/worker-emits" || return 1
+
+    # Closure requires reconciliation and closure authority.
+    sed 's/^Active-context reconciliation: complete$/Active-context reconciliation: incomplete/' \
+        "$signals/closed" > "$signals/unreconciled"
+    ! validate_closure_signal_fixture "$signals/unreconciled" || return 1
+
+    sed 's/^Closure authority: present$/Closure authority: absent/' \
+        "$signals/closed" > "$signals/no-authority"
+    ! validate_closure_signal_fixture "$signals/no-authority" || return 1
+
+    # Completed implementation and publication are not closure by themselves.
+    sed -e 's/^Audit completion: complete$/Audit completion: not-started/' \
+        -e 's/^Orchestrator acceptance: granted$/Orchestrator acceptance: pending/' \
+        -e 's/^Closure authority: present$/Closure authority: absent/' \
+        -e 's/^Logical-whole closure: closed$/Logical-whole closure: not-closed/' \
+        "$signals/closed" > "$signals/published-not-closed"
+    validate_closure_signal_fixture "$signals/published-not-closed" || return 1
+
+    sed '/^Public Git equality:/d' "$signals/closed" > "$signals/no-public-state"
+    ! validate_closure_signal_fixture "$signals/no-public-state" || return 1
+}
+
 test_browser_stall_guard_and_amended_acceptance_contracts() {
     start="### Browser Verification Stall Guard"
     end="### Amended Cooperator Expectations"
@@ -6314,6 +7053,7 @@ run_test "model routing fixtures enforce observation, quota, fallback, and refus
 run_test "Plan Mode ownership, routing, and one-cycle budget contracts are enforced" test_plan_mode_ownership_routing_and_cycle_budget_contracts
 run_test "Worker freshness and same-session continuation contracts are enforced" test_worker_freshness_and_same_session_continuation_contracts
 run_test "report, audit, handoff, human governance, and authority-envelope contracts are enforced" test_report_audit_handoff_and_authority_envelope_contracts
+run_test "recovery classification, failure evidence, and closure signalling are enforced" test_recovery_classification_and_closure_signalling_contracts
 run_test "browser stall guard and amended expectation fixtures are enforced" test_browser_stall_guard_and_amended_acceptance_contracts
 run_test "browser stall guard stops after conclusive evidence" test_browser_stall_guard_conclusive_stop_contracts
 run_test "owner command, privileged session, and readback fixtures are enforced" test_owner_command_privilege_and_readback_contracts

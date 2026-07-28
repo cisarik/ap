@@ -542,6 +542,34 @@ A checklist of observable outcomes prepared by the Orchestrator for
 user-visible work. The Cooperator responds with `PASS`, `FAIL`, `NOT TESTED`,
 or status plus `+` commentary.
 
+## Recovery Candidate
+
+A multidimensional classification of one exact repository, worktree, commit
+range, path set, or individual difference. It uses the five canonical labels
+`accepted-continuation`, `unrelated-owner-work`, `stale-clone`,
+`unpublished-candidate`, and `unexplained-divergence`: one precedence-selected
+primary controls the action while every other proven applicable label remains a
+secondary fact.
+
+## Logical Whole
+
+A bounded unit of work with one objective, authority, and closure decision.
+`Logical block` is a compatible synonym retained for existing prompts and
+history.
+
+## Closure Signal
+
+The single exact string a project declares to announce logical-whole closure.
+The Orchestrator owns it and may emit it only once accepted evidence,
+active-context reconciliation, and closure authority exist. A Worker never emits
+it. Universal AP defines the mechanism and hardcodes no signal text.
+
+## Near-Miss Record
+
+A report entry describing an execution issue that was detected and resolved
+during the task, with its cause, resolution, and residual risk. `none` is a
+valid value.
+
 ## Failure Episode
 
 One stably identified verification failure, its symptom-continuity evidence,

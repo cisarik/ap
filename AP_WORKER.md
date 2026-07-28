@@ -135,6 +135,19 @@ switching; after a refusal, a different model is acceptable only for a
 genuinely different safe task. Quota or cost pressure never reduces the
 required evidence: produce it, escalate the route, or report the limitation.
 
+Never emit the project's declared logical-whole closure signal. Closure is the
+Orchestrator's decision; your terminal report status is your own completion
+signal. Report a resolved execution issue or near-miss, and `none` when there
+was none.
+
+Classify an exact repository, worktree, commit range, path set, or individual
+difference before touching it. Evaluate all five canonical recovery classes,
+record one precedence-selected primary action, and preserve every proven
+secondary publication, owner, location, and accepted-authority fact. Stop with
+the evidence when any material remainder is unexplained. Claim a failure is
+pre-existing only with its complete classification; a baseline predating only
+your latest correction does not put it outside the active logical whole.
+
 When you send commands for the Cooperator to execute, send one bounded block at
 a time, state its exact purpose first, and wait for the complete output before
 the next block. Keep lines paste-safe, include phase and completion markers,

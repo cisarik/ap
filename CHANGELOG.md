@@ -28,6 +28,13 @@ the authoritative archive for exact content.
   success after zero to two attempts, and conclusive early stop, plus the
   three-role Cooperator-decision, Orchestrator-issuance, Worker-validation
   amendment lifecycle that retires a superseded expectation without widening.
+- Added multidimensional use of the five canonical recovery-candidate classes
+  with exact units, deterministic primary-action precedence, preserved
+  secondary provenance, complete pre-existing failure and evidence-probe
+  classification, the Orchestrator-owned project-declared closure signal, and
+  bounded correction routing that prevents audit-after-audit recursion.
+  `Logical whole` is now the preferred term and `logical block` remains a
+  compatible synonym.
 
 - Added risk-routed orchestration and implementation planning, healthy
   same-session continuation, E0–E4 evidence tiers, report/audit/handoff and

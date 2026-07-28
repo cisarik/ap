@@ -25,6 +25,18 @@ Unless a task requires more detail, the report should include:
    `new-material-risk`, `changed-external-state`, `final-acceptance`, or
    `explicit-closure`.
 
+Two further sections are part of the standard report whenever the task produced
+either kind of evidence:
+
+```text
+Resolved Execution Issues / Near-Misses: none | <issue, cause, resolution, and residual risk>
+Pre-Existing Failure Classification: none | <complete classification per the contract below>
+```
+
+`none` is a valid and expected value for both. Recording a resolved near-miss is
+not an admission of failure; it is the evidence that a real execution risk was
+seen and handled, and omitting it hides that evidence.
+
 Summarize command execution. Include full output only for failures, unexpected
 state, safety-critical evidence, or explicit Orchestrator request.
 Short informal progress updates are not formal reports and do not consume the
@@ -646,6 +658,120 @@ ordinary-only trigger, and reopens routing only for that same axis. Focused
 tests, report formatting, internal phase labels, deterministic rechecks, and
 continuation inside unchanged authority use `Material phase gate: no`.
 `Unchanged axes reopened: none` is the only accepted value.
+
+## Repository Recovery-Candidate Classification Contract
+
+A difference from the expected baseline is classified before mutation, using the
+five canonical classes in
+[AP.md](AP.md#recovery-candidate-classification):
+
+```text
+Classification unit type: repository | worktree | commit-range | path-set | individual-difference
+Classification unit identity: <exact identity>
+Observed difference: <exact difference in that unit>
+Classification accepted-continuation: applicable because <evidence for unit> | not-applicable because <reason>
+Classification unrelated-owner-work: applicable because <evidence for unit> | not-applicable because <reason>
+Classification stale-clone: applicable because <evidence for unit> | not-applicable because <reason>
+Classification unpublished-candidate: applicable because <evidence for unit> | not-applicable because <reason>
+Classification unexplained-divergence: applicable because <material remainder for unit> | not-applicable because no material remainder exists
+Primary recovery classification: accepted-continuation | unrelated-owner-work | stale-clone | unpublished-candidate | unexplained-divergence
+Secondary recovery classifications: none | <all other applicable canonical labels>
+Primary precedence basis: unexplained-divergence > unrelated-owner-work > stale-clone > accepted-continuation > unpublished-candidate
+Immediate recovery action: <canonical action for the primary>
+Publication status: <exact status for unit>
+Owner provenance: <exact provenance for unit>
+Location status: <exact location for unit>
+Accepted authority: <exact authority for unit> | none
+Other-unit context: none | <explicitly identified context that is not classified as this unit>
+Unclassified material remainder: none | <exact remainder>
+Secondary facts preserved: yes
+Recovery gate: honored-explicit-classification
+Baseline fallback: none
+Mutation before classification: none
+Destructive recovery operation: none
+Returned to Orchestrator: yes | no
+```
+
+All five applicability dimensions are recorded for the same exact unit. The
+primary follows the listed action precedence; all other applicable labels
+appear as secondary classifications. `unexplained-divergence` is the fail-closed
+primary for any material remainder and requires `Returned to Orchestrator:
+yes`. Publication, owner, location, and accepted-authority facts remain
+explicit, including overlaps. `Recovery gate:
+honored-explicit-classification`, `Baseline fallback: none`, `Mutation before
+classification: none`, `Destructive recovery operation: none`, and `Secondary
+facts preserved: yes` are the only accepted values.
+
+## Pre-Existing Failure Classification Contract
+
+A Worker report may classify a failure as pre-existing only with the complete
+record required by [AP.md](AP.md#pre-existing-failure-classification):
+
+```text
+Pre-existing claim: none | asserted
+Comparison baseline commit: <exact SHA>
+Baseline predates: latest-correction-only | whole-logical-whole
+Test identity: <exact test>
+Failure signature: <exact signature>
+Topically related to touched behavior: yes | no
+Superseded by accepted authority: none | <accepted Cooperator or design decision>
+Regression exclusion evidence: <evidence the candidate introduced no regression>
+Closure impact: blocks-closure | explicitly-parked
+```
+
+`Baseline predates: latest-correction-only` does not place the failure outside
+the active logical whole. Only `whole-logical-whole` supports that conclusion.
+`Pre-existing claim: none` leaves the remaining fields not applicable.
+
+## Evidence-Probe Failure Contract
+
+A probe that returns no useful evidence records the separated causes required by
+[AP.md](AP.md#evidence-probe-failure-classification):
+
+```text
+Intended system fact: <the fact being established>
+Probe construction: sound | defective
+Command execution: executed | not-executed
+Returned system evidence: <evidence returned | none>
+Prior valid evidence: none | <still-valid evidence or immutable configuration proving the fact>
+Fresh probe necessary: yes | no
+Failure classification: diagnostic-method-failure | product-or-security-failure | no-failure
+Fact status: proven | unknown
+```
+
+A defective probe or a command that never executed classifies as
+`diagnostic-method-failure` and leaves `Fact status: unknown` unless prior valid
+evidence proves the fact. `Failure classification: no-failure` requires
+`Fact status: proven`. A mutable, security-critical, or otherwise unresolved
+fact requires `Fresh probe necessary: yes` while it remains unproven, so a
+diagnostic-method failure can never retire the underlying question.
+
+## Closure Signal Contract
+
+Closure signalling follows [AP.md](AP.md#closure-signal):
+
+```text
+Declared closure signal: <project-declared exact signal string>
+Signal owner: orchestrator
+Worker emission of closure signal: prohibited
+Accepted evidence: <evidence supporting closure>
+Active-context reconciliation: complete | incomplete
+Closure authority: present | absent
+Implementation completion: <status>
+Audit completion: <status>
+Publication: <status>
+Public Git equality: <status>
+Orchestrator acceptance: <status>
+Logical-whole closure: closed | not-closed
+```
+
+`Signal owner: orchestrator` and
+`Worker emission of closure signal: prohibited` are the only accepted values.
+`Logical-whole closure: closed` requires
+`Active-context reconciliation: complete` and `Closure authority: present`. The
+declared signal is a project value; universal AP hardcodes no signal text. The
+six listed states stay separately visible, because none of them alone is
+closure.
 
 ## Browser Stall Guard Contract
 
