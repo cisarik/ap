@@ -257,6 +257,44 @@ git_init() {
     git -C "$dir" config user.name "AP Tests"
 }
 
+new_execution_project() {
+    fixture_name=$1
+    fixture=$TMPROOT/execution-$fixture_name
+    mkdir -p "$fixture/runtime" "$fixture/src"
+    git_init "$fixture"
+    git -C "$fixture" remote add origin "https://example.invalid/acme/$fixture_name.git"
+    python_path=$(command -v python3)
+    python_path=$(readlink -f "$python_path")
+    python_version=$($python_path -s -B -c 'import sys; print("%d.%d" % sys.version_info[:2])')
+    ln -s "$python_path" "$fixture/runtime/python"
+    printf '%s\n' 'VALUE = "inside"' > "$fixture/src/goodmod.py"
+    : > "$fixture/ap.project.conf"
+    git -C "$fixture" config --file ap.project.conf ap.schemaVersion 1
+    git -C "$fixture" config --file ap.project.conf ap.projectId "acme/$fixture_name"
+    git -C "$fixture" config --file ap.project.conf ap.environmentPolicy sanitized-v1
+    git -C "$fixture" config --file ap.project.conf runtime.cpython.kind cpython
+    git -C "$fixture" config --file ap.project.conf runtime.cpython.executable runtime/python
+    git -C "$fixture" config --file ap.project.conf runtime.cpython.requiredVersion "$python_version"
+    git -C "$fixture" config --file ap.project.conf runtime.cpython.sourceRoot src
+    git -C "$fixture" config --file ap.project.conf runtime.cpython.provenanceModule goodmod
+    git -C "$fixture" config --file ap.project.conf operation.capture.workingDirectory .
+    git -C "$fixture" config --file ap.project.conf --add operation.capture.argv -c
+    git -C "$fixture" config --file ap.project.conf --add operation.capture.argv \
+        'import os,sys; print("ARGS="+repr(sys.argv[1:])); print("PATH="+os.environ.get("PATH","")); print("SOURCE="+os.environ.get("PYTHONPATH","")); forbidden=[k for k in os.environ if k.startswith(("APP", "LD_", "DYLD_", "GIT_", "VIRTUAL_ENV")) or k in ("PYTHONHOME","PYTHONSTARTUP","BASH_ENV","ENV","SSH_AUTH_SOCK")]; print("FORBIDDEN="+repr(forbidden))'
+    git -C "$fixture" config --file ap.project.conf operation.capture.allowTrailingArgv true
+    git -C "$fixture" config --file ap.project.conf operation.deny.workingDirectory .
+    git -C "$fixture" config --file ap.project.conf --add operation.deny.argv -c
+    git -C "$fixture" config --file ap.project.conf --add operation.deny.argv 'import sys; print(repr(sys.argv[1:]))'
+    git -C "$fixture" config --file ap.project.conf operation.deny.allowTrailingArgv false
+    git -C "$fixture" config --file ap.project.conf operation.exit37.workingDirectory .
+    git -C "$fixture" config --file ap.project.conf --add operation.exit37.argv -c
+    git -C "$fixture" config --file ap.project.conf --add operation.exit37.argv 'import sys; sys.exit(37)'
+    git -C "$fixture" config --file ap.project.conf operation.exit37.allowTrailingArgv false
+    git -C "$fixture" add .
+    git -C "$fixture" commit -q -m "execution fixture"
+    printf '%s\n' "$fixture"
+}
+
 copy_worktree_to_source() {
     mkdir -p "$SOURCE"
     (
@@ -334,6 +372,13 @@ assert_not_contains() {
         1) return 0 ;;
         *) return 1 ;;
     esac
+}
+
+show_command_evidence() {
+    printf '%s\n' '--- captured stdout ---' >&2
+    sed 's/^/  /' "$OUT" >&2 || true
+    printf '%s\n' '--- captured stderr ---' >&2
+    sed 's/^/  /' "$ERR" >&2 || true
 }
 
 # Join harmless soft wrapping only inside one semantic Markdown block. Each
@@ -2866,6 +2911,143 @@ assert_pattern_schema_fixture_rejected() {
     }
 }
 
+test_project_contract_baseline_and_candidate_validation() {
+    project=$(new_execution_project contract-valid) || return 1
+    baseline=$(git -C "$project" rev-parse HEAD) || return 1
+    run_ok "$REPO/ap" project check --root "$project" --baseline "$baseline" || return 1
+    assert_contains "$OUT" "OK trusted baseline contract: $baseline:ap.project.conf" || return 1
+    assert_contains "$OUT" "OK CPython runtime:" || return 1
+
+    run_ok "$REPO/ap" project check --root "$project" --candidate || return 1
+    assert_contains "$OUT" "execution trust: no" || return 1
+    assert_contains "$OUT" "PASS (non-authorizing)" || return 1
+
+    git -C "$project" config --file ap.project.conf unexpected.field value
+    run_ok "$REPO/ap" project check --root "$project" --baseline "$baseline" || return 1
+    run_fail "$REPO/ap" project check --root "$project" --candidate || return 1
+    assert_contains "$ERR" "unknown schema-v1 section or field" || return 1
+}
+
+test_project_contract_rejects_closed_schema_and_unsafe_values() {
+    project=$(new_execution_project duplicate) || return 1
+    git -C "$project" config --file ap.project.conf --add ap.schemaVersion 1
+    run_fail "$REPO/ap" project check --root "$project" --candidate || return 1
+    assert_contains "$ERR" "schemaVersion must occur exactly once" || return 1
+
+    project=$(new_execution_project missing) || return 1
+    git -C "$project" config --file ap.project.conf --unset-all ap.environmentPolicy
+    run_fail "$REPO/ap" project check --root "$project" --candidate || return 1
+    assert_contains "$ERR" "environmentPolicy must occur exactly once" || return 1
+
+    project=$(new_execution_project version) || return 1
+    git -C "$project" config --file ap.project.conf ap.schemaVersion 2
+    run_fail "$REPO/ap" project check --root "$project" --candidate || return 1
+    assert_contains "$ERR" "unsupported project contract schemaVersion" || return 1
+
+    project=$(new_execution_project unknown) || return 1
+    git -C "$project" config --file ap.project.conf deployment.host example.invalid
+    run_fail "$REPO/ap" project check --root "$project" --candidate || return 1
+    assert_contains "$ERR" "unknown schema-v1 section or field" || return 1
+
+    project=$(new_execution_project include) || return 1
+    git -C "$project" config --file ap.project.conf include.path /tmp/untrusted.conf
+    run_fail "$REPO/ap" project check --root "$project" --candidate || return 1
+    assert_contains "$ERR" "include directives are forbidden" || return 1
+
+    project=$(new_execution_project identity) || return 1
+    git -C "$project" config --file ap.project.conf ap.projectId acme/not-identity
+    run_fail "$REPO/ap" project check --root "$project" --candidate || return 1
+    assert_contains "$ERR" "projectId mismatch" || return 1
+
+    project=$(new_execution_project absolute) || return 1
+    git -C "$project" config --file ap.project.conf runtime.cpython.executable /usr/bin/python3
+    run_fail "$REPO/ap" project check --root "$project" --candidate || return 1
+    assert_contains "$ERR" "must be project-relative" || return 1
+
+    project=$(new_execution_project traversal) || return 1
+    git -C "$project" config --file ap.project.conf operation.capture.workingDirectory ../outside
+    run_fail "$REPO/ap" project check --root "$project" --candidate || return 1
+    assert_contains "$ERR" "must not traverse with .." || return 1
+
+    project=$(new_execution_project no-contract) || return 1
+    git -C "$project" rm -q ap.project.conf
+    run_fail "$REPO/ap" project check --root "$project" --candidate || return 1
+    assert_contains "$ERR" "candidate ap.project.conf is missing" || return 1
+    git -C "$project" commit -q -m "remove contract"
+    baseline=$(git -C "$project" rev-parse HEAD) || return 1
+    run_fail "$REPO/ap" project check --root "$project" --baseline "$baseline" || return 1
+    assert_contains "$ERR" "does not contain ap.project.conf" || return 1
+}
+
+test_project_exec_sanitizes_environment_and_preserves_argv() {
+    project=$(new_execution_project direct-exec) || return 1
+    baseline=$(git -C "$project" rev-parse HEAD) || return 1
+    shadow=$project/shadow
+    mkdir -p "$shadow"
+    printf '%s\n' '#!/bin/sh' 'printf "SHADOW EXECUTED\\n"' 'exit 99' > "$shadow/python3"
+    printf '%s\n' '#!/bin/sh' 'printf "SHADOW GIT EXECUTED\\n"' 'exit 99' > "$shadow/git"
+    chmod +x "$shadow/python3" "$shadow/git"
+    sensitive=do-not-print-this-sensitive-value
+    run_ok /usr/bin/env \
+        PATH="$shadow" APPIMAGE="$sensitive" APPDIR="$sensitive" LD_LIBRARY_PATH="$sensitive" \
+        PYTHONHOME="$sensitive" PYTHONPATH="$sensitive" PYTHONSTARTUP="$sensitive" \
+        PYTHONWARNINGS="$sensitive" VIRTUAL_ENV="$sensitive" BASH_ENV="$sensitive" \
+        CDPATH="$sensitive" AP_PROJECT_CLEAN_STAGE=1 GIT_CONFIG_COUNT=1 \
+        GIT_CONFIG_KEY_0=alias.status GIT_CONFIG_VALUE_0="$sensitive" \
+        SSH_AUTH_SOCK="$sensitive" \
+        "$REPO/ap" exec --root "$project" --baseline "$baseline" --operation capture -- \
+        "space value" '$(printf shadow)' '; echo nope' '*' || { show_command_evidence; return 1; }
+    assert_contains "$OUT" "ARGS=['space value', '\$(printf shadow)', '; echo nope', '*']" || { show_command_evidence; return 1; }
+    assert_contains "$OUT" "PATH=/usr/bin:/bin" || { show_command_evidence; return 1; }
+    assert_contains "$OUT" "SOURCE=$project/src" || { show_command_evidence; return 1; }
+    assert_contains "$OUT" "FORBIDDEN=[]" || { show_command_evidence; return 1; }
+    assert_not_contains "$OUT" "$sensitive" || { show_command_evidence; return 1; }
+    assert_not_contains "$ERR" "$sensitive" || { show_command_evidence; return 1; }
+    assert_not_contains "$OUT" "SHADOW EXECUTED" || return 1
+    assert_not_contains "$OUT" "SHADOW GIT EXECUTED" || return 1
+    ! grep -E '(^|[[:space:]])(eval|sh -c)([[:space:]]|$)' "$REPO/ap" >/dev/null || return 1
+
+    : > "$OUT"
+    : > "$ERR"
+    "$REPO/ap" exec --root "$project" --baseline "$baseline" --operation exit37 -- >"$OUT" 2>"$ERR" &&
+        exit_status=0 || exit_status=$?
+    [ "$exit_status" -eq 37 ] || return 1
+}
+
+test_project_exec_enforces_baseline_operation_policy() {
+    project=$(new_execution_project operation-policy) || return 1
+    baseline=$(git -C "$project" rev-parse HEAD) || return 1
+    run_fail "$REPO/ap" exec --root "$project" --baseline "$baseline" --operation absent -- || return 1
+    assert_contains "$ERR" "operation is not declared by the trusted baseline" || return 1
+
+    run_fail "$REPO/ap" exec --root "$project" --baseline "$baseline" --operation deny -- extra || return 1
+    assert_contains "$ERR" "does not allow trailing argv" || return 1
+
+    git -C "$project" config --file ap.project.conf operation.capture.allowTrailingArgv false
+    run_fail "$REPO/ap" exec --root "$project" --baseline "$baseline" --operation capture -- safe || return 1
+    assert_contains "$ERR" "worktree/baseline ap.project.conf drift forbids execution" || return 1
+}
+
+test_project_cpython_provenance_failures_stop_without_repair() {
+    project=$(new_execution_project version-mismatch) || return 1
+    git -C "$project" config --file ap.project.conf runtime.cpython.requiredVersion 9.9
+    run_fail "$REPO/ap" project check --root "$project" --candidate || return 1
+    assert_contains "$ERR" "STOP and report the mismatch" || { show_command_evidence; return 1; }
+    assert_contains "$ERR" "without repairing" || { show_command_evidence; return 1; }
+
+    project=$(new_execution_project outside-module) || return 1
+    git -C "$project" config --file ap.project.conf runtime.cpython.provenanceModule json
+    run_fail "$REPO/ap" project check --root "$project" --candidate || return 1
+    assert_contains "$ERR" "provenance module resolves outside" || { show_command_evidence; return 1; }
+    assert_contains "$ERR" "do not repair" || { show_command_evidence; return 1; }
+
+    project=$(new_execution_project broken-encodings) || return 1
+    printf '%s\n' 'import encodings' 'encodings.__file__ = __file__' > "$project/src/sitecustomize.py"
+    run_fail "$REPO/ap" project check --root "$project" --candidate || return 1
+    assert_contains "$ERR" "encodings resolves outside" || { show_command_evidence; return 1; }
+    assert_contains "$ERR" "do not repair" || { show_command_evidence; return 1; }
+}
+
 test_runner_argument_handling() {
     run_ok "$SH_BIN" "$REPO/tests/ap_tool_tests.sh" --help || return 1
     assert_contains "$OUT" "Usage: ap_tool_tests.sh" || return 1
@@ -4888,6 +5070,9 @@ test_tool_help_and_docs_agree() {
     grep -F "ap doctor [--candidate]" "$OUT" >/dev/null || return 1
     grep -F "ap update --check" "$OUT" >/dev/null || return 1
     grep -F "ap update --apply" "$OUT" >/dev/null || return 1
+    grep -F "ap project check --root" "$OUT" >/dev/null || return 1
+    grep -F "ap exec --root" "$OUT" >/dev/null || return 1
+    grep -F "project check --root" "$REPO/docs/adr/0012-baseline-bound-project-execution.md" >/dev/null || return 1
     grep -F "doctor --candidate" "$REPO/UPDATING.md" >/dev/null || return 1
     grep -F "./.ap/ap doctor" "$REPO/INTEGRATION.md" >/dev/null
 }
@@ -7754,6 +7939,11 @@ EOF
 
 copy_worktree_to_source
 
+run_test "baseline and candidate project contracts validate with distinct trust" test_project_contract_baseline_and_candidate_validation
+run_test "project contract schema rejects missing, duplicate, unknown, include, identity, and unsafe values" test_project_contract_rejects_closed_schema_and_unsafe_values
+run_test "project exec sanitizes contamination and preserves direct argv and exit status" test_project_exec_sanitizes_environment_and_preserves_argv
+run_test "project exec enforces baseline drift, declarations, and trailing-argv policy" test_project_exec_enforces_baseline_operation_policy
+run_test "CPython provenance failures stop without environment repair" test_project_cpython_provenance_failures_stop_without_repair
 run_test "runner rejects unknown arguments and prints usage for --help" test_runner_argument_handling
 run_test "runner fails closed when the content scanner cannot be resolved" test_runner_fails_closed_without_content_scanner
 run_test "shared grep assertions distinguish matches, no-match, and evidence errors" test_shared_grep_assertions_fail_closed

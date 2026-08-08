@@ -20,6 +20,9 @@ usage() {
 Usage:
   ap init
   ap doctor [--candidate]
+  ap project check --root <physical-root> --baseline <commit>
+  ap project check --root <physical-root> --candidate
+  ap exec --root <physical-root> --baseline <commit> --operation <id> -- <argv>
   ap update --check
   ap update --apply
   ap help
@@ -28,13 +31,94 @@ Commands:
   init                Create or refresh the managed AP block in the superproject AGENTS.md.
   doctor              Strict read-only health check for the committed .ap pin.
   doctor --candidate  Read-only health check for an intentional .ap update or rollback candidate.
+  project check       Validate a baseline contract and CPython, or a non-authorizing candidate.
+  exec                Run one baseline-declared operation in a sanitized direct-exec envelope.
   update --check      Check whether canonical AP main is a forward update.
   update --apply      Fetch canonical AP main and move only the .ap checkout to that commit.
 
-The tool must run from an initialized .ap Git submodule, normally as ./.ap/ap.
-It never commits, pushes, modifies Git configuration, or copies AP protocol
-files into the consuming project.
+Integration commands run from an initialized .ap Git submodule, normally as
+./.ap/ap. Project-check and exec commands accept an explicit physical root.
+The tool never commits, pushes, modifies Git configuration, or copies AP
+protocol files into the consuming project.
 EOF
+}
+
+PROJECT_CONTRACT=ap.project.conf
+PROJECT_CHILD_PATH=/usr/bin:/bin
+
+project_clean_stage() {
+    project_stage_argument=$1
+    shift
+    if [ "$project_stage_argument" = yes ] &&
+        [ "${AP_PROJECT_CLEAN_STAGE:-}" = 1 ] &&
+        [ "${PATH:-}" = "$PROJECT_CHILD_PATH" ] &&
+        [ "${HOME:-}" = /nonexistent ] &&
+        [ "${LC_ALL:-}" = C ] &&
+        [ "${GIT_CONFIG_NOSYSTEM:-}" = 1 ]; then
+        return 0
+    fi
+
+    case "$0" in
+        */*) project_script=$0 ;;
+        *) project_script=$(command -v "$0" 2>/dev/null || true) ;;
+    esac
+    [ -n "${project_script:-}" ] || fail "cannot resolve executable path for sanitized bootstrap"
+    project_script_dir=${project_script%/*}
+    project_script_name=${project_script##*/}
+    [ "$project_script_dir" != "$project_script" ] || project_script_dir=.
+    project_script_dir=$(cd "$project_script_dir" 2>/dev/null && pwd -P) ||
+        fail "cannot resolve executable directory for sanitized bootstrap"
+    project_script=$project_script_dir/$project_script_name
+
+    project_loader_contamination=
+    if [ "${LD_LIBRARY_PATH+x}" = x ]; then project_loader_contamination=LD_LIBRARY_PATH; fi
+    if [ "${LD_PRELOAD+x}" = x ]; then project_loader_contamination="${project_loader_contamination}${project_loader_contamination:+
+}LD_PRELOAD"; fi
+    if [ "${LD_AUDIT+x}" = x ]; then project_loader_contamination="${project_loader_contamination}${project_loader_contamination:+
+}LD_AUDIT"; fi
+    if [ "${DYLD_LIBRARY_PATH+x}" = x ]; then project_loader_contamination="${project_loader_contamination}${project_loader_contamination:+
+}DYLD_LIBRARY_PATH"; fi
+    if [ "${DYLD_FRAMEWORK_PATH+x}" = x ]; then project_loader_contamination="${project_loader_contamination}${project_loader_contamination:+
+}DYLD_FRAMEWORK_PATH"; fi
+    if [ "${DYLD_INSERT_LIBRARIES+x}" = x ]; then project_loader_contamination="${project_loader_contamination}${project_loader_contamination:+
+}DYLD_INSERT_LIBRARIES"; fi
+    unset LD_LIBRARY_PATH LD_PRELOAD LD_AUDIT \
+        DYLD_LIBRARY_PATH DYLD_FRAMEWORK_PATH DYLD_INSERT_LIBRARIES
+
+    [ -x /usr/bin/env ] || fail "trusted /usr/bin/env is required for sanitized bootstrap"
+    [ -x /usr/bin/awk ] || fail "trusted /usr/bin/awk is required for contamination classification"
+    project_other_contamination=$(
+        /usr/bin/env | /usr/bin/awk -F= '
+            $1 == "APPIMAGE" || $1 == "APPDIR" || $1 == "PATH" ||
+            $1 == "BASH_ENV" || $1 == "ENV" || $1 == "KSH_ENV" ||
+            $1 == "ZDOTDIR" || $1 == "SHELLOPTS" || $1 == "BASHOPTS" ||
+            $1 == "CDPATH" || $1 == "PROMPT_COMMAND" || $1 == "SSH_AUTH_SOCK" ||
+            $1 ~ /^LD_/ || $1 ~ /^DYLD_/ || $1 ~ /^PYTHON/ ||
+            $1 ~ /^VIRTUAL_ENV/ || $1 ~ /^GIT_/ { print $1 }
+        '
+    )
+    project_contamination=$project_loader_contamination
+    if [ -n "$project_other_contamination" ]; then
+        project_contamination="${project_contamination}${project_contamination:+
+}$project_other_contamination"
+    fi
+    exec /usr/bin/env -i \
+        PATH="$PROJECT_CHILD_PATH" \
+        LC_ALL=C \
+        HOME=/nonexistent \
+        GIT_CONFIG_NOSYSTEM=1 \
+        AP_PROJECT_CLEAN_STAGE=1 \
+        AP_PARENT_CONTAMINATION="$project_contamination" \
+        "$project_script" --ap-internal-sanitized-stage "$@"
+}
+
+report_parent_contamination() {
+    if [ -n "${AP_PARENT_CONTAMINATION:-}" ]; then
+        project_names=$(printf '%s\n' "$AP_PARENT_CONTAMINATION" | tr '\n' ' ' | sed 's/ $//')
+        say "WARN sanitized inherited environment classes: $project_names"
+    else
+        say "OK inherited environment contamination markers: none"
+    fi
 }
 
 require_git() {
@@ -566,6 +650,417 @@ cmd_update_apply() {
     say "Commit in the superproject only after compatibility review: git add .ap && git commit"
 }
 
+project_cleanup() {
+    case "${project_tmp:-}" in
+        /tmp/ap-project.*|/private/tmp/ap-project.*|/var/tmp/ap-project.*)
+            rm -rf "$project_tmp"
+            ;;
+    esac
+}
+
+project_require_root() {
+    project_requested_root=$1
+    [ -n "$project_requested_root" ] || fail "--root requires a value"
+    case "$project_requested_root" in
+        /*) ;;
+        *) fail "--root must be an absolute physical path" ;;
+    esac
+    project_root=$(physical_path "$project_requested_root") || fail "project root is not a directory"
+    [ "$project_root" = "$project_requested_root" ] || fail "--root must already be the physical project root: $project_root"
+    project_git_root=$(git -C "$project_root" rev-parse --show-toplevel 2>/dev/null || true)
+    [ -n "$project_git_root" ] || fail "--root is not a Git worktree"
+    project_git_root=$(physical_path "$project_git_root") || fail "cannot resolve Git project root"
+    [ "$project_git_root" = "$project_root" ] || fail "--root must name the Git worktree top level"
+}
+
+project_resolve_baseline() {
+    project_requested_baseline=$1
+    case "$project_requested_baseline" in
+        [0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]* ) ;;
+        *) fail "--baseline must be a full lowercase commit object ID" ;;
+    esac
+    [ "${#project_requested_baseline}" -eq 40 ] || fail "--baseline must be a full 40-character commit object ID"
+    project_baseline=$(git -C "$project_root" rev-parse --verify "$project_requested_baseline^{commit}" 2>/dev/null || true)
+    [ "$project_baseline" = "$project_requested_baseline" ] || fail "baseline commit is missing or does not resolve exactly"
+    git -C "$project_root" cat-file -e "$project_baseline:$PROJECT_CONTRACT" 2>/dev/null ||
+        fail "baseline $project_baseline does not contain $PROJECT_CONTRACT"
+}
+
+project_config() {
+    if [ "$project_contract_mode" = baseline ]; then
+        git -C "$project_root" config --no-includes --blob "$project_baseline:$PROJECT_CONTRACT" "$@"
+    else
+        git -C "$project_root" config --no-includes --file "$project_root/$PROJECT_CONTRACT" "$@"
+    fi
+}
+
+project_count_key() {
+    project_count=$(project_config --null --get-all "$1" 2>/dev/null |
+        awk 'BEGIN { RS="\0" } { count++ } END { print count + 0 }')
+    printf '%s\n' "$project_count"
+}
+
+project_read_singleton() {
+    project_read_key=$1
+    project_read_label=$2
+    project_read_required=$3
+    project_read_count=$(project_count_key "$project_read_key")
+    if [ "$project_read_required" = required ]; then
+        [ "$project_read_count" -eq 1 ] || fail "$project_read_label must occur exactly once"
+    else
+        [ "$project_read_count" -le 1 ] || fail "$project_read_label may occur at most once"
+        if [ "$project_read_count" -eq 0 ]; then
+            project_read_value=
+            return
+        fi
+    fi
+    project_read_value=$(project_config --get "$project_read_key") || fail "cannot read $project_read_label"
+    case "$project_read_value" in
+        *'
+'*) fail "$project_read_label must not contain a newline" ;;
+    esac
+    [ -n "$project_read_value" ] || fail "$project_read_label must not be empty"
+}
+
+project_validate_relative_path() {
+    project_path_value=$1
+    project_path_label=$2
+    project_path_allow_dot=$3
+    [ -n "$project_path_value" ] || fail "$project_path_label must not be empty"
+    case "$project_path_value" in
+        /*) fail "$project_path_label must be project-relative" ;;
+        *//*|*/./*|./*|*/.) fail "$project_path_label is not a normalized project-relative path" ;;
+    esac
+    [ "$project_path_allow_dot" = yes ] || [ "$project_path_value" != . ] ||
+        fail "$project_path_label must name a path below the project root"
+    project_old_ifs=$IFS
+    IFS=/
+    set -- $project_path_value
+    IFS=$project_old_ifs
+    for project_component in "$@"; do
+        [ "$project_component" != .. ] || fail "$project_path_label must not traverse with .."
+        [ -n "$project_component" ] || fail "$project_path_label contains an empty component"
+    done
+}
+
+project_require_inside_root() {
+    project_inside_path=$1
+    project_inside_label=$2
+    case "$project_inside_path" in
+        "$project_root"|"$project_root"/*) ;;
+        *) fail "$project_inside_label resolves outside the project root" ;;
+    esac
+}
+
+project_expected_id() {
+    project_origin=$(git -C "$project_root" config --get remote.origin.url 2>/dev/null || true)
+    [ -n "$project_origin" ] || fail "remote.origin.url is required to verify projectId"
+    project_origin=${project_origin%/}
+    project_origin=${project_origin%.git}
+    case "$project_origin" in
+        *://*) project_origin_path=${project_origin#*://}; project_origin_path=${project_origin_path#*/} ;;
+        *@*:*) project_origin_path=${project_origin#*:} ;;
+        *) fail "remote.origin.url cannot be mapped to a stable owner/project identifier" ;;
+    esac
+    project_origin_owner=${project_origin_path%/*}
+    project_origin_repo=${project_origin_path##*/}
+    project_origin_owner=${project_origin_owner##*/}
+    [ -n "$project_origin_owner" ] && [ -n "$project_origin_repo" ] ||
+        fail "remote.origin.url cannot be mapped to a stable owner/project identifier"
+    printf '%s/%s\n' "$project_origin_owner" "$project_origin_repo"
+}
+
+project_validate_contract() {
+    project_tmp=$(mktemp -d "${TMPDIR:-/tmp}/ap-project.XXXXXX") || fail "cannot create project-validation temporary directory"
+    trap project_cleanup EXIT HUP INT TERM
+    project_keys=$project_tmp/keys
+    project_operations=$project_tmp/operations
+    project_argv=$project_tmp/argv
+
+    if [ "$project_contract_mode" = candidate ]; then
+        [ -f "$project_root/$PROJECT_CONTRACT" ] || fail "candidate $PROJECT_CONTRACT is missing"
+        [ ! -L "$project_root/$PROJECT_CONTRACT" ] || fail "candidate $PROJECT_CONTRACT must not be a symlink"
+    fi
+    project_config --list >/dev/null 2>&1 || fail "$PROJECT_CONTRACT is not valid Git-config syntax"
+    project_config --name-only --get-regexp '.*' > "$project_keys" 2>/dev/null ||
+        fail "$PROJECT_CONTRACT contains no configuration"
+
+    : > "$project_operations"
+    while IFS= read -r project_key; do
+        project_key_lower=$(printf '%s\n' "$project_key" | tr '[:upper:]' '[:lower:]')
+        case "$project_key_lower" in
+            include.*|includeif.*) fail "include directives are forbidden in $PROJECT_CONTRACT" ;;
+            ap.schemaversion|ap.projectid|ap.environmentpolicy|\
+            runtime.cpython.kind|runtime.cpython.executable|runtime.cpython.requiredversion|\
+            runtime.cpython.sourceroot|runtime.cpython.provenancemodule) ;;
+            operation.*.workingdirectory|operation.*.argv|operation.*.allowtrailingargv)
+                project_operation_id=${project_key_lower#operation.}
+                project_operation_id=${project_operation_id%.*}
+                case "$project_operation_id" in
+                    ''|*[!a-z0-9_-]*|[-_]* ) fail "invalid operation identifier in key: $project_key" ;;
+                esac
+                printf '%s\n' "$project_operation_id" >> "$project_operations"
+                ;;
+            extension.*.*) ;;
+            *) fail "unknown schema-v1 section or field: $project_key" ;;
+        esac
+    done < "$project_keys"
+    sort -u "$project_operations" -o "$project_operations"
+    [ -s "$project_operations" ] || fail "schema v1 requires at least one declared operation"
+
+    project_read_singleton ap.schemaversion schemaVersion required
+    project_schema_version=$project_read_value
+    [ "$project_schema_version" = 1 ] || fail "unsupported project contract schemaVersion: $project_schema_version"
+    project_read_singleton ap.projectid projectId required
+    project_id=$project_read_value
+    project_id_expected=$(project_expected_id)
+    [ "$project_id" = "$project_id_expected" ] ||
+        fail "projectId mismatch: contract names $project_id but repository identity is $project_id_expected"
+    project_read_singleton ap.environmentpolicy environmentPolicy required
+    project_environment_policy=$project_read_value
+    [ "$project_environment_policy" = sanitized-v1 ] || fail "environmentPolicy must be sanitized-v1"
+
+    project_read_singleton runtime.cpython.kind runtime.cpython.kind required
+    project_runtime_kind=$project_read_value
+    [ "$project_runtime_kind" = cpython ] || fail "runtime.cpython.kind must be cpython"
+    project_read_singleton runtime.cpython.executable runtime.cpython.executable required
+    project_runtime_relative=$project_read_value
+    project_validate_relative_path "$project_runtime_relative" runtime.cpython.executable no
+    project_read_singleton runtime.cpython.requiredversion runtime.cpython.requiredVersion required
+    project_runtime_version=$project_read_value
+    case "$project_runtime_version" in
+        [0-9].[0-9]|[0-9].[0-9][0-9]) ;;
+        *) fail "runtime.cpython.requiredVersion must be a major.minor version" ;;
+    esac
+    project_read_singleton runtime.cpython.sourceroot runtime.cpython.sourceRoot optional
+    project_source_relative=$project_read_value
+    project_read_singleton runtime.cpython.provenancemodule runtime.cpython.provenanceModule optional
+    project_provenance_module=$project_read_value
+    if [ -n "$project_provenance_module" ] && [ -z "$project_source_relative" ]; then
+        fail "runtime.cpython.provenanceModule requires sourceRoot"
+    fi
+    if [ -n "$project_provenance_module" ]; then
+        case "$project_provenance_module" in
+            *[!A-Za-z0-9_.]*|.*|*.|*..*) fail "runtime.cpython.provenanceModule is not a valid module name" ;;
+        esac
+    fi
+
+    if [ -n "$project_source_relative" ]; then
+        project_validate_relative_path "$project_source_relative" runtime.cpython.sourceRoot yes
+        [ -d "$project_root/$project_source_relative" ] || fail "declared CPython sourceRoot does not exist"
+        project_source_root=$(physical_path "$project_root/$project_source_relative") || fail "cannot resolve CPython sourceRoot"
+        project_require_inside_root "$project_source_root" runtime.cpython.sourceRoot
+    else
+        project_source_root=
+    fi
+
+    project_runtime_entry=$project_root/$project_runtime_relative
+    [ -e "$project_runtime_entry" ] || fail "declared CPython executable does not exist; STOP and report the mismatch without repairing the environment"
+    [ -x "$project_runtime_entry" ] || fail "declared CPython executable is not executable; STOP and report the mismatch without repairing the environment"
+    project_runtime_executable=$(readlink -f "$project_runtime_entry" 2>/dev/null || true)
+    [ -n "$project_runtime_executable" ] && [ -f "$project_runtime_executable" ] && [ -x "$project_runtime_executable" ] ||
+        fail "declared CPython executable symlink chain cannot be resolved safely; STOP and report the mismatch"
+
+    while IFS= read -r project_operation_id; do
+        project_read_singleton "operation.$project_operation_id.workingdirectory" "operation.$project_operation_id.workingDirectory" required
+        project_workdir_relative=$project_read_value
+        project_validate_relative_path "$project_workdir_relative" "operation.$project_operation_id.workingDirectory" yes
+        [ -d "$project_root/$project_workdir_relative" ] || fail "operation $project_operation_id workingDirectory does not exist"
+        project_workdir=$(physical_path "$project_root/$project_workdir_relative") || fail "cannot resolve operation workingDirectory"
+        project_require_inside_root "$project_workdir" "operation $project_operation_id workingDirectory"
+        project_read_singleton "operation.$project_operation_id.allowtrailingargv" "operation.$project_operation_id.allowTrailingArgv" required
+        case "$project_read_value" in true|false) ;; *) fail "operation.$project_operation_id.allowTrailingArgv must be true or false" ;; esac
+        project_argv_count=$(project_count_key "operation.$project_operation_id.argv")
+        [ "$project_argv_count" -ge 1 ] || fail "operation.$project_operation_id.argv requires at least one fixed argument"
+        project_config --get-all "operation.$project_operation_id.argv" > "$project_argv.values" || fail "cannot read operation argv"
+        [ "$(wc -l < "$project_argv.values" | tr -d ' ')" -eq "$project_argv_count" ] ||
+            fail "operation.$project_operation_id.argv values must not contain newlines"
+        while IFS= read -r project_fixed_arg; do
+            [ -n "$project_fixed_arg" ] || fail "operation.$project_operation_id.argv values must not be empty"
+        done < "$project_argv.values"
+    done < "$project_operations"
+}
+
+project_validate_cpython() {
+    project_probe='import importlib.util, os, sys, sysconfig
+def stop(message):
+    print("ap: CPython validation failed: " + message + "; STOP and report the mismatch; do not repair the environment", file=sys.stderr)
+    raise SystemExit(1)
+def inside(path, root):
+    try:
+        return os.path.commonpath((os.path.realpath(path), os.path.realpath(root))) == os.path.realpath(root)
+    except ValueError:
+        return False
+expected_version, expected_executable, source_root, module = sys.argv[1:5]
+observed_version = "%d.%d" % sys.version_info[:2]
+if observed_version != expected_version:
+    stop("required Python " + expected_version + ", observed " + observed_version)
+executable = os.path.realpath(sys.executable)
+if executable != os.path.realpath(expected_executable):
+    stop("sys.executable does not match the declared executable target")
+prefix = os.path.realpath(sys.prefix)
+base_prefix = os.path.realpath(sys.base_prefix)
+stdlib = os.path.realpath(sysconfig.get_path("stdlib") or "")
+import encodings
+encodings_origin = os.path.realpath(encodings.__file__ or "")
+if not all(os.path.isabs(p) and os.path.exists(p) for p in (executable, prefix, base_prefix, stdlib, encodings_origin)):
+    stop("executable, prefixes, stdlib, or encodings origin is missing or non-absolute")
+if not (inside(stdlib, prefix) or inside(stdlib, base_prefix)):
+    stop("stdlib is inconsistent with sys.prefix and sys.base_prefix")
+if not inside(encodings_origin, stdlib):
+    stop("encodings resolves outside the interpreter stdlib")
+for value in (executable, prefix, base_prefix, stdlib, encodings_origin):
+    lowered = value.lower()
+    if "appimage" in lowered or "/.mount_" in lowered or "cursor" in lowered:
+        stop("runtime provenance resolves through an AppImage/Cursor path")
+if not sys.flags.no_user_site or not sys.dont_write_bytecode:
+    stop("user-site behavior and bytecode writes are not disabled")
+observed_pythonpath = os.environ.get("PYTHONPATH", "")
+if source_root:
+    if os.path.realpath(observed_pythonpath) != os.path.realpath(source_root):
+        stop("PYTHONPATH is not exactly the declared sourceRoot")
+    occurrences = sum(1 for item in sys.path if item and os.path.realpath(item) == os.path.realpath(source_root))
+    if occurrences != 1:
+        stop("declared sourceRoot is not injected exactly once")
+else:
+    if observed_pythonpath:
+        stop("PYTHONPATH is present without a declared sourceRoot")
+if module:
+    spec = importlib.util.find_spec(module)
+    if spec is None or not spec.origin or not inside(spec.origin, source_root):
+        stop("provenance module resolves outside the declared sourceRoot")
+print("OK CPython runtime: " + observed_version)
+print("OK CPython executable: " + executable)
+print("OK CPython stdlib: " + stdlib)
+print("OK CPython encodings: " + encodings_origin)'
+    project_probe_status=0
+    if [ -n "$project_source_root" ]; then
+        /usr/bin/env -i PATH="$PROJECT_CHILD_PATH" LC_ALL=C LANG=C \
+            PYTHONNOUSERSITE=1 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH="$project_source_root" \
+            "$project_runtime_executable" -s -B -c "$project_probe" \
+            "$project_runtime_version" "$project_runtime_executable" "$project_source_root" "$project_provenance_module" ||
+            project_probe_status=$?
+    else
+        /usr/bin/env -i PATH="$PROJECT_CHILD_PATH" LC_ALL=C LANG=C \
+            PYTHONNOUSERSITE=1 PYTHONDONTWRITEBYTECODE=1 \
+            "$project_runtime_executable" -s -B -c "$project_probe" \
+            "$project_runtime_version" "$project_runtime_executable" "" "" ||
+            project_probe_status=$?
+    fi
+    [ "$project_probe_status" -eq 0 ] ||
+        fail "CPython runtime validation failed; STOP and report the mismatch without repairing Python or the workstation"
+}
+
+project_check_common() {
+    report_parent_contamination
+    require_git
+    project_require_root "$1"
+    project_contract_mode=$2
+    if [ "$project_contract_mode" = baseline ]; then
+        project_resolve_baseline "$3"
+        say "OK trusted baseline contract: $project_baseline:$PROJECT_CONTRACT"
+    else
+        project_baseline=
+        say "NOTICE candidate validation is configuration/readiness evidence only; execution trust: no"
+    fi
+    project_validate_contract
+    project_validate_cpython
+    say "OK project contract schema: 1"
+    say "OK project identity: $project_id"
+    say "OK environment policy: $project_environment_policy"
+}
+
+cmd_project() {
+    [ "${1:-}" = check ] || fail "project requires check"
+    shift
+    project_cli_root=
+    project_cli_baseline=
+    project_cli_mode=
+    while [ "$#" -gt 0 ]; do
+        case "$1" in
+            --root) [ "$#" -ge 2 ] || fail "--root requires a value"; project_cli_root=$2; shift 2 ;;
+            --baseline) [ "$#" -ge 2 ] || fail "--baseline requires a value"; [ -z "$project_cli_mode" ] || fail "choose exactly one of --baseline or --candidate"; project_cli_mode=baseline; project_cli_baseline=$2; shift 2 ;;
+            --candidate) [ -z "$project_cli_mode" ] || fail "choose exactly one of --baseline or --candidate"; project_cli_mode=candidate; shift ;;
+            *) fail "unknown project check option: $1" ;;
+        esac
+    done
+    [ -n "$project_cli_root" ] || fail "project check requires --root"
+    [ -n "$project_cli_mode" ] || fail "project check requires --baseline or --candidate"
+    project_check_common "$project_cli_root" "$project_cli_mode" "$project_cli_baseline"
+    if [ "$project_cli_mode" = baseline ]; then
+        say "ap project check --baseline: PASS"
+    else
+        say "ap project check --candidate: PASS (non-authorizing)"
+    fi
+}
+
+cmd_exec() {
+    project_cli_root=
+    project_cli_baseline=
+    project_cli_operation=
+    project_cli_separator=no
+    while [ "$#" -gt 0 ]; do
+        case "$1" in
+            --root) [ "$#" -ge 2 ] || fail "--root requires a value"; project_cli_root=$2; shift 2 ;;
+            --baseline) [ "$#" -ge 2 ] || fail "--baseline requires a value"; project_cli_baseline=$2; shift 2 ;;
+            --operation) [ "$#" -ge 2 ] || fail "--operation requires a value"; project_cli_operation=$2; shift 2 ;;
+            --) project_cli_separator=yes; shift; break ;;
+            *) fail "unknown exec option: $1" ;;
+        esac
+    done
+    [ -n "$project_cli_root" ] || fail "exec requires --root"
+    [ -n "$project_cli_baseline" ] || fail "exec requires --baseline"
+    [ -n "$project_cli_operation" ] || fail "exec requires --operation"
+    case "$project_cli_operation" in ''|*[!a-z0-9_-]*|[-_]*) fail "invalid operation identifier" ;; esac
+    project_trailing_count=$#
+    [ "$project_cli_separator" = yes ] || [ "$project_trailing_count" -eq 0 ] || fail "trailing argv must follow --"
+
+    project_check_common "$project_cli_root" baseline "$project_cli_baseline"
+    grep -Fx "$project_cli_operation" "$project_operations" >/dev/null 2>&1 || fail "operation is not declared by the trusted baseline: $project_cli_operation"
+    project_read_singleton "operation.$project_cli_operation.allowtrailingargv" "operation.$project_cli_operation.allowTrailingArgv" required
+    project_allow_trailing=$project_read_value
+    if [ "$project_trailing_count" -gt 0 ] && [ "$project_allow_trailing" != true ]; then
+        fail "operation $project_cli_operation does not allow trailing argv"
+    fi
+    project_read_singleton "operation.$project_cli_operation.workingdirectory" "operation.$project_cli_operation.workingDirectory" required
+    project_exec_workdir=$(physical_path "$project_root/$project_read_value") || fail "cannot resolve operation workingDirectory"
+    project_config --get-all "operation.$project_cli_operation.argv" > "$project_argv"
+    project_fixed_reverse=$(sed '1!G;h;$!d' "$project_argv")
+    while IFS= read -r project_fixed_arg; do
+        set -- "$project_fixed_arg" "$@"
+    done <<EOF
+$project_fixed_reverse
+EOF
+    set -- "$project_runtime_executable" "$@"
+
+    if ! git -C "$project_root" diff --quiet --no-ext-diff --no-textconv "$project_baseline" -- "$PROJECT_CONTRACT"; then
+        fail "worktree/baseline $PROJECT_CONTRACT drift forbids execution"
+    fi
+    say "OK execution trust: baseline $project_baseline"
+    say "OK operation: $project_cli_operation"
+    say "OK direct argv execution with absolute argv[0]"
+    project_cleanup
+    trap - EXIT HUP INT TERM
+    cd "$project_exec_workdir"
+    if [ -n "$project_source_root" ]; then
+        exec /usr/bin/env -i PATH="$PROJECT_CHILD_PATH" LC_ALL=C LANG=C \
+            PYTHONNOUSERSITE=1 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH="$project_source_root" \
+            AP_PROJECT_ROOT="$project_root" AP_BASELINE="$project_baseline" AP_OPERATION="$project_cli_operation" \
+            "$@"
+    else
+        exec /usr/bin/env -i PATH="$PROJECT_CHILD_PATH" LC_ALL=C LANG=C \
+            PYTHONNOUSERSITE=1 PYTHONDONTWRITEBYTECODE=1 \
+            AP_PROJECT_ROOT="$project_root" AP_BASELINE="$project_baseline" AP_OPERATION="$project_cli_operation" \
+            "$@"
+    fi
+}
+
+project_stage_argument=no
+if [ "${1:-}" = --ap-internal-sanitized-stage ]; then
+    project_stage_argument=yes
+    shift
+fi
+
 case "${1:-help}" in
     init)
         [ "$#" -eq 1 ] || fail "init takes no arguments"
@@ -579,6 +1074,16 @@ case "${1:-help}" in
         else
             fail "doctor takes no argument or --candidate"
         fi
+        ;;
+    project)
+        project_clean_stage "$project_stage_argument" "$@"
+        shift
+        cmd_project "$@"
+        ;;
+    exec)
+        project_clean_stage "$project_stage_argument" "$@"
+        shift
+        cmd_exec "$@"
         ;;
     update)
         [ "$#" -eq 2 ] || fail "update requires --check or --apply"

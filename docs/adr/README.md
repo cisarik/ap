@@ -22,6 +22,7 @@ Programming.
 | [0009](0009-capability-aware-worker-routing-and-execution-gates.md) | Capability-aware Worker routing and execution gates | Accepted | Routing and execution gates retained; planning, freshness, and closure refined by ADR-0011 |
 | [0010](0010-defensive-security-profile.md) | Defensive-security profile and finding contract | Accepted | Advisory INFOSEC.md profile with a small normative AP.md anchor; no existing ADR superseded |
 | [0011](0011-risk-routed-planning-and-bounded-closure.md) | Risk-routed planning and bounded closure | Accepted | Current planning, freshness, evidence-tier, anti-stall, authority-envelope, operational-evidence, and human-governance decision |
+| [0012](0012-baseline-bound-project-execution.md) | Baseline-bound project execution envelope | Accepted | Adds the project contract, sanitized direct execution, and CPython provenance boundary without changing protocol authority |
 
 ADR-0009 permits only an explicit bounded parallel exception. It does not
 supersede fresh sequential independent audit or the remaining decisions in

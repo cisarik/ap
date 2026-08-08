@@ -123,6 +123,7 @@ reviewed and committed by an explicit project task.
 | [ap](ap) | Dependency-free integration tool |
 | [tests/](tests/) | Tests for the integration tool and repository structure; evidence-bearing scans resolve trusted `rg`, ignore arbitrary scanner overrides, and fail closed on execution errors |
 | [docs/adr/](docs/adr/) | Accepted architecture decisions |
+| [ap.project.conf](ap.project.conf) | Versioned non-secret project execution contract; see [ADR-0012](docs/adr/0012-baseline-bound-project-execution.md) |
 
 ## Project-Specific Rules
 
