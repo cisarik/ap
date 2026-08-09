@@ -8790,8 +8790,8 @@ test_external_trace_and_worker_exchange_identity_contracts() {
         'planning, implementation, acceptance, correction, publication, deployment, probe, audit, and restoration' || return 1
     for trace_example in \
         '01_plan.md + 01_report.md' \
-        '01_implementation_02.md + 01_report_02.md' \
-        '01_correction_03.md + 01_report_03.md' \
+        '01_plan_02.md + 01_report_02.md' \
+        '01_implementation_03.md + 01_report_03.md' \
         '02_acceptance.md + 02_report.md'
     do
         grep -F "$trace_example" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
@@ -8821,8 +8821,8 @@ EOF
 
     cat > "$fixtures/sequence" <<'EOF'
 catalog-delivery|01|01|fresh-worker-session|worker-a|plan|not-required
-catalog-delivery|01|02|current-worker-session|worker-a|implementation|not-required
-catalog-delivery|01|03|current-worker-session|worker-a|correction|not-required
+catalog-delivery|01|02|current-worker-session|worker-a|plan|not-required
+catalog-delivery|01|03|current-worker-session|worker-a|implementation|not-required
 catalog-delivery|02|01|fresh-worker-session|worker-b|acceptance|required
 billing-delivery|01|01|fresh-worker-session|worker-c|plan|not-required
 EOF
@@ -8854,18 +8854,21 @@ EOF
 
     cat > "$fixtures/filenames" <<'EOF'
 01|01|plan|01_plan.md|01_report.md|report|commit-a|commit-a|yes
-01|02|implementation|01_implementation_02.md|01_report_02.md|report|commit-b|commit-b|yes
-01|03|correction|01_correction_03.md|01_report_03.md|report|commit-c|commit-c|yes
+01|02|plan|01_plan_02.md|01_report_02.md|report|commit-b|commit-b|yes
+01|03|implementation|01_implementation_03.md|01_report_03.md|report|commit-c|commit-c|yes
 02|01|acceptance|02_acceptance.md|02_report.md|report|commit-d|commit-d|yes
 03|01|probe|03_probe.md|03_interruption.md|interruption|commit-e|commit-e|yes
 EOF
     validate_trace_filename_fixture "$fixtures/filenames" || return 1
-    sed 's/01_implementation_02.md/01_implementation_01.md/' \
+    sed 's/01_plan_02.md/01_plan_01.md/' \
         "$fixtures/filenames" > "$fixtures/suffixed-01"
     ! validate_trace_filename_fixture "$fixtures/suffixed-01" || return 1
-    sed 's/01_implementation_02.md/01_implementation_03.md/' \
+    sed 's/01_implementation_03.md/01_implementation_04.md/' \
         "$fixtures/filenames" > "$fixtures/suffix-gap"
     ! validate_trace_filename_fixture "$fixtures/suffix-gap" || return 1
+    sed 's/01_report_02.md/01_report_03.md/' \
+        "$fixtures/filenames" > "$fixtures/suffix-mismatch"
+    ! validate_trace_filename_fixture "$fixtures/suffix-mismatch" || return 1
     sed 's/|implementation|/|report|/' "$fixtures/filenames" > "$fixtures/reserved-phase"
     ! validate_trace_filename_fixture "$fixtures/reserved-phase" || return 1
     sed 's/|commit-b|commit-b|yes$/|commit-b|commit-other|yes/' \

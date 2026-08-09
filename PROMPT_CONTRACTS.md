@@ -417,15 +417,15 @@ Logical whole identity: catalog-delivery
 Worker session ordinal: 01
 Worker exchange ordinal: 02
 Worker session target: current-worker-session
-Phase: implementation
-Trace files: 01_implementation_02.md + 01_report_02.md
+Phase: plan
+Trace files: 01_plan_02.md + 01_report_02.md
 
 Logical whole identity: catalog-delivery
 Worker session ordinal: 01
 Worker exchange ordinal: 03
 Worker session target: current-worker-session
-Phase: correction
-Trace files: 01_correction_03.md + 01_report_03.md
+Phase: implementation
+Trace files: 01_implementation_03.md + 01_report_03.md
 
 Logical whole identity: catalog-delivery
 Worker session ordinal: 02
@@ -435,6 +435,10 @@ Phase: acceptance
 Acceptance independence: required-fresh-independent
 Trace files: 02_acceptance.md + 02_report.md
 ```
+
+This structural projection example does not authorize repeated plan-only
+cycles or alter any phase, authority, planning-budget, acceptance,
+publication, or closure rule.
 
 Current-session renewal preserves the logical-whole and session coordinates
 and advances only the exchange ordinal. Fresh-session routing inside the same
