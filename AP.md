@@ -15,6 +15,296 @@ This is the sole live normative protocol file for the AP source repository.
 Previous protocol generations are historical material in Git history, not
 parallel live files.
 
+## Semantic Authority and Artifact Relationships
+
+`AP.md` owns the meaning of every durable AP rule. No subordinate document,
+schema, test, executable, consumer block, or historical record is a second
+semantic authority. Subordinate artifacts make the protocol usable through one
+or more declared relationships:
+
+| Relationship | Function |
+|---|---|
+| **structural** | preserves exact field spelling, allowed values, ordering, and fixture shape without redefining their meaning |
+| **operational** | selects role- or task-specific decisions and steps from an AP rule |
+| **advisory** | offers optional patterns or an explicitly activated profile; it cannot grant authority or silently become required |
+| **explanatory** | teaches or defines an AP rule in plain language and links back to its owner |
+| **historical** | records why or when a decision was made; it is not current task authority |
+| **executable** | enforces a defined part of a rule in code or tests without creating new protocol meaning |
+| **consumer** | pins AP and adds project-local rules without copying or overriding universal AP meaning |
+
+These relationships are independent of an artifact's retention lifecycle. For
+example, a durable file may be advisory, while a temporary artifact may carry
+structural evidence. A subordinate artifact must declare its relationship and
+canonical AP link. Language such as “required” inside a structural or
+operational projection means required by the linked AP rule, not independently
+required by that projection.
+
+`PROMPT_CONTRACTS.md` is the structural projection: it owns exact prompt and
+report field names, enum spellings, and fixture shapes. This file owns what
+those structures mean. `AP_ORCHESTRATOR.md` and `AP_WORKER.md` are operational
+projections; `PROMPT_ENGINEERING_PATTERNS.md` and activated `INFOSEC.md` are
+advisory projections; `README.md`, `FAQ.md`, and `GLOSSARY.md` are explanatory
+projections; `ARTIFACT_LIFECYCLE.md`, `INTEGRATION.md`, and `UPDATING.md` are
+operational projections; ADRs and `CHANGELOG.md` are historical; `ap` and its
+tests are executable; and a managed `AGENTS.md` block plus project-owned rules
+form a consumer projection.
+
+### Canonical Semantic-Owner Map
+
+The identifier and linked AP section in each row are the unique semantic home
+for that rule family. Other columns name deliberate projections or enforcement;
+`—` means no projection is needed.
+
+| ID | Durable rule family and canonical semantic home | Deliberate projections and enforcement |
+|---|---|---|
+| RF-01 | [Cooperator sovereignty and material decisions](#rf-01-cooperator-sovereignty-and-material-decisions) | Orchestrator operations; explanatory role summaries; consumer-local product decisions |
+| RF-02 | [Orchestrator decision, reconciliation, and closure authority](#rf-02-orchestrator-decision-reconciliation-and-closure-authority) | Orchestrator operations; closure structural record; relationship tests |
+| RF-03 | [Worker bounded authority and report expiry](#rf-03-worker-bounded-authority-and-report-expiry) | Worker operations; prompt/report structures; negative-route tests |
+| RF-04 | [Planning ownership and Plan-to-Execution](#rf-04-planning-ownership-and-plan-to-execution) | role operations; planning structures; transition fixtures |
+| RF-05 | [Fresh/current routing and independent acceptance](#rf-05-freshcurrent-routing-and-independent-acceptance) | role operations; routing structures; positive/negative fixtures |
+| RF-06 | [Capability, reasoning, permission, containment, and authority](#rf-06-capability-reasoning-permission-containment-and-authority) | capability structures; advisory patterns; contradiction tests |
+| RF-07 | [Evidence tiers and risk-sensitive acceptance](#rf-07-evidence-tiers-and-risk-sensitive-acceptance) | evidence-envelope structures; role decision tables; scenario tests |
+| RF-08 | [Planning, reporting, audit, and blocker budgets](#rf-08-planning-reporting-audit-and-blocker-budgets) | convergence records; role stop rules; recursion tests |
+| RF-09 | [Upgrade-ledger lifecycle](#rf-09-upgrade-ledger-lifecycle) | lifecycle operations; ledger fields and fixtures |
+| RF-10 | [Provider accounting and continuous closure](#rf-10-provider-accounting-and-continuous-closure) | activated provider annex; accounting fixtures |
+| RF-11 | [Browser recovery and amendment](#rf-11-browser-recovery-and-amendment) | activated browser annex; recovery/amendment fixtures |
+| RF-12 | [Git and recovery classification](#rf-12-git-and-recovery-classification) | Worker operations; recovery fields; executable Git checks |
+| RF-13 | [Remote privilege and authenticated readback](#rf-13-remote-privilege-and-authenticated-readback) | activated privilege/readback annexes; evidence fixtures |
+| RF-14 | [Artifact ownership and lifecycle](#rf-14-artifact-ownership-and-lifecycle) | lifecycle operations; discovery/retention structures |
+| RF-15 | [Protocol variants and stable integration](#rf-15-protocol-variants-and-stable-integration) | integration operations; managed consumer block; executable doctor checks |
+| RF-16 | [Baseline-bound project execution](#rf-16-baseline-bound-project-execution) | project contract; `ap project check` and `ap exec`; executable tests |
+| RF-17 | [Closure and anti-stall rules](#rf-17-closure-and-anti-stall-rules) | closure record; Orchestrator stop rules; negative-route tests |
+| RF-18 | [Authority, security, and untrusted-content boundaries](#rf-18-authority-security-and-untrusted-content-boundaries) | activated INFOSEC profile; role operations; security fixtures |
+
+### Rule-Family Owners
+
+#### RF-01 — Cooperator Sovereignty and Material Decisions
+
+The Cooperator selects material routes and protocol designs and owns objectives,
+subjective acceptance, changed objectives, cost, privacy, irreversibility,
+material residual risk, and product trade-offs. Deterministic steps inside an
+approved envelope need no microapproval. The Cooperator is informed at an
+implementation grant, acceptance verdict, publication, and closure.
+
+#### RF-02 — Orchestrator Decision, Reconciliation, and Closure Authority
+
+The Orchestrator owns routing recommendations, evidence reconciliation,
+accept/correct/escalate decisions, ledger reconciliation, and the deterministic
+closure transition after all predeclared evidence and Cooperator-owned decisions
+are satisfied. It may not substitute its judgement for a material human
+decision.
+
+#### RF-03 — Worker Bounded Authority and Report Expiry
+
+A Worker acts only under the current complete prompt, reports one bounded
+result, and loses that authority at its terminal report, cancellation, or
+supersession. Retained context and technical ability are not continuing
+authority. A Worker never closes the logical whole.
+
+#### RF-04 — Planning Ownership and Plan-to-Execution
+
+The Orchestrator owns orchestration planning; an explicitly routed Worker may
+own bounded repository-grounded implementation planning. Planning never grants
+execution. The exact finite transition is defined in
+[Planning Budget and Expiry](#planning-budget-and-expiry) and
+[Implementation Authority](#implementation-authority).
+
+#### RF-05 — Fresh/Current Routing and Independent Acceptance
+
+Current-session continuation is a complete renewed grant for the healthy same
+logical whole when assumptions are unchanged and independence is unnecessary.
+Fresh routing is required by the triggers in
+[Implementation Authority](#implementation-authority); freshness alone does not
+prove independence.
+
+#### RF-06 — Capability, Reasoning, Permission, Containment, and Authority
+
+Role, capability, reasoning, client permission, technical containment, task
+authority, provider policy, credentials, verified gates, and evidence are
+separate dimensions. An action requires all applicable dimensions; no one
+dimension expands another.
+
+#### RF-07 — Evidence Tiers and Risk-Sensitive Acceptance
+
+Evidence tiers E0–E4 select proportionate validation and independence from
+consequence, reversibility, uncertainty, and trust-boundary impact. Phase- and
+surface-specific requirements activate only when their trigger applies.
+
+#### RF-08 — Planning, Reporting, Audit, and Blocker Budgets
+
+Planning, formal reports, unknown-unknown review, correction, audit, and repeated
+blockers have finite budgets. New material evidence or a changed objective may
+open a new justified boundary; repetition alone escalates and never manufactures
+authority.
+
+#### RF-09 — Upgrade-Ledger Lifecycle
+
+The upgrade observation ledger is non-authoritative discovery input with the
+states and deterministic transitions defined under
+[Upgrade Observation Ledger](#upgrade-observation-ledger). Only a current task
+grant authorizes implementation; closure reconciles active entries without
+destroying provenance.
+
+#### RF-10 — Provider Accounting and Continuous Closure
+
+Explicit provider authority, evidence-derived call purpose, classified terminal
+outcomes, accounting relationships, and bounded correction/retry form the
+activated provider route. Unknown billing, privacy, safety, or acceptance facts
+remain open.
+
+#### RF-11 — Browser Recovery and Amendment
+
+Browser verification uses bounded failure episodes and at most two meaningful
+recovery attempts. Missing evidence never becomes PASS. Only the Cooperator may
+amend a frozen expectation; the Orchestrator then issues bounded renewed Worker
+authority.
+
+#### RF-12 — Git and Recovery Classification
+
+Git mutation needs exact authority. Divergence is classified by the five
+canonical recovery classes before mutation, with fail-closed precedence and
+owner work preserved.
+
+#### RF-13 — Remote Privilege and Authenticated Readback
+
+Privilege belongs to the process accessing the resource; owner-executed command
+transport, privilege release, reachability, authentication, identity, first
+causal failure, and direct authenticated readback remain distinct evidence.
+
+#### RF-14 — Artifact Ownership and Lifecycle
+
+Every artifact declares relationship, authority, consumer, discoverability,
+retention or cleanup trigger, and cleanup owner. Promotion moves accepted
+meaning to its durable owner; historical or temporary artifacts never become
+task authority.
+
+#### RF-15 — Protocol Variants and Stable Integration
+
+Exactly one immutable protocol source and variant governs a consumer. Stable AP
+uses the existing repository/path/gitlink/managed-block tuple. Consumer-local
+rules may extend project policy but cannot blend or override universal AP.
+
+#### RF-16 — Baseline-Bound Project Execution
+
+The tracked `ap.project.conf` and executable `ap` enforce the closed project
+schema, sanitized direct execution, declared operation, baseline equality, and
+runtime provenance described by ADR-0012. Readiness never grants task authority.
+
+#### RF-17 — Closure and Anti-Stall Rules
+
+The finite convergence route distinguishes phase results from closure, permits
+only bounded correction and evidence probes, escalates repeated assumptions,
+and allows only the Orchestrator to perform closure after all gates are met.
+
+#### RF-18 — Authority, Security, and Untrusted-Content Boundaries
+
+Minimum-necessary authority, secret minimization, explicit consequential-effect
+classes, untrusted-content treatment, safety-policy compliance, and activated
+security profiles constrain every phase. A refusal or failed boundary is
+reported or safely narrowed, never bypassed.
+
+## Finite Convergence Contract
+
+AP converges through finite, evidence-calibrated transitions. The structural
+spellings for the records below are owned by `PROMPT_CONTRACTS.md`, under its
+“Convergence Records and Phase-Qualified Results” structural section.
+
+### Planning Budget and Expiry
+
+One initial formal implementation-planning cycle is the default. The
+Orchestrator may explicitly authorize one targeted revision only for new
+repository or external evidence, a newly identified material risk, or one
+specifically rejected assumption. The revision names the prior planning report,
+the changed decision boundary, and preserved unaffected decisions. A changed
+objective supersedes the plan and starts a newly bounded logical whole.
+
+There is no second automatic targeted revision. Unresolved repetition returns
+`NEEDS_ORCHESTRATOR_DECISION`. Planning authority expires at the terminal
+planning report, cancellation, or supersession. Retained context, Plan UI
+approval, or an automatic mode transition supplies no implementation authority.
+
+### Implementation Authority
+
+Implementation begins only through one complete Orchestrator prompt containing
+explicit implementation authority, `Native planning mode: not-used`, a
+`fresh-worker-session` or `current-worker-session` target, exact baseline,
+allowlist, and boundaries.
+
+A current Worker may continue only for the healthy same logical whole, unchanged
+assumptions, no independence requirement, useful retained context, and complete
+renewed authority. A fresh Worker is required for independent acceptance or
+audit, compromised context, a material route-assumption change, an unrelated
+logical whole, or another explicit independence trigger. Freshness alone does
+not establish independence.
+
+### Acceptance, Correction, and Escalation
+
+Acceptance is bounded to a fixed candidate, semantic-owner map, allowlist, risk
+claims, and positive/negative matrix; it is not a broad unknown-unknown audit.
+Fresh independent acceptance is risk-driven and is required when the selected
+route changes the sole normative protocol, structural schemas, or semantic
+validators.
+
+After one concrete finding, the Orchestrator may authorize one smallest coherent
+correction. The implementation Worker may not self-certify it. Scoped
+re-acceptance is sufficient only if the correction changes none of: a semantic
+owner; authority, routing, or convergence; an exact structural field; validator
+semantics; runtime behavior; an independence assumption; or a security
+boundary. A change to any of those boundaries requires full fresh acceptance.
+
+If the same design assumption or finding survives one correction and recheck,
+the next result remains `PARTIAL` or `BLOCKED` and includes exactly:
+
+```text
+Escalation disposition: NEEDS_ORCHESTRATOR_DECISION
+```
+
+A second automatic correction for the same assumption is prohibited without
+new material evidence or a changed objective. The unknown-unknown budget is one
+primary fresh acceptance and at most one correction re-acceptance. Missing
+evidence permits only a targeted probe for a named required claim. Out-of-scope
+observations become ledger candidates and do not expand the audit.
+
+### Phase-Specific Gates
+
+- Plan-to-Execution applies only to planning → implementation.
+- Public-ref gates apply only when publication authority exists.
+- INFOSEC contracts apply only when activated.
+- Browser, provider, privilege, deployment, and production gates apply only
+  when the task touches those surfaces.
+- Independent acceptance applies only when the risk/evidence route requires it.
+
+An inactive annex supplies no new requirement or authority. Activation never
+weakens the general protocol.
+
+### Cooperator Participation and Deterministic Closure
+
+The Cooperator selects the material route and approves protocol design before
+implementation. The Cooperator decides changed objectives, subjective
+acceptance, material residual risk, and cost, privacy, irreversibility, or
+product trade-offs. The Orchestrator may deterministically close only when all
+predeclared acceptance, Cooperator-owned decisions, risk disposition, ledger
+reconciliation, and no-active-mutation conditions are satisfied. The
+Cooperator is informed at implementation grant, acceptance verdict,
+publication, and closure; deterministic implementation steps require no
+microapproval.
+
+### Phase-Qualified Results and Closure
+
+These results are separate and cumulative only when their phase applies:
+
+| Result | Meaning |
+|---|---|
+| **Implementation PASS** | A bounded candidate was produced and validated; evidence is non-independent. |
+| **Acceptance PASS** | Authorized evidence accepts the exact candidate; it is independent where required. |
+| **Publication PASS** | The expected accepted commit is the public ref and direct readback matches. |
+| **Deployment PASS** | The exact accepted artifact was deployed and deployment checks passed. |
+| **Production acceptance PASS** | Required production behavior and reconciliation passed. |
+| **ORCHESTRATOR closure** | Every required preceding result, Cooperator-owned decision, risk disposition, ledger reconciliation, and no-active-mutation condition is satisfied. |
+
+None of the five PASS results alone closes a logical whole. A Worker may report
+its authorized phase result but never emits the logical-whole closure signal.
+
 ## 1. Distribution Model
 
 The canonical AP repository owns the universal protocol, universal handbooks,
@@ -316,11 +606,11 @@ Post-plan implementation session: current-worker-session | fresh-worker-session 
 Maximum plan-only cycles: 1
 ```
 
-One plan-only cycle is the default maximum. Another requires new evidence, new
-material risk, rejected assumptions, or a changed objective. Once a safe,
-bounded, decision-complete closure path exists, execution, explicit rejection,
-or identification of exact missing evidence takes precedence over more
-analysis.
+One initial plan-only cycle and the single targeted-revision route are defined
+by [Planning Budget and Expiry](#planning-budget-and-expiry). A changed objective
+starts a new bounded logical whole; repetition does not. Once a safe, bounded,
+decision-complete closure path exists, execution, explicit rejection, or
+identification of exact missing evidence takes precedence over more analysis.
 
 ### Plan-to-Execution Gate
 
@@ -908,13 +1198,9 @@ because emitting it would claim an authority the Worker does not hold. A Worker
 signals its own completion through its terminal report status.
 
 These states remain distinct and must never be substituted for one another:
-
-- implementation completion;
-- audit completion;
-- publication;
-- public Git equality;
-- Orchestrator acceptance;
-- logical-whole closure.
+Implementation PASS, Acceptance PASS, Publication PASS, Deployment PASS,
+Production acceptance PASS, and ORCHESTRATOR closure. Their canonical meanings
+are in [Phase-Qualified Results and Closure](#phase-qualified-results-and-closure).
 
 A terminal Worker report, a green test suite, a completed audit, and a
 successful push are each evidence toward closure. None of them is closure.
@@ -924,13 +1210,11 @@ successful push are each evidence toward closure. None of them is closure.
 Independent verification remains required for security-boundary and
 evidence-authority changes.
 
-Within that requirement, a bounded correction normally returns to the
-implementing Worker rather than to a new auditor. Another fresh audit is
-required only when a correction changes a security boundary, an evidence
-validator, an auditor assumption, or another materially independent fact. An
-audit that produced findings does not by itself entitle the next correction to a
-further audit; that would create audit-after-audit recursion without new
-independent facts.
+Within that requirement, one bounded correction normally returns to the
+implementing Worker. The scoped-versus-full re-acceptance boundary and repeated
+finding escalation are defined in
+[Acceptance, Correction, and Escalation](#acceptance-correction-and-escalation).
+An audit finding never authorizes recursive audit or correction by itself.
 
 ## 8. Worker Responsibilities
 
@@ -1799,8 +2083,9 @@ Worker session; the Diagnostic Worker profile alone does not imply either
 target.
 
 For proportionate risk, uncertainty, or evidence cost, the Orchestrator may use
-a separate fresh Worker instance for sequential independent audit. This is not
-parallel execution.
+a separate fresh Worker instance for sequential independent audit. Changes to
+this sole protocol, structural schemas, or semantic validators require that
+fresh independent route. This is not parallel execution.
 
 When independent evidence identifies a defect, the proportional sequence is:
 
@@ -1808,14 +2093,11 @@ When independent evidence identifies a defect, the proportional sequence is:
 independent finding -> bounded correction -> fresh independent re-audit when proportionate
 ```
 
-A Bounded Correction Worker has implementation authority only for confirmed
-defects and explicitly authorized adjacent consistency changes. Fresh
-Independent Re-Audit is a Worker session profile and a form of Independent
-Audit, not a permanent role and not a new AP phase. It targets the correction
-plus the original risk claim and must use a fresh Worker session independent of
-the correction. Re-audit is not universally mandatory; the Orchestrator may
-directly accept genuinely trivial, low-risk, mechanical corrections when the
-evidence is sufficiently strong.
+A Bounded Correction Worker has implementation authority only for one confirmed
+defect and explicitly authorized adjacent consistency changes. Re-acceptance
+targets the correction plus the original risk claim and follows the
+scoped-versus-full boundary in the finite convergence contract. A second
+automatic correction for the same assumption is prohibited.
 
 ## 16. Numbered Cooperator Acceptance Feedback
 

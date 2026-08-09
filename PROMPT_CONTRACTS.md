@@ -1,8 +1,14 @@
 # Prompt Contracts
 
-This document defines compact structures for AP prompts and reports. It is not a
-collection of fixed giant prompts. The Orchestrator generates a task-specific
-prompt that matches the repository, risk, and authority of the current work.
+Artifact relationship: **structural projection** of the `AP.md` “Semantic
+Authority and Artifact Relationships” section.
+
+This document owns exact prompt/report field spelling, allowed values, and
+fixture shapes. [AP.md](AP.md) alone owns their semantic meaning. A field here
+is required only when its linked AP rule and phase or surface activation require
+it; this is not a collection of fixed giant prompts or a second live protocol.
+The Orchestrator generates a self-contained task-specific prompt that matches
+the repository, risk, and authority of the current work.
 
 ## Worker Report Header
 
@@ -12,9 +18,10 @@ Every standard Worker report begins exactly:
 ### Report for ORCHESTRATOR_CHAT
 ```
 
-Unless a task requires more detail, the report should include:
+Every report has this compact core:
 
 1. status: PASS, PARTIAL, or BLOCKED;
+2. phase-qualified result or `not-applicable`;
 2. start and end commit;
 3. changed files and purpose;
 4. tests and validation;
@@ -23,7 +30,16 @@ Unless a task requires more detail, the report should include:
 7. one smallest next step or review request; and
 8. exactly one report justification: `new-mutation`, `new-evidence`,
    `new-material-risk`, `changed-external-state`, `final-acceptance`, or
-   `explicit-closure`.
+   `explicit-closure`; and
+9. authority-expiry statement.
+
+Numbering is descriptive; field labels and task-specific order may be fixed by
+the authoritative prompt. Activate only the annexes for surfaces the task
+touches: planning revision, acceptance/correction, publication, deployment,
+production acceptance, browser, provider, privilege/readback, recovery,
+INFOSEC, or another explicitly governed profile. An activated annex retains all
+required evidence in its section below. An inactive annex is omitted rather
+than copied with invented values.
 
 Two further sections are part of the standard report whenever the task produced
 either kind of evidence:
@@ -57,6 +73,133 @@ Closure decision required: authorize-and-execute | reject-with-reason | identify
 A third equivalent cycle requires new mutation, evidence, material risk,
 external state, or objective. Another Worker must not be created merely to
 reinterpret the same blocker.
+
+## Convergence Records and Phase-Qualified Results
+
+The meanings and transition rules are owned by the `AP.md` “Finite Convergence
+Contract”. This section owns the exact structural spellings.
+
+### Planning Record
+
+Every initial implementation-planning prompt uses the existing fields in
+[Plan-to-Execution Gate](#plan-to-execution-gate) and:
+
+```text
+Planning cycle: initial
+Prior planning report: none
+Targeted revision basis: none
+Changed decision boundary: none
+Preserved unaffected decisions: none
+Automatic targeted revisions used: 0
+```
+
+The sole authorized targeted revision uses:
+
+```text
+Planning cycle: targeted-revision
+Prior planning report: <stable report identity>
+Targeted revision basis: new-repository-or-external-evidence | newly-identified-material-risk | specifically-rejected-assumption
+Changed decision boundary: <one exact boundary>
+Preserved unaffected decisions: <exact unaffected decisions>
+Automatic targeted revisions used: 1
+```
+
+An issued record contains one value, not literal alternatives. A changed
+objective has no targeted-revision record: it supersedes the plan and starts a
+new logical whole. A second automatic targeted revision or unresolved repeated
+assumption produces a terminal `PARTIAL` or `BLOCKED` record containing exactly:
+
+```text
+Escalation disposition: NEEDS_ORCHESTRATOR_DECISION
+```
+
+### Implementation Authority Record
+
+An implementation prompt contains exactly one value for every routing field and
+concrete values for every boundary:
+
+```text
+Implementation authority: explicit
+Native planning mode: not-used
+Worker session target: fresh-worker-session | current-worker-session
+Exact baseline: <immutable identity>
+Changed-path allowlist: <exact paths>
+Implementation boundaries: <positive and negative authority>
+Independence required: yes | no
+```
+
+For `current-worker-session`, the continuity and complete-renewal fields in
+[Worker Session Target Contract](#worker-session-target-contract) also apply.
+This record cannot appear in a planning report as authority for immediate
+execution.
+
+### Acceptance and Correction Record
+
+```text
+Acceptance candidate: <exact immutable candidate>
+Acceptance owner map: <exact owner-map identity>
+Acceptance allowlist: <exact paths>
+Acceptance risk claims: <fixed claims>
+Acceptance control matrix: <fixed positive and negative controls>
+Acceptance independence: not-required | required-fresh-independent
+Primary fresh acceptances used: 0 | 1
+Automatic corrections used: 0 | 1
+Correction re-acceptance: not-applicable | scoped | full-fresh
+Named missing-evidence probe: none | <one required claim>
+Out-of-scope observations: none | ledger-candidates
+```
+
+`scoped` is invalid if the correction changes a semantic owner,
+authority/routing/convergence rule, exact structural field, validator semantics,
+runtime behavior, independence assumption, or security boundary. Such a change
+uses `full-fresh`. The implementing or correcting Worker cannot be the required
+fresh independent acceptance Worker.
+
+### Phase Result and Closure Record
+
+Worker and Orchestrator records keep result identity separate from closure:
+
+```text
+Phase-qualified result: implementation-PASS | acceptance-PASS | publication-PASS | deployment-PASS | production-acceptance-PASS | not-applicable
+Result artifact or commit: <exact identity or not-applicable>
+Result evidence: <bounded evidence or not-applicable>
+Logical-whole closure: not-closed | closed-by-ORCHESTRATOR
+```
+
+An issued record contains one phase result. `closed-by-ORCHESTRATOR` is valid
+only in an Orchestrator closure record with:
+
+```text
+Required preceding results: satisfied
+Cooperator-owned decisions: satisfied
+Residual-risk disposition: satisfied
+Upgrade-ledger reconciliation: complete
+Active mutation: none
+Closure actor: ORCHESTRATOR
+```
+
+A Worker report always uses `Logical-whole closure: not-closed`; a Worker never
+emits the project closure signal. No implementation, acceptance, publication,
+deployment, or production-acceptance PASS implies closure.
+
+### Activated Surface Annexes
+
+The compact core activates rather than weakens surface evidence:
+
+| Trigger | Structural annex |
+|---|---|
+| planning or targeted revision | Planning Record and Plan-to-Execution fields |
+| independent acceptance or correction | Acceptance and Correction Record |
+| publication authority | exact expected/public ref, direct readback, commit/tree/path evidence |
+| deployment | exact accepted/deployed artifact, target, checks, recovery evidence |
+| production acceptance | behavior, reconciliation, owner/automated evidence, residual risk |
+| browser verification | Browser Stall Guard and Amended Expectation records |
+| provider calls | Provider Accounting record |
+| owner commands, privilege, or authenticated readback | corresponding owner/readback records |
+| INFOSEC activation | applicable security finding, threat-model, containment, source, residual-risk, and audit records |
+
+Phase gates never leak into unrelated prompts merely because their structures
+exist here.
 
 ## Common Worker Task Fields
 
@@ -262,9 +405,10 @@ Post-plan implementation session: current-worker-session | fresh-worker-session 
 Maximum plan-only cycles: 1
 ```
 
-One cycle is the maximum unless new evidence, new material risk, rejected
-assumptions, or a changed objective appears. When the Worker remains healthy
-and independence is not required, use `allowed` with
+One initial cycle is followed by at most one explicitly authorized targeted
+revision using the [Planning Record](#planning-record). A changed objective
+supersedes the plan and begins a new bounded logical whole. When the Worker
+remains healthy and independence is not required, use `allowed` with
 `current-worker-session`; execution still requires the complete new prompt.
 
 The required transition is:
@@ -286,6 +430,11 @@ automatic interface transition grants no implementation authority.
 Once the plan establishes a safe bounded closure path, the Orchestrator must
 authorize and execute it, reject it for a concrete reason, or identify exact
 missing evidence. “More analysis” is not a transition decision.
+
+A terminal planning report, cancellation, or supersession expires planning
+authority. No Plan UI approval, retained context, or automatic mode transition
+changes that result. A prohibited second automatic targeted revision returns
+the exact escalation disposition defined in the Planning Record.
 
 ## Worker Capability Handshake Contract
 
@@ -1626,7 +1775,7 @@ task.
 
 ## Related Documents
 
-- [AP.md](AP.md)
+- [AP semantic authority](AP.md#semantic-authority-and-artifact-relationships)
 - [AP_ORCHESTRATOR.md](AP_ORCHESTRATOR.md)
 - [AP_WORKER.md](AP_WORKER.md)
 - [PROMPT_ENGINEERING_PATTERNS.md](PROMPT_ENGINEERING_PATTERNS.md)

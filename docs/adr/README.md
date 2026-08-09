@@ -23,6 +23,7 @@ Programming.
 | [0010](0010-defensive-security-profile.md) | Defensive-security profile and finding contract | Accepted | Advisory INFOSEC.md profile with a small normative AP.md anchor; no existing ADR superseded |
 | [0011](0011-risk-routed-planning-and-bounded-closure.md) | Risk-routed planning and bounded closure | Accepted | Current planning, freshness, evidence-tier, anti-stall, authority-envelope, operational-evidence, and human-governance decision |
 | [0012](0012-baseline-bound-project-execution.md) | Baseline-bound project execution envelope | Accepted | Adds the project contract, sanitized direct execution, and CPython provenance boundary without changing protocol authority |
+| [0013](0013-semantic-ownership-and-convergence.md) | Semantic ownership and finite convergence | Accepted | Establishes the semantic-owner registry, projection taxonomy, structural-field ownership, and bounded convergence contract |
 
 ADR-0009 permits only an explicit bounded parallel exception. It does not
 supersede fresh sequential independent audit or the remaining decisions in
@@ -36,6 +37,11 @@ ADR-0011 prospectively replaces the universal fresh-default bias and extends
 ADR-0009's Plan-to-Execution gate. It preserves current-session authority
 renewal, fresh sequential independent audit, the bounded parallel exception,
 and the stricter activated `INFOSEC.md` rules.
+
+ADR-0013 consolidates current semantic ownership in `AP.md` and classifies all
+other live artifacts as projections or enforcement. It refines planning and
+acceptance budgets without changing the roles, stable variant tuple, executable
+runtime, or earlier ADR bodies.
 
 ## Lifecycle Rule
 

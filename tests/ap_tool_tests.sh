@@ -4627,11 +4627,9 @@ test_worker_session_profile_and_evidence_contracts() {
     grep -F "Same-session diagnostic evidence must be labelled" "$REPO/AP.md" >/dev/null || return 1
     grep -F "does not independently certify that correction" "$REPO/AP.md" >/dev/null || return 1
     grep -F "### Report for ORCHESTRATOR_CHAT" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
-    grep -F "Bounded Correction Worker has implementation authority only for confirmed" "$REPO/AP.md" >/dev/null || return 1
-    grep -F "defects and explicitly authorized adjacent consistency changes" "$REPO/AP.md" >/dev/null || return 1
-    grep -F "Independent Re-Audit is a Worker session profile and a form of Independent" "$REPO/AP.md" >/dev/null || return 1
-    grep -F "Audit, not a permanent role and not a new AP phase" "$REPO/AP.md" >/dev/null || return 1
-    grep -F "Re-audit is not universally mandatory" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "A Bounded Correction Worker has implementation authority only for one confirmed" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "scoped-versus-full boundary in the finite convergence contract" "$REPO/AP.md" >/dev/null || return 1
+    grep -F "A second automatic correction for the same assumption is prohibited" "$REPO/AP.md" >/dev/null || return 1
     scan_absent "discovery-worker-role" \
         -n "Discovery Worker" "$REPO" --glob '!/.git/**' --glob '!tests/**' || return 1
     scan_absent "persistent-profile-roles" \
@@ -5970,27 +5968,24 @@ test_recovery_classification_and_closure_signalling_contracts() {
         "Only the Orchestrator may emit it, and only once accepted evidence, active-context reconciliation, and closure authority all exist" || return 1
     assert_section_contract "$REPO/AP.md" "$closure_start" "$closure_end" \
         "A Worker must never emit the project's authoritative closure signal" || return 1
-    # All six states must stay listed as distinct Markdown blocks.
+    # Phase results remain separate structural values and none implies closure.
     for closure_state in \
-        "implementation completion" \
-        "audit completion" \
-        "publication" \
-        "public Git equality" \
-        "Orchestrator acceptance"
+        "Implementation PASS" \
+        "Acceptance PASS" \
+        "Publication PASS" \
+        "Deployment PASS" \
+        "Production acceptance PASS" \
+        "ORCHESTRATOR closure"
     do
-        assert_section_contract "$REPO/AP.md" "$closure_start" "$closure_end" \
-            "- $closure_state;" || return 1
+        assert_section_contract "$REPO/AP.md" "### Phase-Qualified Results and Closure" \
+            "## 1. Distribution Model" "$closure_state" || return 1
     done
-    assert_section_contract "$REPO/AP.md" "$closure_start" "$closure_end" \
-        "- logical-whole closure." || return 1
     assert_section_contract "$REPO/AP.md" "$closure_start" "$closure_end" \
         "None of them is closure" || return 1
     assert_section_contract "$REPO/AP.md" "$closure_start" "$closure_end" \
-        "a bounded correction normally returns to the implementing Worker rather than to a new auditor" || return 1
-    assert_section_contract "$REPO/AP.md" "$closure_start" "$closure_end" \
-        "Another fresh audit is required only when a correction changes a security boundary, an evidence validator, an auditor assumption, or another materially independent fact" || return 1
-    assert_section_contract "$REPO/AP.md" "$closure_start" "$closure_end" \
-        "that would create audit-after-audit recursion without new independent facts" || return 1
+        "The scoped-versus-full re-acceptance boundary and repeated" || return 1
+    assert_section_contract "$REPO/AP.md" "### Acceptance, Correction, and Escalation" \
+        "### Phase-Specific Gates" "A second automatic correction for the same assumption is prohibited" || return 1
     # The compatible legacy sentence must remain for existing consumers.
     assert_section_contract "$REPO/AP.md" "$closure_start" "$closure_end" \
         "The Orchestrator owns the logical-block closure decision" || return 1
@@ -8008,6 +8003,277 @@ EOF
         "$REPO/PROMPT_ENGINEERING_PATTERNS.md" >/dev/null
 }
 
+validate_convergence_fixture() {
+    file=$1
+    for field in \
+        "Planning cycle:" \
+        "Prior planning report:" \
+        "Targeted revision basis:" \
+        "Changed decision boundary:" \
+        "Preserved unaffected decisions:" \
+        "Automatic targeted revisions used:" \
+        "Terminal planning report submitted:" \
+        "Planning authority after terminal report:" \
+        "Plan UI approval:" \
+        "Implementation authority:" \
+        "Separate implementation prompt:" \
+        "Native planning mode:" \
+        "Worker session target:" \
+        "Healthy same logical whole:" \
+        "Assumptions unchanged:" \
+        "Independence required:" \
+        "Worker materially implemented candidate:" \
+        "Independent evidence established:" \
+        "Exact baseline:" \
+        "Changed-path allowlist:" \
+        "Implementation boundaries:" \
+        "Terminal implementation report submitted:" \
+        "Implementation authority after terminal report:" \
+        "Primary fresh acceptances used:" \
+        "Automatic corrections used:" \
+        "Correction re-acceptance:" \
+        "Semantic boundary changed:" \
+        "Same assumption survives correction and recheck:" \
+        "Escalation disposition:" \
+        "Missing evidence:" \
+        "Evidence probe scope:" \
+        "Audit scope:" \
+        "Phase-qualified result:" \
+        "Required preceding results:" \
+        "Cooperator-owned decisions:" \
+        "Residual-risk disposition:" \
+        "Upgrade-ledger reconciliation:" \
+        "Active mutation:" \
+        "Closure actor:" \
+        "Logical-whole closure:"
+    do
+        [ "$(grep -cF "$field" "$file")" -eq 1 ] || return 1
+        value=$(sed -n "s/^$field //p" "$file")
+        [ -n "$value" ] || return 1
+    done
+
+    planning_cycle=$(sed -n 's/^Planning cycle: //p' "$file")
+    revisions=$(sed -n 's/^Automatic targeted revisions used: //p' "$file")
+    [ "$planning_cycle" = initial ] || [ "$planning_cycle" = targeted-revision ] || return 1
+    [ "$revisions" = 0 ] || [ "$revisions" = 1 ] || return 1
+    if [ "$planning_cycle" = initial ]; then
+        [ "$revisions" = 0 ] || return 1
+        [ "$(sed -n 's/^Prior planning report: //p' "$file")" = none ] || return 1
+    else
+        [ "$revisions" = 1 ] || return 1
+        [ "$(sed -n 's/^Prior planning report: //p' "$file")" != none ] || return 1
+        [ "$(sed -n 's/^Targeted revision basis: //p' "$file")" != none ] || return 1
+        [ "$(sed -n 's/^Changed decision boundary: //p' "$file")" != none ] || return 1
+        [ "$(sed -n 's/^Preserved unaffected decisions: //p' "$file")" != none ] || return 1
+    fi
+
+    if [ "$(sed -n 's/^Terminal planning report submitted: //p' "$file")" = yes ]; then
+        [ "$(sed -n 's/^Planning authority after terminal report: //p' "$file")" = expired ] || return 1
+    fi
+    if [ "$(sed -n 's/^Implementation authority: //p' "$file")" = explicit ]; then
+        [ "$(sed -n 's/^Separate implementation prompt: //p' "$file")" = yes ] || return 1
+        [ "$(sed -n 's/^Native planning mode: //p' "$file")" = not-used ] || return 1
+        [ "$(sed -n 's/^Exact baseline: //p' "$file")" != none ] || return 1
+        [ "$(sed -n 's/^Changed-path allowlist: //p' "$file")" != none ] || return 1
+        [ "$(sed -n 's/^Implementation boundaries: //p' "$file")" != none ] || return 1
+    fi
+    if [ "$(sed -n 's/^Worker session target: //p' "$file")" = current-worker-session ]; then
+        [ "$(sed -n 's/^Healthy same logical whole: //p' "$file")" = yes ] || return 1
+        [ "$(sed -n 's/^Assumptions unchanged: //p' "$file")" = yes ] || return 1
+        [ "$(sed -n 's/^Independence required: //p' "$file")" = no ] || return 1
+    fi
+    if [ "$(sed -n 's/^Independent evidence established: //p' "$file")" = yes ]; then
+        [ "$(sed -n 's/^Worker session target: //p' "$file")" = fresh-worker-session ] || return 1
+        [ "$(sed -n 's/^Worker materially implemented candidate: //p' "$file")" = no ] || return 1
+    fi
+    if [ "$(sed -n 's/^Independence required: //p' "$file")" = yes ]; then
+        [ "$(sed -n 's/^Independent evidence established: //p' "$file")" = yes ] || return 1
+    fi
+    if [ "$(sed -n 's/^Terminal implementation report submitted: //p' "$file")" = yes ]; then
+        [ "$(sed -n 's/^Implementation authority after terminal report: //p' "$file")" = expired ] || return 1
+    fi
+
+    acceptances=$(sed -n 's/^Primary fresh acceptances used: //p' "$file")
+    corrections=$(sed -n 's/^Automatic corrections used: //p' "$file")
+    [ "$acceptances" = 0 ] || [ "$acceptances" = 1 ] || return 1
+    [ "$corrections" = 0 ] || [ "$corrections" = 1 ] || return 1
+    if [ "$(sed -n 's/^Correction re-acceptance: //p' "$file")" = scoped ]; then
+        [ "$(sed -n 's/^Semantic boundary changed: //p' "$file")" = no ] || return 1
+    fi
+    if [ "$(sed -n 's/^Same assumption survives correction and recheck: //p' "$file")" = yes ]; then
+        [ "$corrections" = 1 ] || return 1
+        [ "$(sed -n 's/^Escalation disposition: //p' "$file")" = NEEDS_ORCHESTRATOR_DECISION ] || return 1
+        [ "$(sed -n 's/^Logical-whole closure: //p' "$file")" = not-closed ] || return 1
+    fi
+    if [ "$(sed -n 's/^Missing evidence: //p' "$file")" != none ]; then
+        [ "$(sed -n 's/^Evidence probe scope: //p' "$file")" = named-required-claim ] || return 1
+        [ "$(sed -n 's/^Audit scope: //p' "$file")" = fixed-candidate-matrix ] || return 1
+    fi
+
+    case "$(sed -n 's/^Phase-qualified result: //p' "$file")" in
+        implementation-PASS|acceptance-PASS|publication-PASS|deployment-PASS|production-acceptance-PASS|not-applicable) ;;
+        *) return 1 ;;
+    esac
+    if [ "$(sed -n 's/^Logical-whole closure: //p' "$file")" = closed ]; then
+        [ "$(sed -n 's/^Closure actor: //p' "$file")" = ORCHESTRATOR ] || return 1
+        [ "$(sed -n 's/^Required preceding results: //p' "$file")" = satisfied ] || return 1
+        [ "$(sed -n 's/^Cooperator-owned decisions: //p' "$file")" = satisfied ] || return 1
+        [ "$(sed -n 's/^Residual-risk disposition: //p' "$file")" = satisfied ] || return 1
+        [ "$(sed -n 's/^Upgrade-ledger reconciliation: //p' "$file")" = complete ] || return 1
+        [ "$(sed -n 's/^Active mutation: //p' "$file")" = none ] || return 1
+    fi
+}
+
+write_convergence_fixture() {
+    file=$1
+    phase_result=$2
+    cat > "$file" <<EOF
+Planning cycle: initial
+Prior planning report: none
+Targeted revision basis: none
+Changed decision boundary: none
+Preserved unaffected decisions: none
+Automatic targeted revisions used: 0
+Terminal planning report submitted: yes
+Planning authority after terminal report: expired
+Plan UI approval: no-authority
+Implementation authority: explicit
+Separate implementation prompt: yes
+Native planning mode: not-used
+Worker session target: fresh-worker-session
+Healthy same logical whole: no
+Assumptions unchanged: yes
+Independence required: no
+Worker materially implemented candidate: yes
+Independent evidence established: no
+Exact baseline: abc1234
+Changed-path allowlist: AP.md
+Implementation boundaries: bounded
+Terminal implementation report submitted: yes
+Implementation authority after terminal report: expired
+Primary fresh acceptances used: 0
+Automatic corrections used: 0
+Correction re-acceptance: not-applicable
+Semantic boundary changed: no
+Same assumption survives correction and recheck: no
+Escalation disposition: none
+Missing evidence: none
+Evidence probe scope: none
+Audit scope: fixed-candidate-matrix
+Phase-qualified result: $phase_result
+Required preceding results: incomplete
+Cooperator-owned decisions: pending
+Residual-risk disposition: pending
+Upgrade-ledger reconciliation: incomplete
+Active mutation: none
+Closure actor: none
+Logical-whole closure: not-closed
+EOF
+}
+
+test_semantic_ownership_and_convergence_contracts() {
+    owner_rows=$TMPROOT/semantic-owner-rows
+    grep '^| RF-[0-9][0-9] |' "$REPO/AP.md" > "$owner_rows" || return 1
+    [ "$(wc -l < "$owner_rows" | tr -d ' ')" -eq 18 ] || return 1
+    [ "$(sed -n 's/^| \(RF-[0-9][0-9]\) |.*$/\1/p' "$owner_rows" | sort -u | wc -l | tr -d ' ')" -eq 18 ] || return 1
+    [ "$(grep -c '](#rf-[0-9][0-9]-' "$owner_rows")" -eq 18 ] || return 1
+    while IFS= read -r anchor
+    do
+        file_has_anchor "$REPO/AP.md" "$anchor" || return 1
+    done <<EOF
+$(sed -n 's/.*](#\([^)]*\)).*/\1/p' "$owner_rows")
+EOF
+
+    grep -F 'This is the sole live normative protocol file' "$REPO/AP.md" >/dev/null || return 1
+    grep -F 'Artifact relationship: **structural projection**' "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
+    grep -F 'This document owns exact prompt/report field spelling, allowed values, and' "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
+    grep -F 'This file owns what' "$REPO/AP.md" >/dev/null || return 1
+    grep -F 'Escalation disposition: NEEDS_ORCHESTRATOR_DECISION' "$REPO/AP.md" >/dev/null || return 1
+    grep -F 'Escalation disposition: NEEDS_ORCHESTRATOR_DECISION' "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
+
+    fixtures=$TMPROOT/convergence-fixtures
+    mkdir -p "$fixtures"
+    write_convergence_fixture "$fixtures/implementation" implementation-PASS
+    validate_convergence_fixture "$fixtures/implementation" || return 1
+
+    # Healthy current continuation is legal only under a complete renewed grant.
+    sed -e 's/^Worker session target:.*$/Worker session target: current-worker-session/' \
+        -e 's/^Healthy same logical whole:.*$/Healthy same logical whole: yes/' \
+        -e 's/^Worker materially implemented candidate:.*$/Worker materially implemented candidate: no/' \
+        "$fixtures/implementation" > "$fixtures/current-continuation"
+    validate_convergence_fixture "$fixtures/current-continuation" || return 1
+
+    # Required independent acceptance is fresh and distinct from implementation.
+    sed -e 's/^Independence required:.*$/Independence required: yes/' \
+        -e 's/^Worker materially implemented candidate:.*$/Worker materially implemented candidate: no/' \
+        -e 's/^Independent evidence established:.*$/Independent evidence established: yes/' \
+        -e 's/^Primary fresh acceptances used:.*$/Primary fresh acceptances used: 1/' \
+        -e 's/^Phase-qualified result:.*$/Phase-qualified result: acceptance-PASS/' \
+        "$fixtures/implementation" > "$fixtures/fresh-acceptance"
+    validate_convergence_fixture "$fixtures/fresh-acceptance" || return 1
+
+    # One bounded correction can receive scoped re-acceptance when no semantic boundary changed.
+    sed -e 's/^Automatic corrections used:.*$/Automatic corrections used: 1/' \
+        -e 's/^Correction re-acceptance:.*$/Correction re-acceptance: scoped/' \
+        "$fixtures/fresh-acceptance" > "$fixtures/scoped-reacceptance"
+    validate_convergence_fixture "$fixtures/scoped-reacceptance" || return 1
+
+    # All five PASS values remain representable without closure.
+    for result in implementation-PASS acceptance-PASS publication-PASS deployment-PASS production-acceptance-PASS
+    do
+        write_convergence_fixture "$fixtures/$result" "$result"
+        validate_convergence_fixture "$fixtures/$result" || return 1
+        grep -F 'Logical-whole closure: not-closed' "$fixtures/$result" >/dev/null || return 1
+    done
+
+    # The Cooperator satisfies material decisions; only the Orchestrator closes.
+    sed -e 's/^Required preceding results:.*$/Required preceding results: satisfied/' \
+        -e 's/^Cooperator-owned decisions:.*$/Cooperator-owned decisions: satisfied/' \
+        -e 's/^Residual-risk disposition:.*$/Residual-risk disposition: satisfied/' \
+        -e 's/^Upgrade-ledger reconciliation:.*$/Upgrade-ledger reconciliation: complete/' \
+        -e 's/^Closure actor:.*$/Closure actor: ORCHESTRATOR/' \
+        -e 's/^Logical-whole closure:.*$/Logical-whole closure: closed/' \
+        "$fixtures/fresh-acceptance" > "$fixtures/closure"
+    validate_convergence_fixture "$fixtures/closure" || return 1
+
+    # Negative controls exercise relationships rather than favored prose.
+    sed 's/^Planning authority after terminal report:.*$/Planning authority after terminal report: active-by-UI-approval/' \
+        "$fixtures/implementation" > "$fixtures/ui-exec"
+    ! validate_convergence_fixture "$fixtures/ui-exec" || return 1
+    sed 's/^Implementation authority after terminal report:.*$/Implementation authority after terminal report: active/' \
+        "$fixtures/implementation" > "$fixtures/report-survival"
+    ! validate_convergence_fixture "$fixtures/report-survival" || return 1
+    sed -e 's/^Independence required:.*$/Independence required: yes/' \
+        -e 's/^Independent evidence established:.*$/Independent evidence established: yes/' \
+        "$fixtures/implementation" > "$fixtures/self-acceptance"
+    ! validate_convergence_fixture "$fixtures/self-acceptance" || return 1
+    sed -e 's/^Worker materially implemented candidate:.*$/Worker materially implemented candidate: no/' \
+        -e 's/^Independent evidence established:.*$/Independent evidence established: yes/' \
+        "$fixtures/current-continuation" > "$fixtures/current-independent"
+    ! validate_convergence_fixture "$fixtures/current-independent" || return 1
+    sed 's/^Automatic targeted revisions used:.*$/Automatic targeted revisions used: 2/' \
+        "$fixtures/implementation" > "$fixtures/second-plan-revision"
+    ! validate_convergence_fixture "$fixtures/second-plan-revision" || return 1
+    sed -e 's/^Automatic corrections used:.*$/Automatic corrections used: 1/' \
+        -e 's/^Same assumption survives correction and recheck:.*$/Same assumption survives correction and recheck: yes/' \
+        "$fixtures/implementation" > "$fixtures/missing-escalation"
+    ! validate_convergence_fixture "$fixtures/missing-escalation" || return 1
+    sed -e 's/^Missing evidence:.*$/Missing evidence: provider-count/' \
+        -e 's/^Audit scope:.*$/Audit scope: open-unknown-unknowns/' \
+        "$fixtures/fresh-acceptance" > "$fixtures/open-audit"
+    ! validate_convergence_fixture "$fixtures/open-audit" || return 1
+    sed 's/^Closure actor:.*$/Closure actor: WORKER/' "$fixtures/closure" > "$fixtures/worker-closure"
+    ! validate_convergence_fixture "$fixtures/worker-closure" || return 1
+    sed -e 's/^Phase-qualified result:.*$/Phase-qualified result: publication-PASS/' \
+        -e 's/^Required preceding results:.*$/Required preceding results: incomplete/' \
+        "$fixtures/closure" > "$fixtures/publication-is-closure"
+    ! validate_convergence_fixture "$fixtures/publication-is-closure" || return 1
+    sed -e 's/^Correction re-acceptance:.*$/Correction re-acceptance: scoped/' \
+        -e 's/^Semantic boundary changed:.*$/Semantic boundary changed: yes/' \
+        "$fixtures/scoped-reacceptance" > "$fixtures/scoped-semantic-change"
+    ! validate_convergence_fixture "$fixtures/scoped-semantic-change"
+}
+
 test_failure_preservation_privilege_and_cleanup_contracts() {
     assert_section_contract "$REPO/AP.md" "## 12. Validation and Public Verification" \
         "## 13. Artifact Lifecycle and Repository Hygiene" \
@@ -8144,6 +8410,7 @@ run_test "upgrade ledger lifecycle and reconciliation fixtures are enforced" tes
 run_test "evidence tiers, activation, and surface-routing contracts are enforced" test_evidence_tiers_activation_and_surface_routing_contracts
 run_test "evidence tiers and implementation/acceptance envelopes enforce scenario relationships" test_evidence_tier_and_implementation_envelope_scenarios
 run_test "first-causal-error, privilege, parser, and cleanup contracts are enforced" test_failure_preservation_privilege_and_cleanup_contracts
+run_test "semantic owners and finite convergence enforce positive and negative routes" test_semantic_ownership_and_convergence_contracts
 
 say "passed: $pass_count"
 say "failed: $fail_count"
