@@ -7,6 +7,16 @@ remains the sole live normative protocol.
 
 ## Unreleased
 
+- Added the prospective AP-native logical-whole, Worker-session, and exchange
+  coordinates plus an optional subordinate external analytic-development trace,
+  standard Markdown/Git exchange grammar, atomic after-outcome archival, and
+  restoration precedence under
+  [RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity).
+  Historical prompts retain their original AP pins. CLI behavior, schema v1,
+  the managed block, stable variant selection, and consumer pins are unchanged.
+  This local implementation candidate still requires fresh independent
+  acceptance and does not claim publication or closure; rationale is recorded
+  by ADR-0014.
 - Consolidated every durable AP rule family under a stable semantic-owner map
   in `AP.md`; classified subordinate artifacts as structural, operational,
   advisory, explanatory, historical, executable, or consumer projections;

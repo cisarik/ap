@@ -75,6 +75,7 @@ for that rule family. Other columns name deliberate projections or enforcement;
 | RF-16 | [Baseline-bound project execution](#rf-16-baseline-bound-project-execution) | project contract; `ap project check` and `ap exec`; executable tests |
 | RF-17 | [Closure and anti-stall rules](#rf-17-closure-and-anti-stall-rules) | closure record; Orchestrator stop rules; negative-route tests |
 | RF-18 | [Authority, security, and untrusted-content boundaries](#rf-18-authority-security-and-untrusted-content-boundaries) | activated INFOSEC profile; role operations; security fixtures |
+| RF-19 | [External analytic trace and Worker exchange identity](#rf-19-external-analytic-trace-and-worker-exchange-identity) | prompt/report structures; role and lifecycle operations; explanatory and historical projections; exchange fixtures |
 
 ### Rule-Family Owners
 
@@ -202,6 +203,92 @@ Minimum-necessary authority, secret minimization, explicit consequential-effect
 classes, untrusted-content treatment, safety-policy compliance, and activated
 security profiles constrain every phase. A refusal or failed boundary is
 reported or safely narrowed, never bypassed.
+
+#### RF-19 — External Analytic Trace and Worker Exchange Identity
+
+Every newly issued authoritative Worker prompt carries one stable lowercase
+kebab-case logical-whole identity, one two-digit Worker-session ordinal, and
+one two-digit Worker-exchange ordinal, each beginning at `01`; every terminal
+Worker report echoes the exact coordinates. The logical-whole identity names
+one bounded objective through closure or cancellation. A materially changed
+objective begins a new identity and resets both ordinals to `01`.
+
+A Worker-session ordinal identifies one concrete Worker session only inside
+that logical whole. Its first session is `01`; each genuinely fresh session
+receives the next contiguous ordinal and resets its exchange ordinal to `01`.
+An ordinal is never reassigned to another concrete session. Complete renewed
+authority to the exact healthy current session preserves the logical-whole and
+session coordinates and increments the contiguous exchange ordinal. Exchange
+`01` is the first separately authorized prompt/outcome lifecycle in a session;
+every later renewal or reissue increments it, regardless of phase or profile.
+A target or profile change alone neither creates nor preserves session
+identity.
+
+Coordinates record routing and continuity decisions. They do not grant
+authority, prove delivery, establish independence, or replace the exact Worker
+session target, continuity anchor, and complete authority-renewal contract. A
+fresh independent acceptance uses a genuinely fresh session and the next
+session ordinal, but freshness and ordinals alone never prove independence.
+Missing, duplicate, malformed, skipped, regressed, reused, or contradictory
+coordinates in a newly issued prompt require stop and prospective correction.
+Every exchange begins with one complete authoritative prompt and ends with one
+terminal report, cancellation, supersession, or truthful interruption record;
+retained context never renews authority.
+
+An **external analytic-development trace** is an explicitly activated,
+optional historical and evidentiary projection of a selective causal chain:
+Cooperator intent or correction, Orchestrator decision, exact issued Worker
+prompt, terminal outcome or truthful interruption, reconciliation, and
+acceptance, publication, or closure when applicable. It is subordinate to the
+governing immutable AP identity, canonical project state, and current external
+or production evidence. It is not task, Git, provider, publication,
+deployment, production, acceptance, or closure authority; archived prose is a
+claim/evidence package, and archive time does not prove delivery time.
+
+The trace is optional for universal AP correctness unless authorized project
+rules activate it. An unavailable, stale, private, divergent, or contradictory
+trace is classified and ranked rather than silently trusted and does not block
+ordinary AP work when governing AP, canonical project evidence, and required
+restoration evidence suffice. It is selective, not a raw transcript,
+chronological diary, hidden-reasoning archive, tool log, credentials or private
+data store, live specification, roadmap, issue tracker, current handoff, or
+authority source. A public trace is public-safe by default and excludes
+secrets, credentials, private locations, environment values, private media,
+sensitive payloads, and unnecessary production detail. AP owns these semantics
+and coordinates; replaceable trace implementations own only their storage,
+layout, discovery, indexes, and local validation under AP precedence.
+
+When the standard Markdown/Git projection is activated, exchange `01` uses
+`NN_<phase>.md` with `NN_report.md`; later exchanges use
+`NN_<phase>_XX.md` with `NN_report_XX.md`. `NN` is the session ordinal, `XX`
+is the exchange ordinal, unsuffixed means `01`, and `_01` is invalid. Ordinals
+are two-digit and contiguous; `<phase>` is lowercase kebab-case and is not
+`report`, `interruption`, or `handout`. One exchange has exactly one prompt and
+one mutually exclusive `report` or `interruption` companion.
+
+A completed prompt/report pair is first archived together after the report
+exists; in Git both files have the same unique first-add commit. Until then,
+the prompt remains external to mutation-gated worktrees unless a separately
+authorized workflow owns a safe staging location. An interruption companion is
+permitted only when no terminal Worker report exists, is written by an
+authorized non-Worker owner from safely known cancellation, interruption, or
+supersession facts, and never impersonates the Worker. A late or contradictory
+report requires explicit Orchestrator reconciliation and prospective
+correction. Reports and interruption companions are never silently substituted
+or rewritten; correction, redaction, and supersession preserve provenance.
+Bootstrap exceptions are explicit and prospective. Historical artifacts remain
+interpretable under their governing AP pin and are not retroactively renamed,
+renumbered, or presented as governed by later rules.
+
+A fresh Orchestrator restores in this order: (1) governing immutable AP; (2)
+canonical project repository and current external or production evidence; (3)
+accepted or reconciled durable decisions; (4) optional supporting external
+trace evidence; and (5) tentative plans or historical narrative. Current truth
+is verified independently. Accepted universal meaning is promoted to AP,
+project behavior to its specification, architecture to ADRs, deferred work to
+roadmaps or issues, and security or operational rules to their durable owners.
+The trace never replaces restoration synthesis, private-memory independence,
+or a current durable owner.
 
 ## Finite Convergence Contract
 

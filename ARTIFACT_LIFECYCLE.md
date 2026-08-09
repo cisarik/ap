@@ -42,6 +42,57 @@ knowledge. A trigger never authorizes deletion; a task grant must name it.
 Before retirement, promote material conclusions to their owner and update
 inbound links in the same bounded change.
 
+## External Analytic Development Trace
+
+Artifact relationship: **operational lifecycle projection** of
+[RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity).
+An activated external analytic-development trace is retained historical
+evidence, not a semantic owner or task, Git, acceptance, publication,
+deployment, production, or closure authority. A project may activate one
+conforming trace through authorized project/task rules; an inactive or
+unavailable trace does not weaken current AP authority or required evidence.
+
+The activation record names its historical relationship, project-local
+consumer and discovery declaration, public/private visibility, retention or
+cleanup trigger, promotion targets, and a separately authorized archival and
+cleanup owner. Public traces are public-safe by default. Private traces remain
+bounded to their declared consumer and do not gain authority from privacy.
+
+Selective causal content may include Cooperator intent or correction,
+Orchestrator decisions, exact issued Worker prompts, terminal reports or
+truthful interruption companions, reconciliation, and applicable acceptance,
+publication, or closure evidence. Exclude raw transcripts, hidden reasoning,
+tool logs, credentials, private URLs or environment values, private media,
+sensitive payloads, unnecessary production detail, and unbounded chronological
+history. The trace is not a live specification, roadmap, issue tracker,
+restoration prompt, repository handoff, or current authority source.
+
+First archive an exact prompt and its actual terminal report together only
+after the report exists. For Git, both files have the same unique first-add
+commit. Keep the externally delivered prompt outside mutation-gated worktrees
+until then unless a separately authorized workflow owns a safe staging
+location. The implementation Worker does not archive its current exchange
+without a later exact archival grant.
+
+Only when no terminal Worker report exists may an authorized non-Worker owner
+write a mutually exclusive interruption companion from safely known
+cancellation, interruption, or supersession facts. It never impersonates the
+Worker. A late or contradictory report requires explicit Orchestrator
+reconciliation and a prospective correction. Correction, redaction, and
+supersession preserve provenance; no report or interruption is silently
+replaced or rewritten. Bootstrap exceptions are explicit before prospective
+use rather than invented retroactively, and historical artifacts retain their
+governing AP pin.
+
+Promote accepted universal meaning to AP, project behavior to specifications,
+architecture to ADRs, deferred work to roadmaps or issues, and security or
+operational rules to their owners. Promotion, not trace retention, makes those
+decisions durable. Git history does not justify stale live handoffs or duplicate
+normative documents. A trace remains distinct from Discovery Records,
+restoration prompts, repository handoffs, upgrade ledgers, raw transcripts,
+ADRs, specifications, and issues, each of which keeps its own consumer and
+lifecycle.
+
 ## Discovery Records
 
 A Discovery Record is optional project-owned decision-support evidence for

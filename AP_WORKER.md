@@ -4,7 +4,9 @@ Artifact relationship: **operational projection** of
 [AP semantic authority](AP.md#semantic-authority-and-artifact-relationships).
 `AP.md` is the sole semantic owner; [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md)
 owns exact prompt/report spellings. This handbook is a compact execution aid; it
-does not grant task authority.
+does not grant task authority. Worker exchange identity and trace operations
+project
+[RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity).
 
 In a consuming project, read `.ap/AP.md`, this handbook, the project-root
 `AGENTS.md`, and the complete current Orchestrator prompt.
@@ -44,6 +46,30 @@ automatic revision requires `NEEDS_ORCHESTRATOR_DECISION`.
 Current-session continuation is legal only for the healthy same logical whole,
 unchanged assumptions, useful retained context, no independence requirement,
 and complete renewed authority. Freshness alone does not prove independence.
+
+## Worker Exchange Coordinates and Trace Boundary
+
+Before action, verify exactly one logical-whole identity, Worker-session
+ordinal, and Worker-exchange ordinal and confirm that they match the declared
+fresh/current route and actual session continuity. Newly issued prompts with
+missing, duplicate, malformed, skipped, regressed, reused, or contradictory
+coordinates stop for correction. A current-session renewal preserves the
+logical-whole and session coordinates and advances exchange; a genuinely fresh
+session uses the next session ordinal and exchange `01`. A new ordinal alone
+never proves independence.
+
+Echo the exact three prompt coordinates once in the terminal report. Treat a
+trace, archived prompt, prior report, filename, ordinal, continuity memory, or
+retained context as evidence only, never current authority. Do not create or
+archive the current prompt/outcome pair unless a separate exact archival grant
+is issued after the outcome exists. When able, return the Worker terminal
+report; an interruption companion belongs only to a separately authorized
+non-Worker owner when no report exists.
+
+Stop after the terminal report because authority expires regardless of context
+or trace availability. See
+[RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity) and
+the [structural coordinate contract](PROMPT_CONTRACTS.md#worker-exchange-identity-and-external-trace-contract).
 
 ## Capability, Permission, Containment, and Authority
 

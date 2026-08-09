@@ -14,6 +14,9 @@ Follow the linked AP rule family and structural contracts for exact behavior.
 | ORCHESTRATOR | Persistent coordination role for recommendations, task grants, reconciliation, and deterministic closure; see [RF-02](AP.md#rf-02-orchestrator-decision-reconciliation-and-closure-authority). |
 | WORKER | Persistent bounded-execution role that validates and reports but never closes the logical whole. |
 | Instance / session | A concrete role occupant / its bounded context and lifecycle. |
+| Logical Whole Identity | Stable lowercase kebab-case coordinate for one bounded objective until closure, cancellation, or material objective change; see [RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity). |
+| Worker Session Ordinal | Two-digit coordinate for one concrete Worker session inside one logical whole; it is not a session target or proof of independence. |
+| Worker Exchange Ordinal | Two-digit coordinate for one separately authorized prompt/outcome lifecycle inside a Worker session; current-session renewal increments it. |
 | Worker session target | Exact routing value `fresh-worker-session` or `current-worker-session`; it is not authority or proof of independence. |
 | Fresh Worker Session | New session that inherits no prior grant and re-establishes evidence; freshness alone is not independence. |
 | Current Worker Session | Exact healthy session reused under a complete renewed grant and continuity anchor; evidence remains non-independent. |
@@ -72,6 +75,10 @@ Follow the linked AP rule family and structural contracts for exact behavior.
 | Diagnostic Closeout | Bounded, normally read-only review of the same implemented slice. |
 | Compact Communication | Links stable owners while retaining complete task-specific authority and evidence. |
 | Discovery Record | Optional non-authoritative exploration artifact with consumer, promotion target, and lifecycle. |
+| External Analytic Development Trace | Optional explicitly activated selective historical-evidence projection subordinate to governing AP and current project/external truth; see [RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity). |
+| Trace Projection | Replaceable storage, layout, discovery, index, and validation representation of RF-19 semantics; it does not own those semantics. |
+| Interruption Companion | Non-Worker-owned historical outcome used only when no terminal report exists, recording safely known cancellation, interruption, or supersession facts. |
+| Atomic Archival Transaction | First archival of an exact prompt and existing outcome together; in Git both have the same unique first-add commit. |
 | Upgrade Observation Ledger | Non-authoritative `upgrade <canonical-repository>` entries in `untriaged`, `accepted`, `duplicate`, `rejected`, `invalidated`, `implemented`, or `parked` states. |
 | Active-Context Reconciliation | Closure removal of terminal ledger entries from active context while preserving unresolved entries and historical provenance. |
 | Restoration Prompt / Readiness | Self-contained context transfer without mutation authority / PASS-PARTIAL-BLOCKED completeness review. |

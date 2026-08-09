@@ -4,7 +4,9 @@ Artifact relationship: **operational projection** of
 [AP semantic authority](AP.md#semantic-authority-and-artifact-relationships).
 `AP.md` is the sole semantic owner; [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md)
 owns exact field spellings. This handbook selects Orchestrator decisions and
-does not grant Worker authority or add universal requirements.
+does not grant Worker authority or add universal requirements. Worker exchange
+identity and trace operations project
+[RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity).
 
 In a consuming project, read `.ap/AP.md`, this handbook, and the project-root
 `AGENTS.md`. Project rules supply local presentation and product policy without
@@ -109,6 +111,47 @@ implemented the candidate. Internal delegation remains one accountable WORKER.
 A missing or contradictory target authorizes neither route. Communicate the
 selected target clearly to the Cooperator using project-configured presentation;
 universal AP does not prescribe localized labels, clients, models, or vendors.
+
+## Worker Exchange Coordinates and Optional Trace
+
+For each logical whole, assign one stable logical-whole identity and track the
+concrete Worker session and separately authorized exchange. A new logical whole
+starts session `01`, exchange `01`; a genuinely fresh session inside that whole
+advances the session ordinal and resets exchange to `01`; complete renewal to
+the exact healthy current session preserves the whole/session coordinates and
+advances the exchange ordinal. Communicate all three coordinates in every
+complete prompt and require the terminal report to echo them. Reject gaps,
+regression, reuse, or conflict with fresh/current routing. A phase, profile,
+filename, or ordinal never grants authority or proves independence.
+
+Prefer current-session renewal after an imperfect report when the same session
+is healthy, assumptions are unchanged, and independence is unnecessary. Use
+fresh routing for a material route-assumption change, compromised context,
+independent evidence, or another AP trigger. Every exchange follows prior
+authority expiry and receives a complete new prompt; retained context is never
+the renewal.
+
+Treat external trace configuration as project/task context. A trace is inactive
+unless authorized project rules configure it, and its availability never
+becomes a universal prerequisite. When configured, archive—or ask the
+separately authorized Cooperator or archive owner to archive—the exact prompt
+and actual outcome together only after the outcome exists. Keep launch prompts
+outside mutation-gated worktrees until then unless an authorized workflow owns
+a safe staging location.
+
+Reconcile interruption companions, late or contradictory reports, corrections,
+redactions, and supersession prospectively. Never impersonate a Worker, replace
+a report silently, rewrite history as though a later artifact were original,
+or infer delivery from archive time. Preserve historical pins and explicit
+bootstrap exceptions.
+
+Restore a fresh Orchestrator from governing immutable AP, current repository
+and external evidence, and accepted durable decisions before optional trace
+history. Never depend on private model memory for a durable rule. Promote
+accepted meaning to its canonical AP, specification, ADR, roadmap/issue,
+security, or operational owner and keep the trace historical. See
+[RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity) and
+the [lifecycle projection](ARTIFACT_LIFECYCLE.md#external-analytic-development-trace).
 
 ## Planning Ownership and Plan-to-Execution
 

@@ -8190,9 +8190,9 @@ EOF
 test_semantic_ownership_and_convergence_contracts() {
     owner_rows=$TMPROOT/semantic-owner-rows
     grep '^| RF-[0-9][0-9] |' "$REPO/AP.md" > "$owner_rows" || return 1
-    [ "$(wc -l < "$owner_rows" | tr -d ' ')" -eq 18 ] || return 1
-    [ "$(sed -n 's/^| \(RF-[0-9][0-9]\) |.*$/\1/p' "$owner_rows" | sort -u | wc -l | tr -d ' ')" -eq 18 ] || return 1
-    [ "$(grep -c '](#rf-[0-9][0-9]-' "$owner_rows")" -eq 18 ] || return 1
+    [ "$(wc -l < "$owner_rows" | tr -d ' ')" -eq 19 ] || return 1
+    [ "$(sed -n 's/^| \(RF-[0-9][0-9]\) |.*$/\1/p' "$owner_rows" | sort -u | wc -l | tr -d ' ')" -eq 19 ] || return 1
+    [ "$(grep -c '](#rf-[0-9][0-9]-' "$owner_rows")" -eq 19 ] || return 1
     while IFS= read -r anchor
     do
         file_has_anchor "$REPO/AP.md" "$anchor" || return 1
@@ -8592,6 +8592,394 @@ EOF
     ! validate_failure_preservation_fixture "$fixtures/cleanup-masks-cause"
 }
 
+validate_exchange_metadata_fixture() {
+    file=$1
+    [ "$(grep -c '^Logical whole identity:' "$file")" -eq 1 ] || return 1
+    [ "$(grep -c '^Worker session ordinal:' "$file")" -eq 1 ] || return 1
+    [ "$(grep -c '^Worker exchange ordinal:' "$file")" -eq 1 ] || return 1
+    identity=$(sed -n 's/^Logical whole identity: //p' "$file")
+    printf '%s\n' "$identity" | grep -Eq '^[a-z0-9]+(-[a-z0-9]+)*$' || return 1
+    for ordinal_label in 'Worker session ordinal' 'Worker exchange ordinal'
+    do
+        ordinal=$(sed -n "s/^$ordinal_label: //p" "$file")
+        printf '%s\n' "$ordinal" | grep -Eq '^(0[1-9]|[1-9][0-9])$' || return 1
+    done
+}
+
+validate_exchange_sequence_fixture() {
+    file=$1
+    awk -F '|' '
+        function valid_id(value) {
+            return value ~ /^[a-z0-9]+(-[a-z0-9]+)*$/
+        }
+        function valid_ordinal(value) {
+            return value ~ /^(0[1-9]|[1-9][0-9])$/
+        }
+        NF != 7 { exit 1 }
+        {
+            whole = $1
+            session = $2
+            exchange = $3
+            target = $4
+            worker = $5
+            phase = $6
+            independence = $7
+            if (!valid_id(whole) || !valid_ordinal(session) ||
+                !valid_ordinal(exchange) || worker == "" ||
+                phase !~ /^[a-z0-9]+(-[a-z0-9]+)*$/ ||
+                (target != "fresh-worker-session" &&
+                 target != "current-worker-session") ||
+                (independence != "required" &&
+                 independence != "not-required")) exit 1
+            session_number = session + 0
+            exchange_number = exchange + 0
+            if (NR == 1 || whole != prior_whole) {
+                if (session_number != 1 || exchange_number != 1 ||
+                    target != "fresh-worker-session") exit 1
+            } else if (target == "current-worker-session") {
+                if (session_number != prior_session + 0 ||
+                    exchange_number != prior_exchange + 1 ||
+                    worker != prior_worker) exit 1
+            } else {
+                if (session_number != prior_session + 1 ||
+                    exchange_number != 1 || worker == prior_worker) exit 1
+            }
+            key = whole SUBSEP session
+            if (key in session_owner && session_owner[key] != worker) exit 1
+            session_owner[key] = worker
+            if (independence == "required" &&
+                target != "fresh-worker-session") exit 1
+            prior_whole = whole
+            prior_session = session
+            prior_exchange = exchange_number
+            prior_worker = worker
+        }
+        END { if (NR == 0) exit 1 }
+    ' "$file"
+}
+
+validate_trace_filename_fixture() {
+    file=$1
+    awk -F '|' '
+        function valid_ordinal(value) {
+            return value ~ /^(0[1-9]|[1-9][0-9])$/
+        }
+        NF != 9 { exit 1 }
+        {
+            session = $1
+            exchange = $2
+            phase = $3
+            prompt = $4
+            companion = $5
+            outcome = $6
+            prompt_add = $7
+            companion_add = $8
+            outcome_first = $9
+            if (!valid_ordinal(session) || !valid_ordinal(exchange) ||
+                phase !~ /^[a-z0-9]+(-[a-z0-9]+)*$/ ||
+                phase == "report" || phase == "interruption" ||
+                phase == "handout" ||
+                (outcome != "report" && outcome != "interruption") ||
+                prompt_add == "" || prompt_add != companion_add ||
+                outcome_first != "yes") exit 1
+            if ((exchange + 0) == 1) {
+                expected_prompt = session "_" phase ".md"
+                expected_companion = session "_" outcome ".md"
+            } else {
+                expected_prompt = session "_" phase "_" exchange ".md"
+                expected_companion = session "_" outcome "_" exchange ".md"
+            }
+            if (prompt != expected_prompt || companion != expected_companion ||
+                prompt ~ /_01\.md$/ || companion ~ /_01\.md$/) exit 1
+        }
+        END { if (NR == 0) exit 1 }
+    ' "$file"
+}
+
+validate_trace_activation_fixture() {
+    file=$1
+    forbidden_trace_repository=$(printf '%s/%s' cisarik meta)
+    forbidden_local_root=$(printf '/%s/%s' home agile)
+    ! grep -F "$forbidden_trace_repository" "$file" >/dev/null || return 1
+    ! grep -F "$forbidden_local_root" "$file" >/dev/null || return 1
+    [ "$(grep -c '^External trace disposition:' "$file")" -eq 1 ] || return 1
+    disposition=$(sed -n 's/^External trace disposition: //p' "$file")
+    case "$disposition" in
+        not-used)
+            [ "$(sed '/^[[:space:]]*$/d' "$file" | wc -l | tr -d ' ')" -eq 1 ]
+            ;;
+        configured)
+            for field in \
+                'Trace discovery:' \
+                'Trace project key:' \
+                'Trace logical-whole projection identity:' \
+                'Trace authority:' \
+                'Trace archival owner:' \
+                'Trace visibility:' \
+                'Trace companion outcome:' \
+                'Trace self-granted status:'
+            do
+                [ "$(grep -c "^$field" "$file")" -eq 1 ] || return 1
+                [ -n "$(sed -n "s/^$field //p" "$file")" ] || return 1
+            done
+            [ "$(sed -n 's/^Trace authority: //p' "$file")" = historical-evidence-only ] || return 1
+            [ "$(sed -n 's/^Trace self-granted status: //p' "$file")" = none ] || return 1
+            [ "$(sed -n 's/^Trace archival owner: //p' "$file")" != WORKER ] || return 1
+            grep -Eq '^Trace visibility: (public|private)$' "$file" || return 1
+            grep -Eq '^Trace companion outcome: (report|interruption)$' "$file" || return 1
+            ;;
+        *) return 1 ;;
+    esac
+}
+
+validate_trace_boundary_fixture() {
+    file=$1
+    for required in \
+        'Canonical semantic owner: AP.md' \
+        'Trace relationship: historical-evidence' \
+        'Universal trace prerequisite: none' \
+        'Trace authority: historical-evidence-only' \
+        'Archive metadata authority effect: none' \
+        'Archive proves delivery time: no' \
+        'Archive proves independence: no' \
+        'Archive grants acceptance: no' \
+        'Archive grants publication: no' \
+        'Archive grants closure: no' \
+        'Content selection: selective-causal-history' \
+        'Raw transcript: excluded' \
+        'Hidden reasoning: excluded' \
+        'Secrets and credentials: excluded' \
+        'Unbounded payloads: excluded' \
+        'Prompt-first mutation-gated archival: prohibited' \
+        'Outcome existed before archival: yes' \
+        'Report/interruption mutual exclusion: required' \
+        'Late report handling: prospective-orchestrator-reconciliation' \
+        'Silent replacement: prohibited' \
+        'Public safety: public-safe-default' \
+        'Private memory restoration authority: none'
+    do
+        [ "$(grep -cFx "$required" "$file")" -eq 1 ] || return 1
+    done
+}
+
+test_external_trace_and_worker_exchange_identity_contracts() {
+    owner_anchor='rf-19-external-analytic-trace-and-worker-exchange-identity'
+    [ "$(grep -c '^| RF-19 |' "$REPO/AP.md")" -eq 1 ] || return 1
+    [ "$(grep -c '^#### RF-19 — External Analytic Trace and Worker Exchange Identity$' "$REPO/AP.md")" -eq 1 ] || return 1
+    file_has_anchor "$REPO/AP.md" "$owner_anchor" || return 1
+
+    for projection in PROMPT_CONTRACTS.md AP_ORCHESTRATOR.md AP_WORKER.md \
+        ARTIFACT_LIFECYCLE.md README.md FAQ.md GLOSSARY.md CHANGELOG.md \
+        docs/adr/0014-external-analytic-trace-and-worker-exchange-identity.md \
+        docs/adr/README.md tests/ap_tool_tests.sh
+    do
+        grep -F "$owner_anchor" "$REPO/$projection" >/dev/null || return 1
+    done
+    grep -F 'Artifact relationship: **structural projection**' "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
+    grep -F 'Artifact relationship: **operational lifecycle projection** of' "$REPO/ARTIFACT_LIFECYCLE.md" >/dev/null || return 1
+    grep -F 'Accepted as an implementation candidate decision record' \
+        "$REPO/docs/adr/0014-external-analytic-trace-and-worker-exchange-identity.md" >/dev/null || return 1
+
+    assert_section_contract "$REPO/AP.md" \
+        '#### RF-19 — External Analytic Trace and Worker Exchange Identity' \
+        '## Finite Convergence Contract' \
+        'A fresh Orchestrator restores in this order' || return 1
+    assert_section_contract "$REPO/PROMPT_CONTRACTS.md" \
+        '## Worker Exchange Identity and External Trace Contract' \
+        '## Session-And-Mode Routing Contract' \
+        'planning, implementation, acceptance, correction, publication, deployment, probe, audit, and restoration' || return 1
+    for trace_example in \
+        '01_plan.md + 01_report.md' \
+        '01_implementation_02.md + 01_report_02.md' \
+        '01_correction_03.md + 01_report_03.md' \
+        '02_acceptance.md + 02_report.md'
+    do
+        grep -F "$trace_example" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
+    done
+
+    fixtures=$TMPROOT/external-trace-exchange-fixtures
+    mkdir -p "$fixtures"
+    cat > "$fixtures/metadata" <<'EOF'
+Logical whole identity: catalog-delivery
+Worker session ordinal: 01
+Worker exchange ordinal: 01
+EOF
+    validate_exchange_metadata_fixture "$fixtures/metadata" || return 1
+    sed '/^Worker exchange ordinal:/d' "$fixtures/metadata" > "$fixtures/missing-coordinate"
+    ! validate_exchange_metadata_fixture "$fixtures/missing-coordinate" || return 1
+    sed '/^Worker session ordinal:/p' "$fixtures/metadata" > "$fixtures/duplicate-coordinate"
+    ! validate_exchange_metadata_fixture "$fixtures/duplicate-coordinate" || return 1
+    for invalid_ordinal in 00 0 1 001 100 xx
+    do
+        sed "s/^Worker exchange ordinal:.*$/Worker exchange ordinal: $invalid_ordinal/" \
+            "$fixtures/metadata" > "$fixtures/invalid-$invalid_ordinal"
+        ! validate_exchange_metadata_fixture "$fixtures/invalid-$invalid_ordinal" || return 1
+    done
+    sed 's/^Logical whole identity:.*$/Logical whole identity: Catalog Delivery/' \
+        "$fixtures/metadata" > "$fixtures/malformed-whole"
+    ! validate_exchange_metadata_fixture "$fixtures/malformed-whole" || return 1
+
+    cat > "$fixtures/sequence" <<'EOF'
+catalog-delivery|01|01|fresh-worker-session|worker-a|plan|not-required
+catalog-delivery|01|02|current-worker-session|worker-a|implementation|not-required
+catalog-delivery|01|03|current-worker-session|worker-a|correction|not-required
+catalog-delivery|02|01|fresh-worker-session|worker-b|acceptance|required
+billing-delivery|01|01|fresh-worker-session|worker-c|plan|not-required
+EOF
+    validate_exchange_sequence_fixture "$fixtures/sequence" || return 1
+    sed 's/|01|02|current-worker-session/|01|03|current-worker-session/' \
+        "$fixtures/sequence" > "$fixtures/skipped-exchange"
+    ! validate_exchange_sequence_fixture "$fixtures/skipped-exchange" || return 1
+    sed 's/|01|03|current-worker-session/|01|01|current-worker-session/' \
+        "$fixtures/sequence" > "$fixtures/regressed-exchange"
+    ! validate_exchange_sequence_fixture "$fixtures/regressed-exchange" || return 1
+    sed 's/|01|02|current-worker-session/|02|02|current-worker-session/' \
+        "$fixtures/sequence" > "$fixtures/current-changed-session"
+    ! validate_exchange_sequence_fixture "$fixtures/current-changed-session" || return 1
+    sed 's/|02|01|fresh-worker-session|worker-b/|01|01|fresh-worker-session|worker-b/' \
+        "$fixtures/sequence" > "$fixtures/fresh-preserved-session"
+    ! validate_exchange_sequence_fixture "$fixtures/fresh-preserved-session" || return 1
+    sed 's/|02|01|fresh-worker-session|worker-b|acceptance|required/|01|04|current-worker-session|worker-a|acceptance|required/' \
+        "$fixtures/sequence" > "$fixtures/current-independent"
+    ! validate_exchange_sequence_fixture "$fixtures/current-independent" || return 1
+    sed 's/|02|01|fresh-worker-session|worker-b/|03|01|fresh-worker-session|worker-b/' \
+        "$fixtures/sequence" > "$fixtures/session-gap"
+    ! validate_exchange_sequence_fixture "$fixtures/session-gap" || return 1
+    sed 's/|02|01|fresh-worker-session|worker-b/|01|01|fresh-worker-session|worker-d/' \
+        "$fixtures/sequence" > "$fixtures/session-ordinal-reuse"
+    ! validate_exchange_sequence_fixture "$fixtures/session-ordinal-reuse" || return 1
+    sed 's/billing-delivery|01|01/billing-delivery|02|01/' \
+        "$fixtures/sequence" > "$fixtures/objective-no-reset"
+    ! validate_exchange_sequence_fixture "$fixtures/objective-no-reset" || return 1
+
+    cat > "$fixtures/filenames" <<'EOF'
+01|01|plan|01_plan.md|01_report.md|report|commit-a|commit-a|yes
+01|02|implementation|01_implementation_02.md|01_report_02.md|report|commit-b|commit-b|yes
+01|03|correction|01_correction_03.md|01_report_03.md|report|commit-c|commit-c|yes
+02|01|acceptance|02_acceptance.md|02_report.md|report|commit-d|commit-d|yes
+03|01|probe|03_probe.md|03_interruption.md|interruption|commit-e|commit-e|yes
+EOF
+    validate_trace_filename_fixture "$fixtures/filenames" || return 1
+    sed 's/01_implementation_02.md/01_implementation_01.md/' \
+        "$fixtures/filenames" > "$fixtures/suffixed-01"
+    ! validate_trace_filename_fixture "$fixtures/suffixed-01" || return 1
+    sed 's/01_implementation_02.md/01_implementation_03.md/' \
+        "$fixtures/filenames" > "$fixtures/suffix-gap"
+    ! validate_trace_filename_fixture "$fixtures/suffix-gap" || return 1
+    sed 's/|implementation|/|report|/' "$fixtures/filenames" > "$fixtures/reserved-phase"
+    ! validate_trace_filename_fixture "$fixtures/reserved-phase" || return 1
+    sed 's/|commit-b|commit-b|yes$/|commit-b|commit-other|yes/' \
+        "$fixtures/filenames" > "$fixtures/non-atomic-first-add"
+    ! validate_trace_filename_fixture "$fixtures/non-atomic-first-add" || return 1
+    sed 's/|commit-b|commit-b|yes$/|commit-b|commit-b|no/' \
+        "$fixtures/filenames" > "$fixtures/prompt-first-archive"
+    ! validate_trace_filename_fixture "$fixtures/prompt-first-archive" || return 1
+    sed 's/03_interruption.md/03_report.md/' \
+        "$fixtures/filenames" > "$fixtures/interruption-as-report"
+    ! validate_trace_filename_fixture "$fixtures/interruption-as-report" || return 1
+
+    printf '%s\n' 'External trace disposition: not-used' > "$fixtures/inactive-trace"
+    validate_trace_activation_fixture "$fixtures/inactive-trace" || return 1
+    cat > "$fixtures/configured-trace" <<'EOF'
+External trace disposition: configured
+Trace discovery: project trace declaration
+Trace project key: catalog
+Trace logical-whole projection identity: catalog-delivery
+Trace authority: historical-evidence-only
+Trace archival owner: archive-owner
+Trace visibility: public
+Trace companion outcome: report
+Trace self-granted status: none
+EOF
+    validate_trace_activation_fixture "$fixtures/configured-trace" || return 1
+    sed 's/^Trace authority:.*$/Trace authority: task-and-acceptance/' \
+        "$fixtures/configured-trace" > "$fixtures/trace-as-authority"
+    ! validate_trace_activation_fixture "$fixtures/trace-as-authority" || return 1
+    sed 's/^Trace archival owner:.*$/Trace archival owner: WORKER/' \
+        "$fixtures/configured-trace" > "$fixtures/self-archive"
+    ! validate_trace_activation_fixture "$fixtures/self-archive" || return 1
+    sed 's/^Trace self-granted status:.*$/Trace self-granted status: accepted/' \
+        "$fixtures/configured-trace" > "$fixtures/self-status"
+    ! validate_trace_activation_fixture "$fixtures/self-status" || return 1
+    forbidden_trace_repository=$(printf '%s/%s' cisarik meta)
+    forbidden_local_root=$(printf '/%s/%s' home agile)
+    sed "s#^Trace discovery:.*#Trace discovery: $forbidden_trace_repository#" \
+        "$fixtures/configured-trace" > "$fixtures/hardcoded-trace-repository"
+    ! validate_trace_activation_fixture "$fixtures/hardcoded-trace-repository" || return 1
+    sed "s#^Trace discovery:.*#Trace discovery: $forbidden_local_root/project#" \
+        "$fixtures/configured-trace" > "$fixtures/hardcoded-local-root"
+    ! validate_trace_activation_fixture "$fixtures/hardcoded-local-root" || return 1
+    printf '%s\n' 'External trace disposition: not-used' 'Trace authority: historical-evidence-only' \
+        > "$fixtures/inactive-extra-fields"
+    ! validate_trace_activation_fixture "$fixtures/inactive-extra-fields" || return 1
+
+    cat > "$fixtures/trace-boundary" <<'EOF'
+Canonical semantic owner: AP.md
+Trace relationship: historical-evidence
+Universal trace prerequisite: none
+Trace authority: historical-evidence-only
+Archive metadata authority effect: none
+Archive proves delivery time: no
+Archive proves independence: no
+Archive grants acceptance: no
+Archive grants publication: no
+Archive grants closure: no
+Content selection: selective-causal-history
+Raw transcript: excluded
+Hidden reasoning: excluded
+Secrets and credentials: excluded
+Unbounded payloads: excluded
+Prompt-first mutation-gated archival: prohibited
+Outcome existed before archival: yes
+Report/interruption mutual exclusion: required
+Late report handling: prospective-orchestrator-reconciliation
+Silent replacement: prohibited
+Public safety: public-safe-default
+Private memory restoration authority: none
+EOF
+    validate_trace_boundary_fixture "$fixtures/trace-boundary" || return 1
+    for mutation in \
+        's/^Canonical semantic owner:.*$/Canonical semantic owner: trace-repository/' \
+        's/^Universal trace prerequisite:.*$/Universal trace prerequisite: required/' \
+        's/^Archive metadata authority effect:.*$/Archive metadata authority effect: task-authority/' \
+        's/^Archive proves independence:.*$/Archive proves independence: yes/' \
+        's/^Archive grants acceptance:.*$/Archive grants acceptance: yes/' \
+        's/^Archive grants publication:.*$/Archive grants publication: yes/' \
+        's/^Archive grants closure:.*$/Archive grants closure: yes/' \
+        's/^Content selection:.*$/Content selection: raw-transcript/' \
+        's/^Hidden reasoning:.*$/Hidden reasoning: required/' \
+        's/^Secrets and credentials:.*$/Secrets and credentials: required/' \
+        's/^Unbounded payloads:.*$/Unbounded payloads: required/' \
+        's/^Prompt-first mutation-gated archival:.*$/Prompt-first mutation-gated archival: required/' \
+        's/^Report\/interruption mutual exclusion:.*$/Report\/interruption mutual exclusion: optional/' \
+        's/^Late report handling:.*$/Late report handling: silent-replacement/' \
+        's/^Private memory restoration authority:.*$/Private memory restoration authority: required/'
+    do
+        sed "$mutation" "$fixtures/trace-boundary" > "$fixtures/boundary-negative"
+        ! validate_trace_boundary_fixture "$fixtures/boundary-negative" || return 1
+    done
+
+    scan_absent 'rf19-private-or-meta-identity' -n \
+        "$forbidden_trace_repository|$forbidden_local_root|Worker exchange provider:|Worker exchange model:|Worker exchange client:" \
+        "$REPO/AP.md" "$REPO/AP_ORCHESTRATOR.md" "$REPO/AP_WORKER.md" \
+        "$REPO/PROMPT_CONTRACTS.md" "$REPO/ARTIFACT_LIFECYCLE.md" \
+        "$REPO/README.md" "$REPO/FAQ.md" "$REPO/GLOSSARY.md" \
+        "$REPO/CHANGELOG.md" \
+        "$REPO/docs/adr/0014-external-analytic-trace-and-worker-exchange-identity.md" || return 1
+    scan_absent 'rf19-secret-shapes' -n \
+        'BEGIN (RSA|OPENSSH|EC|DSA) PRIVATE KEY|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9_]{20,}|xox[baprs]-' \
+        "$REPO/AP.md" "$REPO/PROMPT_CONTRACTS.md" \
+        "$REPO/ARTIFACT_LIFECYCLE.md" \
+        "$REPO/docs/adr/0014-external-analytic-trace-and-worker-exchange-identity.md" || return 1
+
+    # RF-19 changes documentation and semantic enforcement only. Runtime,
+    # schema, managed-block, integration, update, pattern, and INFOSEC surfaces
+    # remain byte-identical to the exact task baseline.
+    git -C "$REPO" diff --quiet 1b0774117e1de7ecabddc7f08d15dbaf3068b09b -- \
+        ap ap.project.conf INTEGRATION.md UPDATING.md \
+        PROMPT_ENGINEERING_PATTERNS.md INFOSEC.md .gitignore
+}
+
 copy_worktree_to_source
 
 run_test "baseline and candidate project contracts validate with distinct trust" test_project_contract_baseline_and_candidate_validation
@@ -8685,6 +9073,7 @@ run_test "first-causal-error, privilege, parser, and cleanup contracts are enfor
 run_test "semantic owners and finite convergence enforce positive and negative routes" test_semantic_ownership_and_convergence_contracts
 run_test "operational and advisory projections enforce ownership and route relationships" test_operational_projection_relationships
 run_test "explanatory and operational-guide projections preserve discovery, runtime, safety, and compression" test_explanatory_projection_and_compression_contracts
+run_test "external trace and Worker exchange identity enforce positive and negative routes" test_external_trace_and_worker_exchange_identity_contracts
 
 say "passed: $pass_count"
 say "failed: $fail_count"

@@ -8,6 +8,7 @@ Programming.
 | Status | Meaning |
 |---|---|
 | Accepted | Current durable decision |
+| Implementation candidate | Accepted rationale in a local candidate; no public acceptance, publication, or closure claim |
 | Superseded | Replaced by a later ADR; preserved only when still useful in the live tree |
 
 ## Index
@@ -24,6 +25,7 @@ Programming.
 | [0011](0011-risk-routed-planning-and-bounded-closure.md) | Risk-routed planning and bounded closure | Accepted | Current planning, freshness, evidence-tier, anti-stall, authority-envelope, operational-evidence, and human-governance decision |
 | [0012](0012-baseline-bound-project-execution.md) | Baseline-bound project execution envelope | Accepted | Adds the project contract, sanitized direct execution, and CPython provenance boundary without changing protocol authority |
 | [0013](0013-semantic-ownership-and-convergence.md) | Semantic ownership and finite convergence | Accepted | Establishes the semantic-owner registry, projection taxonomy, structural-field ownership, and bounded convergence contract |
+| [0014](0014-external-analytic-trace-and-worker-exchange-identity.md) | External analytic trace and Worker exchange identity | Implementation candidate | Historical rationale for RF-19; AP.md remains the sole live semantic owner and fresh independent acceptance is still required |
 
 ADR-0009 permits only an explicit bounded parallel exception. It does not
 supersede fresh sequential independent audit or the remaining decisions in
@@ -42,6 +44,12 @@ ADR-0013 consolidates current semantic ownership in `AP.md` and classifies all
 other live artifacts as projections or enforcement. It refines planning and
 acceptance budgets without changing the roles, stable variant tuple, executable
 runtime, or earlier ADR bodies.
+
+ADR-0014 records candidate rationale for AP-native logical-whole/session/exchange
+coordinates and an optional subordinate external trace. Its live meaning is
+owned only by
+[RF-19](../../AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity);
+the ADR does not claim public acceptance, publication, or closure.
 
 ## Lifecycle Rule
 

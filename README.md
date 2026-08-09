@@ -15,11 +15,11 @@ Canonical repository: `https://github.com/cisarik/ap`
 | Need | Read | Relationship |
 |---|---|---|
 | protocol meaning and convergence | [AP.md](AP.md) | sole live normative protocol and semantic owner |
-| exact prompt/report fields and enums | [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md) | structural projection |
+| exact prompt/report fields, exchange coordinates, and standard trace grammar | [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md) | structural projection |
 | role decisions | [AP_ORCHESTRATOR.md](AP_ORCHESTRATOR.md), [AP_WORKER.md](AP_WORKER.md) | operational projections |
 | optional prompt craft | [PROMPT_ENGINEERING_PATTERNS.md](PROMPT_ENGINEERING_PATTERNS.md) | first-class universal advisory projection |
 | activated defensive security | [INFOSEC.md](INFOSEC.md) | advisory profile; all procedures apply when activated |
-| artifact handling | [ARTIFACT_LIFECYCLE.md](ARTIFACT_LIFECYCLE.md) | operational lifecycle projection |
+| artifact and activated external-trace handling | [ARTIFACT_LIFECYCLE.md](ARTIFACT_LIFECYCLE.md) | operational lifecycle projection |
 | newcomer concepts | [FAQ.md](FAQ.md), [GLOSSARY.md](GLOSSARY.md) | explanatory projections |
 | adoption and updates | [INTEGRATION.md](INTEGRATION.md), [UPDATING.md](UPDATING.md) | operational guides |
 | rationale and delivery | [ADRs](docs/adr/), [CHANGELOG.md](CHANGELOG.md) | historical records |
@@ -29,6 +29,11 @@ Canonical repository: `https://github.com/cisarik/ap`
 No subordinate artifact independently defines AP meaning. A task prompt remains
 self-contained for its repository, baseline, authority, boundaries, validation,
 and activated surfaces.
+
+[RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity)
+owns universal logical-whole, Worker-session, exchange, and external-trace
+meaning. An external analytic-development trace is subordinate historical
+evidence and remains optional unless authorized project rules activate it.
 
 ## Stable Pinned Distribution
 

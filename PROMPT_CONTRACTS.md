@@ -1,7 +1,8 @@
 # Prompt Contracts
 
 Artifact relationship: **structural projection** of the `AP.md` “Semantic
-Authority and Artifact Relationships” section.
+Authority and Artifact Relationships” section and
+[RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity).
 
 This document owns exact prompt/report field spelling, allowed values, and
 fixture shapes. [AP.md](AP.md) alone owns their semantic meaning. A field here
@@ -20,18 +21,24 @@ Every standard Worker report begins exactly:
 
 Every report has this compact core:
 
-1. status: PASS, PARTIAL, or BLOCKED;
-2. phase-qualified result or `not-applicable`;
-2. start and end commit;
-3. changed files and purpose;
-4. tests and validation;
-5. commit and push result when authorized;
-6. deviations, risks, or missing evidence;
-7. one smallest next step or review request; and
-8. exactly one report justification: `new-mutation`, `new-evidence`,
+1. logical-whole identity, Worker-session ordinal, and Worker-exchange ordinal;
+2. status: PASS, PARTIAL, or BLOCKED;
+3. phase-qualified result or `not-applicable`;
+4. start and end commit;
+5. changed files and purpose;
+6. tests and validation;
+7. commit and push result when authorized;
+8. deviations, risks, or missing evidence;
+9. one smallest next step or review request;
+10. exactly one report justification: `new-mutation`, `new-evidence`,
    `new-material-risk`, `changed-external-state`, `final-acceptance`, or
    `explicit-closure`; and
-9. authority-expiry statement.
+11. authority-expiry statement.
+
+Every standard terminal report begins its metadata with exactly one occurrence
+of the coordinate fields owned by the
+[Worker Exchange Identity and External Trace Contract](PROMPT_CONTRACTS.md#worker-exchange-identity-and-external-trace-contract)
+and echoes the authoritative prompt's values unchanged.
 
 Numbering is descriptive; field labels and task-specific order may be fixed by
 the authoritative prompt. Activate only the annexes for surfaces the task
@@ -82,7 +89,7 @@ Contract”. This section owns the exact structural spellings.
 ### Planning Record
 
 Every initial implementation-planning prompt uses the existing fields in
-[Plan-to-Execution Gate](#plan-to-execution-gate) and:
+[Plan-to-Execution Gate](PROMPT_CONTRACTS.md#plan-to-execution-gate) and:
 
 ```text
 Planning cycle: initial
@@ -119,6 +126,9 @@ An implementation prompt contains exactly one value for every routing field and
 concrete values for every boundary:
 
 ```text
+Logical whole identity: <lowercase-kebab-case>
+Worker session ordinal: <NN>
+Worker exchange ordinal: <NN>
 Implementation authority: explicit
 Native planning mode: not-used
 Worker session target: fresh-worker-session | current-worker-session
@@ -129,7 +139,7 @@ Independence required: yes | no
 ```
 
 For `current-worker-session`, the continuity and complete-renewal fields in
-[Worker Session Target Contract](#worker-session-target-contract) also apply.
+[Worker Session Target Contract](PROMPT_CONTRACTS.md#worker-session-target-contract) also apply.
 This record cannot appear in a planning report as authority for immediate
 execution.
 
@@ -206,6 +216,9 @@ exist here.
 | Field | Purpose |
 |---|---|
 | Persistent role identity | State that the recipient is a Worker instance assigned to WORKER |
+| Logical whole identity | Mandatory stable lowercase kebab-case identity for the bounded objective |
+| Worker session ordinal | Mandatory two-digit identity of one concrete Worker session inside the logical whole |
+| Worker exchange ordinal | Mandatory two-digit identity of the separately authorized prompt/outcome lifecycle inside the session |
 | Worker session target | Mandatory `fresh-worker-session` or `current-worker-session` routing declaration |
 | Native planning mode | Mandatory `required` or `not-used` routing declaration |
 | Worker session profile | Fresh Implementation Worker, Worker-Executed Preflight, Fresh Evidence Probe, Diagnostic Worker, Bounded Correction Worker, Fresh Independent Audit, Fresh Independent Re-Audit, or another explicitly defined bounded profile |
@@ -315,6 +328,9 @@ name alone never supplies the target.
 Fresh implementation:
 
 ```text
+Logical whole identity: catalog-endpoint
+Worker session ordinal: 01
+Worker exchange ordinal: 01
 Worker session target: fresh-worker-session
 Native planning mode: not-used
 Worker session profile: Fresh Implementation Worker
@@ -324,6 +340,9 @@ Task identity: implement one bounded catalog endpoint
 Current-session continuation:
 
 ```text
+Logical whole identity: catalog-endpoint
+Worker session ordinal: 01
+Worker exchange ordinal: 02
 Worker session target: current-worker-session
 Native planning mode: not-used
 Worker session profile: Diagnostic Worker
@@ -335,6 +354,9 @@ Evidence posture: non-independent
 Fresh independent audit:
 
 ```text
+Logical whole identity: catalog-endpoint
+Worker session ordinal: 02
+Worker exchange ordinal: 01
 Worker session target: fresh-worker-session
 Native planning mode: not-used
 Worker session profile: Fresh Independent Audit
@@ -347,6 +369,142 @@ Task identity: independently audit commit <exact-sha>
 - omitted target used to continue mutation in an open conversation;
 - a Fresh Implementation Worker, Diagnostic Worker, or Bounded Correction
   Worker profile treated as session routing without an explicit target.
+
+## Worker Exchange Identity and External Trace Contract
+
+Artifact relationship: **structural projection** of
+[RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity).
+This section owns exact field and standard Markdown/Git projection spellings;
+RF-19 alone owns their meaning.
+
+Every newly issued, renewed, or reissued authoritative Worker prompt under this
+AP identity contains each field exactly once, and every standard terminal
+Worker report echoes the same three values exactly once:
+
+```text
+Logical whole identity: <lowercase-kebab-case>
+Worker session ordinal: <NN>
+Worker exchange ordinal: <NN>
+```
+
+`NN` is exactly two digits from `01` through `99`. Missing, duplicate,
+malformed, zero, one-digit, three-digit, skipped, regressed, reused, or
+route-contradictory coordinates fail the structure before action. `Task
+identity`, Worker session target, Worker session profile, phase, continuity
+anchor, and authority remain separate fields. Legacy prompts and reports remain
+interpretable under their original immutable AP pin.
+
+The coordinate block is part of every newly issued planning, implementation,
+acceptance, correction, publication, deployment, probe, audit, and restoration
+prompt shape in this document and of every corresponding standard terminal
+report. A report-format repair uses a complete new authoritative exchange with
+the next exchange ordinal and never overwrites the earlier outcome.
+
+### Coordinate Transition Example
+
+One logical whole progresses through same-session renewal and fresh independent
+acceptance as follows:
+
+```text
+Logical whole identity: catalog-delivery
+Worker session ordinal: 01
+Worker exchange ordinal: 01
+Worker session target: fresh-worker-session
+Phase: plan
+Trace files: 01_plan.md + 01_report.md
+
+Logical whole identity: catalog-delivery
+Worker session ordinal: 01
+Worker exchange ordinal: 02
+Worker session target: current-worker-session
+Phase: implementation
+Trace files: 01_implementation_02.md + 01_report_02.md
+
+Logical whole identity: catalog-delivery
+Worker session ordinal: 01
+Worker exchange ordinal: 03
+Worker session target: current-worker-session
+Phase: correction
+Trace files: 01_correction_03.md + 01_report_03.md
+
+Logical whole identity: catalog-delivery
+Worker session ordinal: 02
+Worker exchange ordinal: 01
+Worker session target: fresh-worker-session
+Phase: acceptance
+Acceptance independence: required-fresh-independent
+Trace files: 02_acceptance.md + 02_report.md
+```
+
+Current-session renewal preserves the logical-whole and session coordinates
+and advances only the exchange ordinal. Fresh-session routing inside the same
+logical whole advances the session ordinal and resets exchange to `01`.
+Independent acceptance requires that fresh route and next session ordinal; its
+coordinates alone do not prove independence. A changed objective instead uses:
+
+```text
+Prior logical whole identity: catalog-delivery
+Logical whole identity: billing-delivery
+Worker session ordinal: 01
+Worker exchange ordinal: 01
+Worker session target: fresh-worker-session
+```
+
+### External Trace Activation Record
+
+Inactive trace configuration is exactly:
+
+```text
+External trace disposition: not-used
+```
+
+When project or task rules activate a trace, the compact record is:
+
+```text
+External trace disposition: configured
+Trace discovery: <canonical trace location or discovery declaration>
+Trace project key: <project-local key>
+Trace logical-whole projection identity: <project-local projection identity>
+Trace authority: historical-evidence-only
+Trace archival owner: <owner distinct from Worker implementation authority>
+Trace visibility: public | private
+Trace companion outcome: report | interruption
+Trace self-granted status: none
+```
+
+An issued record contains one value rather than literal alternatives. The
+configured fields are absent when disposition is `not-used`. Configuration
+grants no status or authority, and the archival owner is separately authorized
+after an outcome exists.
+
+### Standard Markdown/Git Exchange Projection
+
+The interoperable filename grammar is:
+
+```text
+Exchange 01: NN_<phase>.md + NN_report.md
+Exchange 02+: NN_<phase>_XX.md + NN_report_XX.md
+```
+
+`NN` equals the Worker-session ordinal; `XX` equals the Worker-exchange
+ordinal; unsuffixed means exchange `01`; `_01` is invalid. Both ordinals are
+two-digit and contiguous. `<phase>` is lowercase kebab-case other than
+`report`, `interruption`, or `handout`. An interruption outcome replaces only
+the companion spelling (`NN_interruption.md` or `NN_interruption_XX.md`) and is
+mutually exclusive with the report companion.
+
+Atomic first archival in Git uses:
+
+```text
+Prompt first-add commit: <exact commit>
+Companion first-add commit: <same exact commit>
+Outcome existed before archival: yes
+Atomic first archival: yes
+```
+
+Concrete project, date, and directory layout remains trace-owned. A filename,
+ordinal, archived record, or first-add commit is evidence only and never task,
+independence, acceptance, publication, or closure authority.
 
 ## Session-And-Mode Routing Contract
 
@@ -406,7 +564,7 @@ Maximum plan-only cycles: 1
 ```
 
 One initial cycle is followed by at most one explicitly authorized targeted
-revision using the [Planning Record](#planning-record). A changed objective
+revision using the [Planning Record](PROMPT_CONTRACTS.md#planning-record). A changed objective
 supersedes the plan and begins a new bounded logical whole. When the Worker
 remains healthy and independence is not required, use `allowed` with
 `current-worker-session`; execution still requires the complete new prompt.
@@ -475,6 +633,9 @@ state, or grant authority.
 ### Universal Read-Only Capability-Identification Prompt
 
 ```text
+Logical whole identity: <lowercase-kebab-case>
+Worker session ordinal: <NN>
+Worker exchange ordinal: <NN>
 Worker session target: <fresh-worker-session|current-worker-session>
 Native planning mode: not-used
 Task phase: read-only capability identification
@@ -1476,6 +1637,9 @@ Residual-risk summary: <for acceptance decisions>
 A focused or broad defensive audit prompt carries:
 
 ```text
+Logical whole identity: <lowercase-kebab-case>
+Worker session ordinal: <NN>
+Worker exchange ordinal: <NN>
 Security task class: focused defensive audit | broad milestone application audit | <specialization>
 Owned/authorized target: <exact target and authorization basis>
 Scope: <bounded subsystem, boundary, hypothesis, or approved attack-surface map>
@@ -1495,6 +1659,9 @@ slice.
 ### Accepted-Finding Correction Prompt Contract
 
 ```text
+Logical whole identity: <lowercase-kebab-case>
+Worker session ordinal: <NN>
+Worker exchange ordinal: <NN>
 Security task class: accepted-finding correction
 Accepted finding IDs: <ids the Orchestrator accepted for correction>
 Exact path allowlist: <exact paths>
@@ -1510,6 +1677,9 @@ never audits or certifies its own correction.
 ### Fresh Independent Re-Audit Prompt Contract
 
 ```text
+Logical whole identity: <lowercase-kebab-case>
+Worker session ordinal: <NN>
+Worker exchange ordinal: <NN>
 Security task class: fresh independent re-audit
 Worker session target: fresh-worker-session
 Independent of the correction: yes
@@ -1542,12 +1712,14 @@ advisory procedures live in [INFOSEC.md](INFOSEC.md):
 
 ## Adaptive Phase Contracts
 
-Each Worker prompt must name its Worker session target, Worker session profile,
-phase, reasoning recommendation, authority, evidence, output, transition owner,
-and stopping rule. A `current-worker-session` prompt must also name its
-continuity anchor and complete authority renewal. Orchestrator-only actions do
-not require Worker reasoning recommendations. Keep contracts compact; increase
-detail only when risk, cross-cutting scope, or safety requires it.
+Each Worker prompt must begin with the three coordinate fields from the
+[Worker Exchange Identity and External Trace Contract](PROMPT_CONTRACTS.md#worker-exchange-identity-and-external-trace-contract)
+and name its Worker session target, Worker session profile, phase, reasoning
+recommendation, authority, evidence, output, transition owner, and stopping
+rule. A `current-worker-session` prompt must also name its continuity anchor and
+complete authority renewal. Orchestrator-only actions do not require Worker
+reasoning recommendations. Keep contracts compact; increase detail only when
+risk, cross-cutting scope, or safety requires it.
 
 ### Discovery Or Intent Synthesis
 

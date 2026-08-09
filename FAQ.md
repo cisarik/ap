@@ -101,6 +101,48 @@ After any terminal `PASS`, `PARTIAL`, or `BLOCKED` report, cancellation, or
 supersession, authority expires. An open chat and retained context grant no
 continuing authority.
 
+## Why not open a fresh Worker after every imperfect report?
+
+A healthy current Worker can retain useful repository understanding when the
+logical whole and assumptions are unchanged and independence is unnecessary.
+The Orchestrator issues a complete renewed prompt with the next exchange
+ordinal; an imperfect report alone is not a freshness trigger. Material route
+change, compromised context, and independent acceptance still use a fresh
+session. See
+[RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity).
+
+## How are multiple prompts to the same Worker session identified?
+
+They preserve the logical-whole identity and Worker-session ordinal while each
+complete authority renewal increments the two-digit Worker-exchange ordinal.
+The report echoes the prompt coordinates. Coordinates record routing and do not
+grant authority. See
+[RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity).
+
+## Is an external trace required, and can it grant authority?
+
+No. Universal AP works without one; authorized project rules may activate a
+conforming trace as selective historical evidence. A trace, archive record, or
+filename cannot grant task, Git, acceptance, publication, deployment,
+production, or closure authority. See
+[RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity).
+
+## Can a fresh Orchestrator rely on the previous model's memory?
+
+No. Restoration begins with governing immutable AP, current project and
+external evidence, and durable accepted decisions. Optional trace history and
+tentative narrative come later; private memory is never a durable rule or
+current evidence. See
+[RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity).
+
+## Why archive a prompt and outcome only after the outcome exists?
+
+Adding the exact pair together avoids prompt-first dirty-worktree and
+self-reference loops and prevents an archive from implying an outcome that did
+not occur. Archive time proves archival, not delivery. A truthful interruption
+companion is used only when no terminal report exists. See
+[RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity).
+
 ## What are the four routing states?
 
 Every prompt selects `fresh-worker-session` or `current-worker-session` and
