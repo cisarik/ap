@@ -2,16 +2,21 @@
 
 ## 1. Purpose, Authority, And Artifact Classification
 
-This document is a durable advisory companion to Analytic Programming. It helps
+Artifact relationship: **universal advisory projection** of
+[AP semantic authority](AP.md#semantic-authority-and-artifact-relationships).
+
+This document is a durable first-class advisory companion to AP. It helps
 an Orchestrator select and adapt professional prompt-engineering patterns across
 projects, clients, models, and tools. It is not the live normative protocol, a
 second `AP.md`, a vendor manual, model matrix, magic-phrase collection, prompt
 scrapbook, mechanical prompt generator, or permanent telemetry database.
 
-[AP.md](AP.md) remains the sole live normative protocol. Exact prompt structure
-is owned by [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md). Project governance adds
-applicable local rules. If this library conflicts with a normative owner, the
-normative owner prevails and the library needs correction.
+[AP.md](AP.md) remains the sole live normative protocol and semantic owner.
+[PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md) owns exact structural fields and
+fixtures. Project governance adds applicable local rules. If this library
+conflicts with a canonical semantic or structural owner, that owner prevails
+and the library needs correction. Advisory patterns never become hidden
+requirements merely because they are selected or tested.
 
 ## 2. How To Use This Library
 
@@ -29,7 +34,7 @@ or proof that the task is safe or complete.
 
 ## 3. Pattern Selection And Composition Budget
 
-- Start from normative AP and project rules.
+- Start from canonical AP and project rules.
 - Preserve one objective and one terminal condition.
 - Use P01, P03, and P11 as the normal authoritative-task spine.
 - Add another pattern only for a real ambiguity, capability, risk, evidence,
@@ -360,6 +365,9 @@ Task phase: <plan-only|execution>.
 Planning owner/scope/disposition: <exact contract when plan-only>.
 Post-plan implementation session: <current-worker-session|fresh-worker-session|none>.
 Maximum plan-only cycles: 1.
+Planning cycle: <initial|targeted-revision>.
+Targeted revision record: <none|prior report, permitted basis, changed boundary,
+preserved decisions>; no second automatic revision.
 A UI approval or accepted plan grants no implementation authority.
 Execution requires a separate complete Orchestrator prompt with not-used.
 ```
@@ -563,7 +571,9 @@ Required evidence: <deterministic checks and observations>.
 Self-review may establish: <bounded claims>.
 Combined implementation envelope: <allowed|prohibited>.
 Independent acceptance: <not-required|recommended|required-separate-fresh-worker>.
-Audit budget: one primary audit plus one proportionate re-audit; exceptions: <if any>.
+Audit budget: one primary fresh acceptance plus at most one correction re-acceptance.
+Correction boundary: <scoped when semantics are unchanged|full fresh>.
+Repeated same assumption: NEEDS_ORCHESTRATOR_DECISION.
 ```
 
 #### Failure it prevents
@@ -1006,8 +1016,8 @@ Application and model research does not prove one universal prompt.
 
 ## 12. Prompt-Class Selection Matrix
 
-`Required` below means normally required for that class, never a substitute for
-normative AP fields.
+`Required` below means normally selected for that class, never a substitute for
+canonical AP or structural contract fields.
 
 | Prompt class | Normally required | Risk-dependent | Normally unnecessary / warning |
 |---|---|---|---|
@@ -1046,8 +1056,9 @@ adversarial fixtures. Keep evaluation layers explicit:
 A failure-derived proposal needs recurring evidence or one high-severity
 failure, a precise failure class, representative fixture, proposed owner,
 source support, compatibility analysis, and regression. Advisory changes update
-this library and the changelog. Normative promotion updates the exact canonical
-owner and receives ADR treatment when architectural; it never occurs silently.
+this library and the changelog. Semantic promotion updates the exact canonical
+owner in `AP.md` and receives ADR treatment when architectural; it never occurs
+silently.
 
 Review source links on material change and periodically as maintenance warrants,
 especially after dead links, repeated failures, or AP architecture changes.
@@ -1076,13 +1087,13 @@ semantics, and no textual prompt guarantees injection or disclosure prevention.
 | S14–S20 / agent/reasoning research | [ReAct](https://arxiv.org/abs/2210.03629), [Self-Refine](https://arxiv.org/abs/2303.17651), [self-correction limits](https://arxiv.org/abs/2310.01798), [Lost in the Middle](https://arxiv.org/abs/2307.03172), [SWE-agent](https://arxiv.org/abs/2405.15793), [DSPy](https://arxiv.org/abs/2310.03714), [instruction hierarchy](https://arxiv.org/abs/2404.13208) | P01, P04–P06, P08, P10, P16, P18 | bounded benchmarks/systems; no authority semantics |
 | S21–S24 / security standards/guidance | [NIST taxonomy](https://nvlpubs.nist.gov/nistpubs/ai/NIST.AI.100-2e2025.pdf), [OWASP prompt injection](https://genai.owasp.org/llmrisk/llm01-prompt-injection/), [OWASP disclosure](https://genai.owasp.org/llmrisk/llm022025-sensitive-information-disclosure/), [OWASP excessive agency](https://genai.owasp.org/llmrisk/llm062025-excessive-agency/) | P10, P12, P13, P15–P18 | broad risk guidance, not complete guarantees |
 
-## 15. Related Normative AP Documents
+## 15. Related AP Artifacts
 
-- [AP.md](AP.md) — sole live normative protocol and authority owner.
-- [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md) — structural prompt and report contracts.
-- [AP_ORCHESTRATOR.md](AP_ORCHESTRATOR.md) — operational selection and routing handbook.
-- [AP_WORKER.md](AP_WORKER.md) — Worker conduct handbook.
-- [INFOSEC.md](INFOSEC.md) — advisory defensive-security profile activated by routing or an authoritative prompt.
-- [ARTIFACT_LIFECYCLE.md](ARTIFACT_LIFECYCLE.md) — advisory-library lifecycle.
+- [AP.md](AP.md) — sole live normative protocol and semantic owner.
+- [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md) — structural projection.
+- [AP_ORCHESTRATOR.md](AP_ORCHESTRATOR.md) — Orchestrator operational projection.
+- [AP_WORKER.md](AP_WORKER.md) — Worker operational projection.
+- [INFOSEC.md](INFOSEC.md) — activated advisory defensive-security profile.
+- [ARTIFACT_LIFECYCLE.md](ARTIFACT_LIFECYCLE.md) — lifecycle operational projection.
 - [ADR-0009](docs/adr/0009-capability-aware-worker-routing-and-execution-gates.md) — architectural decision and compatibility record.
 - [ADR-0010](docs/adr/0010-defensive-security-profile.md) — defensive-security profile decision.

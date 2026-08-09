@@ -2,6 +2,9 @@
 
 ## Status, Authority, And Activation
 
+Artifact relationship: **activated advisory security profile** of
+[RF-18](AP.md#rf-18-authority-security-and-untrusted-content-boundaries).
+
 `INFOSEC.md` is an **advisory** Community-Profile-style specialization of
 Analytic Programming, in the sense of NIST SP 800-218A: a profile that augments
 a base framework for one domain without replacing it.
@@ -51,12 +54,12 @@ Non-goals:
 
 | Document | Relationship |
 |---|---|
-| [AP.md](AP.md) | Sole normative protocol; its Defensive-Security Task Anchor is the binding core this profile elaborates |
-| [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md) | Owns the machine-testable structures this profile uses: finding record, threat-model fields, containment ledger, source records, audit and correction prompt contracts |
+| [AP.md](AP.md) | Sole normative protocol and semantic owner; its Defensive-Security Task Anchor is the binding core this profile elaborates |
+| [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md) | Structural projection for exact finding, threat-model, containment, source, audit, and correction fields |
 | [AP_ORCHESTRATOR.md](AP_ORCHESTRATOR.md) | Operational routing, finding evaluation, correction authorization, and re-audit duties |
 | [AP_WORKER.md](AP_WORKER.md) | Worker-side evidence, containment, and reporting duties |
 | [PROMPT_ENGINEERING_PATTERNS.md](PROMPT_ENGINEERING_PATTERNS.md) | Advisory prompt patterns P15, P16, P17, and P04 apply unchanged; this profile adds no new pattern identifiers |
-| [ARTIFACT_LIFECYCLE.md](ARTIFACT_LIFECYCLE.md) | Owns the sensitive-security-evidence artifact class and its lifecycle |
+| [ARTIFACT_LIFECYCLE.md](ARTIFACT_LIFECYCLE.md) | Operational lifecycle projection for sensitive-security evidence |
 | ADRs | ADR-0010 records this profile's ownership decision and deferrals |
 | `tests/ap_tool_tests.sh` | Enforces the ownership and contradiction invariants semantically |
 
@@ -98,7 +101,8 @@ primary route is selected; escalations are explicit.
 | Deployment gate | R5 |
 | Any acceptance-blocking finding | R6 until closure or documented residual acceptance |
 
-Two anti-extreme guards apply normatively:
+When this profile is activated, two anti-extreme guards apply under AP
+precedence:
 
 - no full-repository audit by default — breadth comes only from R4 or R5
   triggers, never from the mere fact that a change happened;
@@ -228,9 +232,9 @@ improvise later.
 
 ## 6. Finding And Evidence Contract
 
-The structural finding record is owned by
+The exact structural finding record is projected by
 [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md#security-finding-record-contract).
-This profile owns its use:
+When activated, use it as follows:
 
 - a candidate weakness is not a vulnerability until reachability and
   preconditions are established;

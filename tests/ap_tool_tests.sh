@@ -4483,7 +4483,8 @@ test_adaptive_lifecycle_contracts() {
 test_reasoning_recommendation_contracts() {
     grep -F "Before every Worker prompt" "$REPO/AP.md" >/dev/null || return 1
     grep -F "No reasoning recommendation is required for work the Orchestrator performs" "$REPO/AP.md" >/dev/null || return 1
-    grep -F "recommend the lowest sufficient reasoning profile" "$REPO/AP_ORCHESTRATOR.md" >/dev/null || return 1
+    assert_section_contract "$REPO/AP_ORCHESTRATOR.md" "## Model And Surface Routing" \
+        "## Evidence and Independence Selection" "recommend the lowest sufficient available route" || return 1
     grep -F "reasoning effort is not broader" "$REPO/AP.md" >/dev/null || return 1
     grep -F "Extra High is not the" "$REPO/AP.md" >/dev/null || return 1
     grep -F "preflight, implementation, diagnostic closeout, and independent audit" "$REPO/AP.md" >/dev/null || return 1
@@ -4503,7 +4504,7 @@ test_prompt_synthesis_contracts() {
     grep -F "Ambiguous brainstorming does not silently rewrite durable repository truth" "$REPO/AP.md" >/dev/null || return 1
     grep -F "plan the bounded repository update needed to restore durable consistency" "$REPO/AP.md" >/dev/null || return 1
     grep -F "without requiring disclosure of hidden chain-of-thought" "$REPO/AP.md" >/dev/null || return 1
-    grep -F "the intended Worker session can understand its complete authority" "$REPO/AP_ORCHESTRATOR.md" >/dev/null || return 1
+    grep -F "must understand its complete authority" "$REPO/AP_ORCHESTRATOR.md" >/dev/null || return 1
     grep -F "evidence density" "$REPO/AP.md" >/dev/null || return 1
     grep -F "completeness, not maximum length" "$REPO/AP.md" >/dev/null || return 1
     grep -F "maximum prompt length" "$REPO/AP_ORCHESTRATOR.md" >/dev/null || return 1
@@ -4533,7 +4534,7 @@ test_checkout_topology_repository_gate_contracts() {
     assert_text_contract "$REPO/AP.md" "standalone checkout may require an exact active branch" || return 1
     assert_text_contract "$REPO/AP.md" "pinned submodule checkout may correctly use detached HEAD" || return 1
     assert_text_contract "$REPO/AP.md" "Public remote \`main\` equality is not required for a consumer pin" || return 1
-    assert_text_contract "$REPO/AP_WORKER.md" "containing repository's recorded gitlink with the submodule \`HEAD\`" || return 1
+    assert_text_contract "$REPO/AP_WORKER.md" "containing repository's recorded gitlink with" || return 1
     assert_text_contract "$REPO/AP_ORCHESTRATOR.md" "must not be attached to a moving branch" || return 1
     assert_text_contract "$REPO/PROMPT_CONTRACTS.md" "Checkout attachment or update requires explicit authority" || return 1
     assert_text_contract "$REPO/INTEGRATION.md" "containing-repository commit that changes" || return 1
@@ -4575,7 +4576,10 @@ test_restoration_contracts() {
     grep -F "professional" "$REPO/AP.md" >/dev/null || return 1
     grep -F "self-contained prompt" "$REPO/AP.md" >/dev/null || return 1
     grep -F "independently verified public commit" "$REPO/AP.md" >/dev/null || return 1
-    grep -F "account, and Git authority" "$REPO/AP_ORCHESTRATOR.md" >/dev/null || return 1
+    assert_section_contract "$REPO/AP_ORCHESTRATOR.md" "## Rotation and Restoration" \
+        "## Stop and Escalation" "operational continuity, strategic decisions" || return 1
+    assert_section_contract "$REPO/AP_ORCHESTRATOR.md" "## Rotation and Restoration" \
+        "## Stop and Escalation" "never authority" || return 1
     grep -F "current mutation state" "$REPO/AP.md" >/dev/null || return 1
     grep -F "selecting a Worker is premature" "$REPO/AP.md" >/dev/null || return 1
     grep -F "grants no mutation authority" "$REPO/AP.md" >/dev/null || return 1
@@ -4586,12 +4590,14 @@ test_restoration_contracts() {
 test_discovery_artifact_contracts() {
     grep -F "Cooperator brainstorming is a legitimate Discovery mode" "$REPO/docs/adr/0006-adaptive-orchestration-and-preflight-lifecycle.md" >/dev/null || return 1
     grep -F "Discovery Records are optional" "$REPO/docs/adr/0006-adaptive-orchestration-and-preflight-lifecycle.md" >/dev/null || return 1
-    grep -F "not task authority" "$REPO/ARTIFACT_LIFECYCLE.md" >/dev/null || return 1
-    grep -F "must never be the sole live source of an accepted" "$REPO/ARTIFACT_LIFECYCLE.md" >/dev/null || return 1
-    grep -F "same bounded change promotes that decision" "$REPO/ARTIFACT_LIFECYCLE.md" >/dev/null || return 1
+    grep -F "decision-support evidence" "$REPO/ARTIFACT_LIFECYCLE.md" >/dev/null || return 1
+    grep -F "task authority" "$REPO/ARTIFACT_LIFECYCLE.md" >/dev/null || return 1
+    grep -F "must never be the sole" "$REPO/ARTIFACT_LIFECYCLE.md" >/dev/null || return 1
+    grep -F "same bounded change" "$REPO/ARTIFACT_LIFECYCLE.md" >/dev/null || return 1
     grep -F "proposed, candidate, recommended, or open" "$REPO/AP.md" >/dev/null || return 1
-    grep -F "hidden chronological brainstorming archives" "$REPO/ARTIFACT_LIFECYCLE.md" >/dev/null || return 1
-    grep -F "promote accepted architecture to ADRs" "$REPO/ARTIFACT_LIFECYCLE.md" >/dev/null || return 1
+    grep -F "Never create hidden chronological" "$REPO/ARTIFACT_LIFECYCLE.md" >/dev/null || return 1
+    grep -F "brainstorming archives or transcript logs" "$REPO/ARTIFACT_LIFECYCLE.md" >/dev/null || return 1
+    grep -F "Promote accepted architecture to ADRs" "$REPO/ARTIFACT_LIFECYCLE.md" >/dev/null || return 1
     [ ! -d "$REPO/.brainstorming" ] || return 1
     ! find "$REPO" -maxdepth 2 \( -name 'NEXT_*' -o -name 'BOOT_*' -o -name 'WORKERS.md' -o -name '*session-log*' \) -print | grep . >/dev/null
 }
@@ -4664,21 +4670,21 @@ test_worker_session_target_and_authority_renewal_contracts() {
     assert_section_contract "$REPO/AP.md" "### Worker Session Target" "### Fresh Evidence Probe" \
         "The Worker session target and Worker session profile are distinct: the target answers which session receives the task; the profile answers what bounded kind of work that session performs" || return 1
 
-    assert_section_contract "$REPO/AP_ORCHESTRATOR.md" "## Worker Session Target Selection" "## Preflight Selection" \
-        "Use \`current-worker-session\` only for intentional reuse of the exact existing Worker session" || return 1
-    assert_section_contract "$REPO/AP_ORCHESTRATOR.md" "## Worker Session Target Selection" "## Preflight Selection" \
-        "The prompt must identify a continuity anchor, state that prior authority expired, grant complete new bounded authority, preserve the WORKER role, explain why reuse is proportionate, require repository and environment re-gating, classify retained context as convenience rather than authority, classify evidence as non-independent, stop on conflict with current repository evidence, and require a new terminal report" || return 1
+    assert_section_contract "$REPO/AP_ORCHESTRATOR.md" "## Worker Session Target Selection" \
+        "## Planning Ownership and Plan-to-Execution" "healthy same logical whole" || return 1
+    assert_section_contract "$REPO/AP_ORCHESTRATOR.md" "## Worker Session Target Selection" \
+        "## Planning Ownership and Plan-to-Execution" "complete renewed authority grant" || return 1
+    assert_section_contract "$REPO/AP_ORCHESTRATOR.md" "## Worker Session Target Selection" \
+        "## Planning Ownership and Plan-to-Execution" "re-gates repository and environment state" || return 1
 
-    assert_section_contract "$REPO/AP_WORKER.md" "## Worker Session Target" "## Session Profile Awareness" \
-        "For \`current-worker-session\`, verify that the continuity anchor identifies the actual session history, the prompt states that prior authority expired, and the prompt grants complete new bounded authority" || return 1
-    assert_section_contract "$REPO/AP_WORKER.md" "## Worker Session Target" "## Session Profile Awareness" \
-        "Re-gate repository and environment state before renewed work. Retained context is convenience, not authority" || return 1
-    assert_section_contract "$REPO/AP_WORKER.md" "## Worker Session Target" "## Session Profile Awareness" \
-        "Stop when a current-session continuity anchor does not match the actual session history or retained context conflicts materially with current repository evidence" || return 1
-    assert_section_contract "$REPO/AP_WORKER.md" "## Session Profile Awareness" "## Checkout Topology Gate" \
-        "After a terminal formal report with \`PASS\`, \`PARTIAL\`, or \`BLOCKED\`, the Worker session is closed for autonomous work and its authority expires. Authority also expires when the task is explicitly cancelled or superseded" || return 1
-    assert_section_contract "$REPO/AP_WORKER.md" "## Session Profile Awareness" "## Checkout Topology Gate" \
-        "A narrowly related follow-up requires an explicit Orchestrator decision, an explicit Worker session target, and a complete new bounded prompt" || return 1
+    assert_section_contract "$REPO/AP_WORKER.md" "## Worker Session Target" \
+        "## Capability, Permission, Containment, and Authority" "actual continuity anchor" || return 1
+    assert_section_contract "$REPO/AP_WORKER.md" "## Worker Session Target" \
+        "## Capability, Permission, Containment, and Authority" "complete renewed authority" || return 1
+    assert_section_contract "$REPO/AP_WORKER.md" "## Reporting" \
+        "## Stopping Conditions" "expires the current authority" || return 1
+    assert_section_contract "$REPO/AP_WORKER.md" "## Reporting" \
+        "## Stopping Conditions" "needs a new complete prompt explicitly" || return 1
 
     assert_section_contract "$REPO/PROMPT_CONTRACTS.md" "## Common Worker Task Fields" "## Repository Checkout Topology Contract" \
         "Worker session target | Mandatory \`fresh-worker-session\` or \`current-worker-session\` routing declaration" || return 1
@@ -4708,8 +4714,10 @@ test_evidence_ladder_closure_and_negative_scope_contracts() {
     grep -F "adaptive evidence ladder as a selection guide, not a mandatory sequence" "$REPO/AP.md" >/dev/null || return 1
     grep -F "Independent audit is not required for every commit" "$REPO/AP.md" >/dev/null || return 1
     grep -F "Use fresh independence when proportionate risk, uncertainty, or evidence cost" "$REPO/AP.md" >/dev/null || return 1
-    grep -F "Do not require" "$REPO/AP_ORCHESTRATOR.md" >/dev/null || return 1
-    grep -F "independent audit for every commit" "$REPO/AP_ORCHESTRATOR.md" >/dev/null || return 1
+    assert_section_contract "$REPO/AP_ORCHESTRATOR.md" "## Evidence and Independence Selection" \
+        "## Preflight Selection" "Do not require independent" || return 1
+    assert_section_contract "$REPO/AP_ORCHESTRATOR.md" "## Evidence and Independence Selection" \
+        "## Preflight Selection" "audit for every commit" || return 1
     grep -F "Higher reasoning effort is not broader" "$REPO/AP.md" >/dev/null || return 1
     grep -F "Extra High is not the default" "$REPO/AP.md" >/dev/null || return 1
     grep -F "Remaining context is not continuing authority" "$REPO/AP.md" >/dev/null || return 1
@@ -4968,7 +4976,7 @@ test_pattern_library_document_processes() {
         "## 12. Prompt-Class Selection Matrix" \
         "## 13. Evaluation, Maintenance, And Deprecation" \
         "## 14. Evidence Notes And Source Limitations" \
-        "## 15. Related Normative AP Documents"
+        "## 15. Related AP Artifacts"
     do
         [ "$(grep -cFx "$heading" "$library")" -eq 1 ] || return 1
     done
@@ -4979,13 +4987,13 @@ test_pattern_library_document_processes() {
     assert_section_contract "$library" \
         "## 13. Evaluation, Maintenance, And Deprecation" \
         "## 14. Evidence Notes And Source Limitations" \
-        "positive, negative, boundary, and adversarial fixtures" || return 1
+        "Maintain positive, negative, boundary" || return 1
     assert_section_contract "$library" \
         "## 13. Evaluation, Maintenance, And Deprecation" \
         "## 14. Evidence Notes And Source Limitations" \
         "self-review checks coherence but is not independent" || return 1
     grep -F "Do not invent a universal automation schedule" "$library" >/dev/null || return 1
-    grep -F "never occurs silently" "$library" >/dev/null
+    grep -F "it never occurs" "$library" >/dev/null
 }
 
 test_four_state_routing_fixtures() {
@@ -5035,14 +5043,17 @@ test_plan_to_execution_and_cooperator_routing_contracts() {
     assert_text_contract "$REPO/PROMPT_CONTRACTS.md" \
         "complete authority renewal with a continuity anchor" || return 1
     grep -F "Fresh Independent Audit, Fresh Independent Re-Audit" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
-    for label in \
-        "Prompt pre fresh Workera" \
-        "Prompt pre aktuálneho Workera" \
-        "Prompt pre fresh Workera s Plan mode" \
-        "Prompt pre aktuálneho Workera s Plan mode"
-    do
-        grep -F "$label" "$REPO/AP_ORCHESTRATOR.md" >/dev/null || return 1
-    done
+    assert_section_contract "$REPO/AP_ORCHESTRATOR.md" \
+        "## Worker Session Target Selection" "## Planning Ownership and Plan-to-Execution" \
+        "fresh-worker-session" || return 1
+    assert_section_contract "$REPO/AP_ORCHESTRATOR.md" \
+        "## Worker Session Target Selection" "## Planning Ownership and Plan-to-Execution" \
+        "current-worker-session" || return 1
+    assert_section_contract "$REPO/AP_ORCHESTRATOR.md" \
+        "## Planning Ownership and Plan-to-Execution" "## Model And Surface Routing" \
+        "Plan UI approval, an automatic mode transition" || return 1
+    scan_absent "localized-routing-as-universal" -n \
+        'Prompt pre fresh|Prompt pre aktu' "$REPO/AP_ORCHESTRATOR.md" || return 1
 }
 
 test_capability_and_authority_dimension_contracts() {
@@ -5144,9 +5155,9 @@ test_sensitive_context_and_side_effect_contracts() {
 
 test_advisory_ownership_adr_and_discoverability() {
     grep -F "sole live normative protocol" "$REPO/AP.md" >/dev/null || return 1
-    grep -F "durable advisory protocol companion" "$REPO/ARTIFACT_LIFECYCLE.md" >/dev/null || return 1
+    grep -F "durable first-class universal advisory projection" "$REPO/ARTIFACT_LIFECYCLE.md" >/dev/null || return 1
     grep -F "not the live normative protocol" "$REPO/PROMPT_ENGINEERING_PATTERNS.md" >/dev/null || return 1
-    grep -F "must not become normative silently" "$REPO/ARTIFACT_LIFECYCLE.md" >/dev/null || return 1
+    grep -F "must not become a hidden requirement or semantic owner" "$REPO/ARTIFACT_LIFECYCLE.md" >/dev/null || return 1
     [ -f "$REPO/docs/adr/0009-capability-aware-worker-routing-and-execution-gates.md" ] || return 1
     grep -F "0009-capability-aware-worker-routing-and-execution-gates.md" "$REPO/docs/adr/README.md" >/dev/null || return 1
     grep -F "partially superseded by ADR-0009" "$REPO/docs/adr/README.md" >/dev/null || return 1
@@ -5480,9 +5491,8 @@ test_model_routing_positive_contracts() {
         "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
     grep -F "never verified from selection alone" "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
     grep -Fx "## Model And Surface Routing" "$REPO/AP_ORCHESTRATOR.md" >/dev/null || return 1
-    grep -F "never as silent evidence reducers" "$REPO/AP_ORCHESTRATOR.md" >/dev/null || return 1
-    grep -F "requested or user-selected model is never" "$REPO/AP_WORKER.md" >/dev/null || return 1
-    grep -F "self-verified identity" "$REPO/AP_WORKER.md" >/dev/null || return 1
+    grep -F "quota or cost never silently reduces" "$REPO/AP_ORCHESTRATOR.md" >/dev/null || return 1
+    grep -F "user-selected model is never self-verified identity" "$REPO/AP_WORKER.md" >/dev/null || return 1
     grep -Fx "## Worker Surface" "$REPO/GLOSSARY.md" >/dev/null || return 1
     grep -Fx "## Model-Suitability Evidence" "$REPO/GLOSSARY.md" >/dev/null || return 1
     grep -Fx "## Silent Fallback" "$REPO/GLOSSARY.md" >/dev/null || return 1
@@ -5713,29 +5723,17 @@ test_worker_freshness_and_same_session_continuation_contracts() {
         "### Fresh Evidence Probe" \
         "same current session" || return 1
     assert_section_contract "$REPO/AP_ORCHESTRATOR.md" \
-        "## Worker Session Target Selection" "## Preflight Selection" \
-        "Freshness alone never establishes independence" || return 1
+        "## Worker Session Target Selection" "## Planning Ownership and Plan-to-Execution" \
+        "does not itself prove independence" || return 1
     assert_section_contract "$REPO/AP_WORKER.md" "## Worker Session Target" \
-        "## Capability And Authority Check" \
-        "A healthy current session may receive approved implementation under a new complete grant" || return 1
-
-    for label in \
-        "Prompt pre fresh Workera" \
-        "Prompt pre aktuálneho Workera" \
-        "Prompt pre fresh Workera s Plan mode" \
-        "Prompt pre aktuálneho Workera s Plan mode"
-    do
-        grep -F "$label" "$REPO/AP_ORCHESTRATOR.md" >/dev/null || return 1
-    done
-    [ "$(grep -Ec '^[1-4]\. `Prompt pre .+`$' "$REPO/AP_ORCHESTRATOR.md")" -eq 4 ] || return 1
-    scan_absent "stale-plan-mode-labels" -n -F \
-        -e "Prompt pre fresh Workera — s Plan mode" \
-        -e "Prompt pre fresh Workera — bez Plan mode" \
-        -e "Prompt pre aktuálneho Workera — s Plan mode" \
-        -e "Prompt pre aktuálneho Workera — bez Plan mode" \
-        "$REPO/AP_ORCHESTRATOR.md" || return 1
-    assert_text_contract "$REPO/AP_ORCHESTRATOR.md" \
-        "configured values are an operator-facing example, not universal protocol language"
+        "## Capability, Permission, Containment, and Authority" \
+        "Current-session continuation is legal only for the healthy same logical whole" || return 1
+    assert_section_contract "$REPO/AP_WORKER.md" "## Worker Session Target" \
+        "## Capability, Permission, Containment, and Authority" \
+        "Freshness alone does not prove independence" || return 1
+    grep -F "project-configured presentation" "$REPO/AP_ORCHESTRATOR.md" >/dev/null || return 1
+    scan_absent "localized-routing-as-universal" -n \
+        'Prompt pre fresh|Prompt pre aktu' "$REPO/AP_ORCHESTRATOR.md"
 }
 
 test_report_audit_handoff_and_authority_envelope_contracts() {
@@ -5851,9 +5849,10 @@ test_protocol_variant_selection_boundary_contracts() {
     do
         grep -F "## $term" "$REPO/GLOSSARY.md" >/dev/null || return 1
     done
-    assert_section_contract "$REPO/AP_ORCHESTRATOR.md" "## Protocol-Variant Selection" \
-        "## Recovery Classification And Closure Signalling" \
-        "Do not apply, quote as authority, or blend in rules from a non-governing variant" || return 1
+    assert_section_contract "$REPO/AP_ORCHESTRATOR.md" \
+        "## Repository, Permission, and Side-Effect Gates" "## Prompt Construction" \
+        "pinned submodule normally uses" || return 1
+    grep -F "RF-15" "$REPO/AP.md" >/dev/null || return 1
 
     # Stable AP must not name or import an experimental protocol line.
     scan_absent "experimental-variant-import" \
@@ -7549,14 +7548,15 @@ test_cooperator_routing_sovereignty_contracts() {
     assert_section_contract "$REPO/AP.md" "### Worker Session Target" "### Fresh Evidence Probe" \
         "These defaults must never produce plan-after-plan or audit-after-audit recursion" || return 1
     assert_section_contract "$REPO/AP_ORCHESTRATOR.md" \
-        "## Cooperator Routing Sovereignty" "## Worker Session Target Selection" \
-        "A Worker never reopens a route the Cooperator already selected" || return 1
+        "## Model And Surface Routing" "## Evidence and Independence Selection" \
+        "The Cooperator selects the route" || return 1
     assert_section_contract "$REPO/AP_WORKER.md" \
-        "## Capability And Authority Check" "## Session Profile Awareness" \
-        "Do not reopen the choice of session freshness, model, reasoning effort, or native planning mode" || return 1
+        "## Capability, Permission, Containment, and Authority" \
+        "## Session Profile and Independence" \
+        "requested, directly observed, inferred, unknown" || return 1
     assert_section_contract "$REPO/AP_WORKER.md" \
-        "## Capability And Authority Check" "## Session Profile Awareness" \
-        "absence of observability is not such evidence and is reported as unknown" || return 1
+        "## Role and Authority Boundary" "## Worker Session Target" \
+        "Keep Cooperator-owned decisions" || return 1
     grep -F "Cooperator Routing Sovereignty" "$REPO/GLOSSARY.md" >/dev/null || return 1
     grep -F "Selected Route" "$REPO/GLOSSARY.md" >/dev/null || return 1
     grep -F "Material Phase Gate" "$REPO/GLOSSARY.md" >/dev/null || return 1
@@ -7690,8 +7690,11 @@ test_upgrade_ledger_lifecycle_contracts() {
             "\`$state\`" || return 1
     done
     assert_section_contract "$REPO/ARTIFACT_LIFECYCLE.md" \
-        "## Upgrade Observation Ledgers" "## Protocol Distribution Artifacts" \
-        "shrinking the active ledger never deletes evidence" || return 1
+        "## Upgrade Observation Ledgers" "## AP Distribution Relationships" \
+        "preserves stable identity and" || return 1
+    assert_section_contract "$REPO/ARTIFACT_LIFECYCLE.md" \
+        "## Upgrade Observation Ledgers" "## AP Distribution Relationships" \
+        "no ledger state authorizes implementation or cleanup" || return 1
     grep -F "Upgrade Observation Ledger" "$REPO/GLOSSARY.md" >/dev/null || return 1
     grep -F "Active-Context Reconciliation" "$REPO/GLOSSARY.md" >/dev/null || return 1
 
@@ -8274,6 +8277,118 @@ EOF
     ! validate_convergence_fixture "$fixtures/scoped-semantic-change"
 }
 
+validate_projection_route_fixture() {
+    file=$1
+    for field in \
+        "Artifact relationship:" \
+        "Canonical semantic owner:" \
+        "Independent semantic authority:" \
+        "Grants task authority:" \
+        "INFOSEC activated:" \
+        "Activated protections retained:" \
+        "Work type:" \
+        "Worker session target:" \
+        "Independence required:" \
+        "Worker materially implemented candidate:" \
+        "Authority after terminal report:"
+    do
+        [ "$(grep -cF "$field" "$file")" -eq 1 ] || return 1
+    done
+    [ "$(sed -n 's/^Canonical semantic owner: //p' "$file")" = AP.md ] || return 1
+    [ "$(sed -n 's/^Independent semantic authority: //p' "$file")" = no ] || return 1
+    [ "$(sed -n 's/^Grants task authority: //p' "$file")" = no ] || return 1
+    [ "$(sed -n 's/^Authority after terminal report: //p' "$file")" = expired ] || return 1
+    if [ "$(sed -n 's/^INFOSEC activated: //p' "$file")" = yes ]; then
+        [ "$(sed -n 's/^Activated protections retained: //p' "$file")" = all ] || return 1
+    fi
+    work_type=$(sed -n 's/^Work type: //p' "$file")
+    target=$(sed -n 's/^Worker session target: //p' "$file")
+    independence=$(sed -n 's/^Independence required: //p' "$file")
+    implemented=$(sed -n 's/^Worker materially implemented candidate: //p' "$file")
+    case "$work_type" in
+        bounded-correction)
+            [ "$independence" = no ] || return 1
+            ;;
+        independent-acceptance)
+            [ "$target" = fresh-worker-session ] || return 1
+            [ "$independence" = yes ] || return 1
+            [ "$implemented" = no ] || return 1
+            ;;
+        *) return 1 ;;
+    esac
+}
+
+test_operational_projection_relationships() {
+    grep -F 'Artifact relationship: **operational projection**' "$REPO/AP_ORCHESTRATOR.md" >/dev/null || return 1
+    grep -F 'Artifact relationship: **operational projection**' "$REPO/AP_WORKER.md" >/dev/null || return 1
+    grep -F 'Artifact relationship: **universal advisory projection**' "$REPO/PROMPT_ENGINEERING_PATTERNS.md" >/dev/null || return 1
+    grep -F 'Artifact relationship: **operational lifecycle projection**' "$REPO/ARTIFACT_LIFECYCLE.md" >/dev/null || return 1
+    grep -F 'Artifact relationship: **activated advisory security profile**' "$REPO/INFOSEC.md" >/dev/null || return 1
+    grep -F 'durable first-class advisory companion' "$REPO/PROMPT_ENGINEERING_PATTERNS.md" >/dev/null || return 1
+    grep -F 'Advisory patterns never become hidden' "$REPO/PROMPT_ENGINEERING_PATTERNS.md" >/dev/null || return 1
+    grep -F 'advisory classification never weakens them' "$REPO/ARTIFACT_LIFECYCLE.md" >/dev/null || return 1
+    grep -F 'Inactive surfaces add no annex and no gate' "$REPO/AP_ORCHESTRATOR.md" >/dev/null || return 1
+    grep -F 'A requested or' "$REPO/AP_WORKER.md" >/dev/null || return 1
+    grep -F 'user-selected model is never self-verified identity' "$REPO/AP_WORKER.md" >/dev/null || return 1
+    grep -F 'Capability, Permission, Containment, and Authority' "$REPO/AP_WORKER.md" >/dev/null || return 1
+    grep -F 'A terminal `PASS`, `PARTIAL`, or `BLOCKED` report' "$REPO/AP_WORKER.md" >/dev/null || return 1
+    grep -F 'Prompt structural projection' "$REPO/AP_ORCHESTRATOR.md" >/dev/null || return 1
+    grep -F 'Prompt structural projection' "$REPO/AP_WORKER.md" >/dev/null || return 1
+
+    # A subordinate may identify AP as sole owner, but may not claim independent
+    # protocol authority for itself.
+    scan_absent "subordinate-independent-semantic-owner" -n -i \
+        'this (handbook|library|profile|document) (is|remains) (a |the )?(second|independent) (normative|semantic)|independent semantic authority: yes' \
+        "$REPO/AP_ORCHESTRATOR.md" "$REPO/AP_WORKER.md" \
+        "$REPO/PROMPT_ENGINEERING_PATTERNS.md" "$REPO/ARTIFACT_LIFECYCLE.md" \
+        "$REPO/INFOSEC.md" || return 1
+
+    fixtures=$TMPROOT/projection-route-fixtures
+    mkdir -p "$fixtures"
+    cat > "$fixtures/current-correction" <<'EOF'
+Artifact relationship: operational
+Canonical semantic owner: AP.md
+Independent semantic authority: no
+Grants task authority: no
+INFOSEC activated: no
+Activated protections retained: not-applicable
+Work type: bounded-correction
+Worker session target: current-worker-session
+Independence required: no
+Worker materially implemented candidate: yes
+Authority after terminal report: expired
+EOF
+    validate_projection_route_fixture "$fixtures/current-correction" || return 1
+
+    cat > "$fixtures/fresh-acceptance" <<'EOF'
+Artifact relationship: operational
+Canonical semantic owner: AP.md
+Independent semantic authority: no
+Grants task authority: no
+INFOSEC activated: yes
+Activated protections retained: all
+Work type: independent-acceptance
+Worker session target: fresh-worker-session
+Independence required: yes
+Worker materially implemented candidate: no
+Authority after terminal report: expired
+EOF
+    validate_projection_route_fixture "$fixtures/fresh-acceptance" || return 1
+
+    sed 's/^Worker session target: fresh-worker-session$/Worker session target: current-worker-session/' \
+        "$fixtures/fresh-acceptance" > "$fixtures/current-independent"
+    ! validate_projection_route_fixture "$fixtures/current-independent" || return 1
+    sed 's/^Independent semantic authority: no$/Independent semantic authority: yes/' \
+        "$fixtures/current-correction" > "$fixtures/second-owner"
+    ! validate_projection_route_fixture "$fixtures/second-owner" || return 1
+    sed 's/^Grants task authority: no$/Grants task authority: yes-by-capability/' \
+        "$fixtures/current-correction" > "$fixtures/capability-authority"
+    ! validate_projection_route_fixture "$fixtures/capability-authority" || return 1
+    sed 's/^Activated protections retained: all$/Activated protections retained: reduced-because-advisory/' \
+        "$fixtures/fresh-acceptance" > "$fixtures/weakened-infosec"
+    ! validate_projection_route_fixture "$fixtures/weakened-infosec"
+}
+
 test_failure_preservation_privilege_and_cleanup_contracts() {
     assert_section_contract "$REPO/AP.md" "## 12. Validation and Public Verification" \
         "## 13. Artifact Lifecycle and Repository Hygiene" \
@@ -8411,6 +8526,7 @@ run_test "evidence tiers, activation, and surface-routing contracts are enforced
 run_test "evidence tiers and implementation/acceptance envelopes enforce scenario relationships" test_evidence_tier_and_implementation_envelope_scenarios
 run_test "first-causal-error, privilege, parser, and cleanup contracts are enforced" test_failure_preservation_privilege_and_cleanup_contracts
 run_test "semantic owners and finite convergence enforce positive and negative routes" test_semantic_ownership_and_convergence_contracts
+run_test "operational and advisory projections enforce ownership and route relationships" test_operational_projection_relationships
 
 say "passed: $pass_count"
 say "failed: $fail_count"
