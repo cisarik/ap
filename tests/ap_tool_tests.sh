@@ -8389,6 +8389,119 @@ EOF
     ! validate_projection_route_fixture "$fixtures/weakened-infosec"
 }
 
+validate_public_projection_fixture() {
+    file=$1
+    for field in \
+        "Artifact relationship:" \
+        "Canonical semantic owner:" \
+        "Exact structural owner:" \
+        "Introduces independent requirement:" \
+        "Grants task authority:" \
+        "Canonical link present:" \
+        "Commands preserved:" \
+        "Runtime or consumer change:" \
+        "Lifecycle explanation:"
+    do
+        [ "$(grep -cF "$field" "$file")" -eq 1 ] || return 1
+    done
+    case "$(sed -n 's/^Artifact relationship: //p' "$file")" in
+        explanatory|operational-guide|historical) ;;
+        *) return 1 ;;
+    esac
+    [ "$(sed -n 's/^Canonical semantic owner: //p' "$file")" = AP.md ] || return 1
+    [ "$(sed -n 's/^Exact structural owner: //p' "$file")" = PROMPT_CONTRACTS.md ] || return 1
+    [ "$(sed -n 's/^Introduces independent requirement: //p' "$file")" = no ] || return 1
+    [ "$(sed -n 's/^Grants task authority: //p' "$file")" = no ] || return 1
+    [ "$(sed -n 's/^Canonical link present: //p' "$file")" = yes ] || return 1
+    [ "$(sed -n 's/^Runtime or consumer change: //p' "$file")" = none ] || return 1
+    [ "$(sed -n 's/^Lifecycle explanation: //p' "$file")" != none ] || return 1
+    if [ "$(sed -n 's/^Artifact relationship: //p' "$file")" = operational-guide ]; then
+        [ "$(sed -n 's/^Commands preserved: //p' "$file")" = yes ] || return 1
+    fi
+}
+
+test_explanatory_projection_and_compression_contracts() {
+    grep -F 'Artifact relationship: **explanatory projection**' "$REPO/README.md" >/dev/null || return 1
+    grep -F 'Artifact relationship: **explanatory projection**' "$REPO/FAQ.md" >/dev/null || return 1
+    grep -F 'Artifact relationship: **explanatory projection**' "$REPO/GLOSSARY.md" >/dev/null || return 1
+    grep -F 'Artifact relationship: **operational integration guide**' "$REPO/INTEGRATION.md" >/dev/null || return 1
+    grep -F 'Artifact relationship: **operational update guide**' "$REPO/UPDATING.md" >/dev/null || return 1
+    grep -F 'Artifact relationship: **historical delivery record**' "$REPO/CHANGELOG.md" >/dev/null || return 1
+
+    for file in AP.md PROMPT_CONTRACTS.md AP_ORCHESTRATOR.md AP_WORKER.md \
+        PROMPT_ENGINEERING_PATTERNS.md INFOSEC.md ARTIFACT_LIFECYCLE.md FAQ.md \
+        GLOSSARY.md INTEGRATION.md UPDATING.md CHANGELOG.md ap tests/
+    do
+        grep -F "$file" "$REPO/README.md" >/dev/null || return 1
+    done
+    grep -F 'sole live normative protocol and semantic owner' "$REPO/README.md" >/dev/null || return 1
+    grep -F 'No subordinate artifact independently defines AP meaning' "$REPO/README.md" >/dev/null || return 1
+    grep -F 'Answers introduce no independent requirements' "$REPO/FAQ.md" >/dev/null || return 1
+    grep -F 'definitions explain canonical terms; they do not create requirements' "$REPO/GLOSSARY.md" >/dev/null || return 1
+    grep -F 'CLI, schema-v1 project contract, stable variant resolution, managed block, and' "$REPO/README.md" >/dev/null || return 1
+    grep -F 'OK resolved governing variant: stable' "$REPO/README.md" >/dev/null || return 1
+    grep -F 'The tool never commits or pushes' "$REPO/README.md" >/dev/null || return 1
+
+    # Runtime, project contract, and the managed-block implementation remain
+    # byte-identical to the fixed implementation baseline.
+    git -C "$REPO" diff --quiet 4862380f351ddd74e1c141a4babe2d0f0b43979d -- ap ap.project.conf || return 1
+
+    set -- "$REPO/AP.md" "$REPO/AP_ORCHESTRATOR.md" "$REPO/AP_WORKER.md" \
+        "$REPO/PROMPT_CONTRACTS.md" "$REPO/PROMPT_ENGINEERING_PATTERNS.md" \
+        "$REPO/ARTIFACT_LIFECYCLE.md" "$REPO/INFOSEC.md" "$REPO/README.md" \
+        "$REPO/FAQ.md" "$REPO/GLOSSARY.md" "$REPO/INTEGRATION.md" "$REPO/UPDATING.md"
+    final_words=$(wc -w "$@" | tail -n 1 | awk '{print $1}')
+    final_bytes=$(wc -c "$@" | tail -n 1 | awk '{print $1}')
+    [ "$final_words" -lt 56129 ] || return 1
+    [ "$final_bytes" -lt 426866 ] || return 1
+
+    scan_absent "public-private-paths" -n \
+        '/home/[^ /]+|/Users/[^ /]+|[A-Za-z]:\\\\Users\\\\|ap-worker2-semantic' \
+        "$REPO/README.md" "$REPO/FAQ.md" "$REPO/GLOSSARY.md" \
+        "$REPO/INTEGRATION.md" "$REPO/UPDATING.md" "$REPO/CHANGELOG.md" || return 1
+    scan_absent "public-secret-shapes" -n \
+        'BEGIN (RSA|OPENSSH|EC|DSA) PRIVATE KEY|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9_]{20,}|xox[baprs]-' \
+        "$REPO/README.md" "$REPO/FAQ.md" "$REPO/GLOSSARY.md" \
+        "$REPO/INTEGRATION.md" "$REPO/UPDATING.md" "$REPO/CHANGELOG.md" || return 1
+
+    fixtures=$TMPROOT/public-projection-fixtures
+    mkdir -p "$fixtures"
+    cat > "$fixtures/explanatory" <<'EOF'
+Artifact relationship: explanatory
+Canonical semantic owner: AP.md
+Exact structural owner: PROMPT_CONTRACTS.md
+Introduces independent requirement: no
+Grants task authority: no
+Canonical link present: yes
+Commands preserved: not-applicable
+Runtime or consumer change: none
+Lifecycle explanation: links newcomer to semantic and structural owners
+EOF
+    validate_public_projection_fixture "$fixtures/explanatory" || return 1
+
+    sed -e 's/^Artifact relationship: explanatory$/Artifact relationship: operational-guide/' \
+        -e 's/^Commands preserved: not-applicable$/Commands preserved: yes/' \
+        -e 's/^Lifecycle explanation:.*$/Lifecycle explanation: projects unchanged executable workflow/' \
+        "$fixtures/explanatory" > "$fixtures/operational-guide"
+    validate_public_projection_fixture "$fixtures/operational-guide" || return 1
+
+    sed 's/^Canonical semantic owner: AP.md$/Canonical semantic owner: FAQ.md/' \
+        "$fixtures/explanatory" > "$fixtures/second-owner"
+    ! validate_public_projection_fixture "$fixtures/second-owner" || return 1
+    sed 's/^Introduces independent requirement: no$/Introduces independent requirement: yes/' \
+        "$fixtures/explanatory" > "$fixtures/hidden-rule"
+    ! validate_public_projection_fixture "$fixtures/hidden-rule" || return 1
+    sed 's/^Commands preserved: yes$/Commands preserved: no/' \
+        "$fixtures/operational-guide" > "$fixtures/lost-command"
+    ! validate_public_projection_fixture "$fixtures/lost-command" || return 1
+    sed 's/^Runtime or consumer change: none$/Runtime or consumer change: silently-changed/' \
+        "$fixtures/explanatory" > "$fixtures/runtime-drift"
+    ! validate_public_projection_fixture "$fixtures/runtime-drift" || return 1
+    sed 's/^Lifecycle explanation:.*$/Lifecycle explanation: none/' \
+        "$fixtures/explanatory" > "$fixtures/no-lifecycle"
+    ! validate_public_projection_fixture "$fixtures/no-lifecycle"
+}
+
 test_failure_preservation_privilege_and_cleanup_contracts() {
     assert_section_contract "$REPO/AP.md" "## 12. Validation and Public Verification" \
         "## 13. Artifact Lifecycle and Repository Hygiene" \
@@ -8527,6 +8640,7 @@ run_test "evidence tiers and implementation/acceptance envelopes enforce scenari
 run_test "first-causal-error, privilege, parser, and cleanup contracts are enforced" test_failure_preservation_privilege_and_cleanup_contracts
 run_test "semantic owners and finite convergence enforce positive and negative routes" test_semantic_ownership_and_convergence_contracts
 run_test "operational and advisory projections enforce ownership and route relationships" test_operational_projection_relationships
+run_test "explanatory and operational-guide projections preserve discovery, runtime, safety, and compression" test_explanatory_projection_and_compression_contracts
 
 say "passed: $pass_count"
 say "failed: $fail_count"

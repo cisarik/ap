@@ -1,5 +1,10 @@
 # Updating the Pinned AP Version
 
+Artifact relationship: **operational update guide** for
+[RF-15](AP.md#rf-15-protocol-variants-and-stable-integration). `AP.md` owns
+meaning; this guide projects the unchanged check, candidate-validation, commit,
+and rollback workflow. It grants no update, Git, or publication authority.
+
 AP updates are explicit and auditable. A consuming project pins an exact AP
 commit through the `.ap` submodule gitlink. No existing project silently changes
 behavior when the AP source repository advances.
@@ -120,4 +125,4 @@ Before committing an AP update in a consuming project:
 
 - [INTEGRATION.md](INTEGRATION.md)
 - [CHANGELOG.md](CHANGELOG.md)
-- [AP.md](AP.md)
+- [AP semantic authority](AP.md#semantic-authority-and-artifact-relationships)

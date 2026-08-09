@@ -1,5 +1,10 @@
 # Integrating AP Into a Project
 
+Artifact relationship: **operational integration guide** for
+[RF-15](AP.md#rf-15-protocol-variants-and-stable-integration). `AP.md` owns
+meaning; this guide projects the unchanged executable adoption, migration, and
+removal workflow. It grants no repository or Git authority.
+
 This guide covers first integration, ordinary clone recovery, health checks,
 migration from copied AP files, and manual removal.
 
@@ -204,7 +209,9 @@ AP does not provide a destructive automatic removal command.
 
 ## Universal Versus Project-Specific Rules
 
-Universal AP rules live in `.ap/`.
+Canonical universal AP semantics live in `.ap/AP.md`; subordinate AP files use
+their declared structural, operational, advisory, explanatory, historical, or
+executable relationship.
 
 Project-specific rules live in the consuming project. The root `AGENTS.md` is
 the normal place for language rules, product invariants, local paths, source of

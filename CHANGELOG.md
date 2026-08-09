@@ -1,10 +1,21 @@
 # Changelog
 
-This file records human-readable AP distribution changes. Git history remains
-the authoritative archive for exact content.
+Artifact relationship: **historical delivery record**. This file records
+human-readable AP distribution changes; it is not a current semantic owner or
+task authority. Git history remains the exact content archive, and `AP.md`
+remains the sole live normative protocol.
 
 ## Unreleased
 
+- Consolidated every durable AP rule family under a stable semantic-owner map
+  in `AP.md`; classified subordinate artifacts as structural, operational,
+  advisory, explanatory, historical, executable, or consumer projections;
+  retained exact schema spellings in `PROMPT_CONTRACTS.md`; and added finite
+  planning, correction, acceptance, phase-result, escalation, and
+  ORCHESTRATOR-only closure relationships. Compressed role and newcomer
+  projections with canonical links and relationship validators. This changes no
+  `ap` runtime, schema-v1, stable variant tuple, managed block, consumer pin,
+  provider, deployment, or production state. Recorded by ADR-0013.
 - Made the test runner fail closed: one central content-scanner prerequisite,
   scan outcomes that separate a clean scan from a missing scanner, explicit
   usage and unknown-argument handling, and temporary-state cleanup on
