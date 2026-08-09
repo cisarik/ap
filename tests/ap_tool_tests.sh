@@ -295,6 +295,45 @@ new_execution_project() {
     printf '%s\n' "$fixture"
 }
 
+new_symlinked_venv_execution_project() {
+    fixture_name=$1
+    fixture=$TMPROOT/execution-$fixture_name
+    mkdir -p "$fixture/src"
+    git_init "$fixture"
+    git -C "$fixture" remote add origin "https://example.invalid/acme/$fixture_name.git"
+    physical_python=$(command -v python3)
+    physical_python=$(readlink -f "$physical_python")
+    python_version=$($physical_python -s -B -c 'import sys; print("%d.%d" % sys.version_info[:2])')
+    "$physical_python" -s -B -m venv --without-pip --symlinks "$fixture/.venv"
+    [ -L "$fixture/.venv/bin/python" ] || return 1
+    venv_purelib=$("$fixture/.venv/bin/python" -s -B -c 'import sysconfig; print(sysconfig.get_path("purelib"))')
+    case "$venv_purelib" in
+        "$fixture/.venv"/*) ;;
+        *) return 1 ;;
+    esac
+    printf '%s\n' 'VALUE = "venv-only"' > "$venv_purelib/ap_venv_only_probe.py"
+    printf '%s\n' 'VALUE = "inside"' > "$fixture/src/goodmod.py"
+    : > "$fixture/ap.project.conf"
+    git -C "$fixture" config --file ap.project.conf ap.schemaVersion 1
+    git -C "$fixture" config --file ap.project.conf ap.projectId "acme/$fixture_name"
+    git -C "$fixture" config --file ap.project.conf ap.environmentPolicy sanitized-v1
+    git -C "$fixture" config --file ap.project.conf runtime.cpython.kind cpython
+    git -C "$fixture" config --file ap.project.conf runtime.cpython.executable .venv/bin/python
+    git -C "$fixture" config --file ap.project.conf runtime.cpython.requiredVersion "$python_version"
+    git -C "$fixture" config --file ap.project.conf runtime.cpython.sourceRoot src
+    git -C "$fixture" config --file ap.project.conf runtime.cpython.provenanceModule goodmod
+    git -C "$fixture" config --file ap.project.conf operation.probe.workingDirectory .
+    git -C "$fixture" config --file ap.project.conf --add operation.probe.argv -c
+    git -C "$fixture" config --file ap.project.conf --add operation.probe.argv \
+        'import os,sys,sysconfig,ap_venv_only_probe; print("SYS_EXECUTABLE="+sys.executable); print("PREFIX="+sys.prefix); print("BASE_PREFIX="+sys.base_prefix); print("PURELIB="+sysconfig.get_path("purelib")); print("VENV_MODULE="+ap_venv_only_probe.VALUE); print("ARGV="+repr(sys.argv)); print("ENV="+repr(sorted(os.environ.items())))'
+    git -C "$fixture" config --file ap.project.conf --add operation.probe.argv 'fixed value'
+    git -C "$fixture" config --file ap.project.conf --add operation.probe.argv '$(printf fixed-shell)'
+    git -C "$fixture" config --file ap.project.conf operation.probe.allowTrailingArgv true
+    git -C "$fixture" add ap.project.conf src/goodmod.py
+    git -C "$fixture" commit -q -m "symlinked venv execution fixture"
+    printf '%s\n' "$fixture"
+}
+
 copy_worktree_to_source() {
     mkdir -p "$SOURCE"
     (
@@ -2969,6 +3008,11 @@ test_project_contract_rejects_closed_schema_and_unsafe_values() {
     run_fail "$REPO/ap" project check --root "$project" --candidate || return 1
     assert_contains "$ERR" "must not traverse with .." || return 1
 
+    project=$(new_execution_project runtime-traversal) || return 1
+    git -C "$project" config --file ap.project.conf runtime.cpython.executable ../outside/python
+    run_fail "$REPO/ap" project check --root "$project" --candidate || return 1
+    assert_contains "$ERR" "runtime.cpython.executable must not traverse with .." || return 1
+
     project=$(new_execution_project no-contract) || return 1
     git -C "$project" rm -q ap.project.conf
     run_fail "$REPO/ap" project check --root "$project" --candidate || return 1
@@ -3014,6 +3058,53 @@ test_project_exec_sanitizes_environment_and_preserves_argv() {
     [ "$exit_status" -eq 37 ] || return 1
 }
 
+test_project_exec_preserves_symlinked_virtualenv_launch_semantics() {
+    project=$(new_symlinked_venv_execution_project symlinked-venv) || return 1
+    baseline=$(git -C "$project" rev-parse HEAD) || return 1
+    physical_python=$(readlink -f "$project/.venv/bin/python") || return 1
+    base_prefix=$($physical_python -s -B -c 'import sys; print(sys.base_prefix)') || return 1
+    venv_purelib=$("$project/.venv/bin/python" -s -B -c 'import sysconfig; print(sysconfig.get_path("purelib"))') || return 1
+
+    run_fail /usr/bin/env -i PATH=/usr/bin:/bin LC_ALL=C LANG=C \
+        PYTHONNOUSERSITE=1 PYTHONDONTWRITEBYTECODE=1 \
+        "$physical_python" -s -B -c 'import ap_venv_only_probe' || return 1
+    assert_contains "$ERR" "No module named 'ap_venv_only_probe'" || { show_command_evidence; return 1; }
+
+    run_ok "$REPO/ap" exec --root "$project" --baseline "$baseline" --operation probe -- \
+        'trailing value' '; echo nope' '*' || { show_command_evidence; return 1; }
+    assert_contains "$OUT" "OK CPython executable: $physical_python" || { show_command_evidence; return 1; }
+    assert_contains "$OUT" "SYS_EXECUTABLE=$project/.venv/bin/python" || { show_command_evidence; return 1; }
+    assert_contains "$OUT" "PREFIX=$project/.venv" || { show_command_evidence; return 1; }
+    assert_contains "$OUT" "BASE_PREFIX=$base_prefix" || { show_command_evidence; return 1; }
+    assert_contains "$OUT" "PURELIB=$venv_purelib" || { show_command_evidence; return 1; }
+    assert_contains "$OUT" "VENV_MODULE=venv-only" || { show_command_evidence; return 1; }
+    assert_contains "$OUT" "ARGV=['-c', 'fixed value', '\$(printf fixed-shell)', 'trailing value', '; echo nope', '*']" || { show_command_evidence; return 1; }
+    expected_environment="ENV=[('AP_BASELINE', '$baseline'), ('AP_OPERATION', 'probe'), ('AP_PROJECT_ROOT', '$project'), ('LANG', 'C'), ('LC_ALL', 'C'), ('PATH', '/usr/bin:/bin'), ('PYTHONDONTWRITEBYTECODE', '1'), ('PYTHONNOUSERSITE', '1'), ('PYTHONPATH', '$project/src')]"
+    assert_contains "$OUT" "$expected_environment" || { show_command_evidence; return 1; }
+    assert_not_contains "$OUT" "VIRTUAL_ENV" || { show_command_evidence; return 1; }
+    assert_not_contains "$OUT" "SHELL EXECUTED" || { show_command_evidence; return 1; }
+}
+
+test_project_exec_rejects_changed_runtime_target() {
+    project=$(new_execution_project changed-target) || return 1
+    baseline=$(git -C "$project" rev-parse HEAD) || return 1
+    original_target=$(readlink -f "$project/runtime/python") || return 1
+    replacement=$project/runtime/replacement-python
+    marker=$project/replacement-invoked
+    printf '%s\n' '#!/bin/sh' "printf '%s\\n' invoked > '$marker'" 'exit 91' > "$replacement"
+    chmod +x "$replacement"
+    ln -s "$replacement" "$project/runtime/python.next"
+    printf '%s\n' 'import os' \
+        "os.replace('$project/runtime/python.next', '$project/runtime/python')" \
+        > "$project/src/sitecustomize.py"
+
+    run_fail "$REPO/ap" exec --root "$project" --baseline "$baseline" --operation capture -- || return 1
+    assert_contains "$OUT" "OK CPython executable: $original_target" || { show_command_evidence; return 1; }
+    assert_contains "$ERR" "declared CPython executable target changed after validation; refusing execution" || { show_command_evidence; return 1; }
+    [ "$(readlink -f "$project/runtime/python")" = "$replacement" ] || return 1
+    [ ! -e "$marker" ] || return 1
+}
+
 test_project_exec_enforces_baseline_operation_policy() {
     project=$(new_execution_project operation-policy) || return 1
     baseline=$(git -C "$project" rev-parse HEAD) || return 1
@@ -3029,6 +3120,32 @@ test_project_exec_enforces_baseline_operation_policy() {
 }
 
 test_project_cpython_provenance_failures_stop_without_repair() {
+    project=$(new_execution_project missing-runtime) || return 1
+    unlink "$project/runtime/python"
+    run_fail "$REPO/ap" project check --root "$project" --candidate || return 1
+    assert_contains "$ERR" "declared CPython executable does not exist" || { show_command_evidence; return 1; }
+
+    project=$(new_execution_project broken-runtime) || return 1
+    unlink "$project/runtime/python"
+    ln -s "$project/runtime/absent-python" "$project/runtime/python"
+    run_fail "$REPO/ap" project check --root "$project" --candidate || return 1
+    assert_contains "$ERR" "declared CPython executable does not exist" || { show_command_evidence; return 1; }
+
+    project=$(new_execution_project non-executable-runtime) || return 1
+    printf '%s\n' '#!/bin/sh' 'exit 0' > "$project/runtime/non-executable-python"
+    chmod 644 "$project/runtime/non-executable-python"
+    unlink "$project/runtime/python"
+    ln -s "$project/runtime/non-executable-python" "$project/runtime/python"
+    run_fail "$REPO/ap" project check --root "$project" --candidate || return 1
+    assert_contains "$ERR" "declared CPython executable is not executable" || { show_command_evidence; return 1; }
+
+    project=$(new_execution_project source-root-escape) || return 1
+    outside_source=$TMPROOT/source-root-escape-outside
+    mv "$project/src" "$outside_source"
+    ln -s "$outside_source" "$project/src"
+    run_fail "$REPO/ap" project check --root "$project" --candidate || return 1
+    assert_contains "$ERR" "runtime.cpython.sourceRoot resolves outside the project root" || { show_command_evidence; return 1; }
+
     project=$(new_execution_project version-mismatch) || return 1
     git -C "$project" config --file ap.project.conf runtime.cpython.requiredVersion 9.9
     run_fail "$REPO/ap" project check --root "$project" --candidate || return 1
@@ -7942,6 +8059,8 @@ copy_worktree_to_source
 run_test "baseline and candidate project contracts validate with distinct trust" test_project_contract_baseline_and_candidate_validation
 run_test "project contract schema rejects missing, duplicate, unknown, include, identity, and unsafe values" test_project_contract_rejects_closed_schema_and_unsafe_values
 run_test "project exec sanitizes contamination and preserves direct argv and exit status" test_project_exec_sanitizes_environment_and_preserves_argv
+run_test "project exec preserves symlinked virtualenv launch semantics" test_project_exec_preserves_symlinked_virtualenv_launch_semantics
+run_test "project exec rejects a runtime target changed after validation" test_project_exec_rejects_changed_runtime_target
 run_test "project exec enforces baseline drift, declarations, and trailing-argv policy" test_project_exec_enforces_baseline_operation_policy
 run_test "CPython provenance failures stop without environment repair" test_project_cpython_provenance_failures_stop_without_repair
 run_test "runner rejects unknown arguments and prints usage for --help" test_runner_argument_handling

@@ -854,11 +854,11 @@ project_validate_contract() {
         project_source_root=
     fi
 
-    project_runtime_entry=$project_root/$project_runtime_relative
-    [ -e "$project_runtime_entry" ] || fail "declared CPython executable does not exist; STOP and report the mismatch without repairing the environment"
-    [ -x "$project_runtime_entry" ] || fail "declared CPython executable is not executable; STOP and report the mismatch without repairing the environment"
-    project_runtime_executable=$(readlink -f "$project_runtime_entry" 2>/dev/null || true)
-    [ -n "$project_runtime_executable" ] && [ -f "$project_runtime_executable" ] && [ -x "$project_runtime_executable" ] ||
+    project_runtime_launch_path=$project_root/$project_runtime_relative
+    [ -e "$project_runtime_launch_path" ] || fail "declared CPython executable does not exist; STOP and report the mismatch without repairing the environment"
+    [ -x "$project_runtime_launch_path" ] || fail "declared CPython executable is not executable; STOP and report the mismatch without repairing the environment"
+    project_runtime_validation_path=$(readlink -f "$project_runtime_launch_path" 2>/dev/null || true)
+    [ -n "$project_runtime_validation_path" ] && [ -f "$project_runtime_validation_path" ] && [ -x "$project_runtime_validation_path" ] ||
         fail "declared CPython executable symlink chain cannot be resolved safely; STOP and report the mismatch"
 
     while IFS= read -r project_operation_id; do
@@ -937,14 +937,14 @@ print("OK CPython encodings: " + encodings_origin)'
     if [ -n "$project_source_root" ]; then
         /usr/bin/env -i PATH="$PROJECT_CHILD_PATH" LC_ALL=C LANG=C \
             PYTHONNOUSERSITE=1 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH="$project_source_root" \
-            "$project_runtime_executable" -s -B -c "$project_probe" \
-            "$project_runtime_version" "$project_runtime_executable" "$project_source_root" "$project_provenance_module" ||
+            "$project_runtime_validation_path" -s -B -c "$project_probe" \
+            "$project_runtime_version" "$project_runtime_validation_path" "$project_source_root" "$project_provenance_module" ||
             project_probe_status=$?
     else
         /usr/bin/env -i PATH="$PROJECT_CHILD_PATH" LC_ALL=C LANG=C \
             PYTHONNOUSERSITE=1 PYTHONDONTWRITEBYTECODE=1 \
-            "$project_runtime_executable" -s -B -c "$project_probe" \
-            "$project_runtime_version" "$project_runtime_executable" "" "" ||
+            "$project_runtime_validation_path" -s -B -c "$project_probe" \
+            "$project_runtime_version" "$project_runtime_validation_path" "" "" ||
             project_probe_status=$?
     fi
     [ "$project_probe_status" -eq 0 ] ||
@@ -1031,8 +1031,6 @@ cmd_exec() {
     done <<EOF
 $project_fixed_reverse
 EOF
-    set -- "$project_runtime_executable" "$@"
-
     if ! git -C "$project_root" diff --quiet --no-ext-diff --no-textconv "$project_baseline" -- "$PROJECT_CONTRACT"; then
         fail "worktree/baseline $PROJECT_CONTRACT drift forbids execution"
     fi
@@ -1042,6 +1040,14 @@ EOF
     project_cleanup
     trap - EXIT HUP INT TERM
     cd "$project_exec_workdir"
+    project_runtime_current_validation_path=$(readlink -f "$project_runtime_launch_path" 2>/dev/null || true)
+    [ -n "$project_runtime_current_validation_path" ] &&
+        [ -f "$project_runtime_current_validation_path" ] &&
+        [ -x "$project_runtime_current_validation_path" ] ||
+        fail "declared CPython executable target changed or became unavailable after validation; refusing execution"
+    [ "$project_runtime_current_validation_path" = "$project_runtime_validation_path" ] ||
+        fail "declared CPython executable target changed after validation; refusing execution"
+    set -- "$project_runtime_launch_path" "$@"
     if [ -n "$project_source_root" ]; then
         exec /usr/bin/env -i PATH="$PROJECT_CHILD_PATH" LC_ALL=C LANG=C \
             PYTHONNOUSERSITE=1 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH="$project_source_root" \

@@ -81,13 +81,25 @@ variables, inherited `PATH`, other Python and virtualenv injection, shell and
 Git injection, and `SSH_AUTH_SOCK` are not inherited. Diagnostics record
 contaminated variable names/classes but never their values.
 
-Before readiness or execution, AP resolves the declared executable and checks
-the CPython major/minor, `sys.executable`, prefixes, stdlib, and `encodings`
-origin for internal consistency and AppImage/Cursor path markers. User-site
-imports and bytecode writes are disabled. A declared source root is injected
-exactly once, and a declared provenance module must resolve inside it. Runtime
-ownership is not restricted to root; a valid user-owned interpreter is
-allowed. Failures direct the Worker to stop and report, never to repair Python.
+Before readiness or execution, AP keeps the baseline-declared executable as
+the logical operation launch path and separately resolves its physical target
+for validation. The physical interpreter is checked for the required CPython
+major/minor, `sys.executable`, prefixes, stdlib, and `encodings` origin, their
+internal consistency, and AppImage/Cursor path markers. User-site imports and
+bytecode writes are disabled. A declared source root is injected exactly once,
+and a declared provenance module must resolve inside it. Runtime ownership is
+not restricted to root; a valid user-owned interpreter is allowed. Failures
+direct the Worker to stop and report, never to repair Python.
+
+Final execution uses the logical launch path, allowing CPython to discover an
+adjacent `pyvenv.cfg`. A virtual-environment operation therefore observes its
+logical `sys.executable`, virtual-environment `sys.prefix`, and site-packages;
+direct non-venv runtimes are unchanged. Immediately before execution, AP
+resolves the logical path again and refuses execution unless its regular,
+executable physical target is the one already validated. A bounded TOCTOU
+interval remains between that final check and kernel execution. The venv's
+`pyvenv.cfg` and site-packages remain mutable runtime inputs, and AP does not
+prove dependency-lock integrity.
 
 ## Security and authority boundary
 
@@ -98,6 +110,8 @@ contain malicious target code, stop that code from starting a shell or another
 process, secure a compromised account or same-user host, prove mutation
 authority, or replace the current authoritative Worker prompt. Technical
 readiness and task authority remain separate.
+
+This launch-path distinction introduces no schema-v1 or CLI change.
 
 Repositories without `ap.project.conf` retain all existing `ap init`, `ap
 doctor`, update, and rollback behavior. Only the new project-check and exec
