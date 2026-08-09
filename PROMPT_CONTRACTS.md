@@ -955,12 +955,12 @@ Audit completion: <status>
 Publication: <status>
 Public Git equality: <status>
 Orchestrator acceptance: <status>
-Logical-whole closure: closed | not-closed
+Logical-whole closure: not-closed | closed-by-ORCHESTRATOR
 ```
 
 `Signal owner: orchestrator` and
 `Worker emission of closure signal: prohibited` are the only accepted values.
-`Logical-whole closure: closed` requires
+`Logical-whole closure: closed-by-ORCHESTRATOR` requires
 `Active-context reconciliation: complete` and `Closure authority: present`. The
 declared signal is a project value; universal AP hardcodes no signal text. The
 six listed states stay separately visible, because none of them alone is

@@ -1390,10 +1390,10 @@ validate_closure_signal_fixture() {
     [ "$(grep -Ec '^Worker emission of closure signal: prohibited$' "$file")" -eq 1 ] || return 1
     [ "$(grep -Ec '^Active-context reconciliation: (complete|incomplete)$' "$file")" -eq 1 ] || return 1
     [ "$(grep -Ec '^Closure authority: (present|absent)$' "$file")" -eq 1 ] || return 1
-    [ "$(grep -Ec '^Logical-whole closure: (closed|not-closed)$' "$file")" -eq 1 ] || return 1
+    [ "$(grep -Ec '^Logical-whole closure: (not-closed|closed-by-ORCHESTRATOR)$' "$file")" -eq 1 ] || return 1
 
     closure=$(sed -n 's/^Logical-whole closure: //p' "$file")
-    if [ "$closure" = "closed" ]; then
+    if [ "$closure" = "closed-by-ORCHESTRATOR" ]; then
         [ "$(sed -n 's/^Active-context reconciliation: //p' "$file")" = "complete" ] || return 1
         [ "$(sed -n 's/^Closure authority: //p' "$file")" = "present" ] || return 1
     fi
@@ -6334,9 +6334,17 @@ Audit completion: complete
 Publication: complete
 Public Git equality: verified
 Orchestrator acceptance: granted
-Logical-whole closure: closed
+Logical-whole closure: closed-by-ORCHESTRATOR
 EOF
     validate_closure_signal_fixture "$signals/closed" || return 1
+
+    sed 's/^Logical-whole closure: closed-by-ORCHESTRATOR$/Logical-whole closure: closed/' \
+        "$signals/closed" > "$signals/legacy-closed"
+    ! validate_closure_signal_fixture "$signals/legacy-closed" || return 1
+
+    sed 's/^Logical-whole closure: closed-by-ORCHESTRATOR$/Logical-whole closure: closed-by-WORKER/' \
+        "$signals/closed" > "$signals/unknown-closure-value"
+    ! validate_closure_signal_fixture "$signals/unknown-closure-value" || return 1
 
     # A Worker may never hold the closure signal.
     sed 's/^Signal owner: orchestrator$/Signal owner: worker/' \
@@ -6360,7 +6368,7 @@ EOF
     sed -e 's/^Audit completion: complete$/Audit completion: not-started/' \
         -e 's/^Orchestrator acceptance: granted$/Orchestrator acceptance: pending/' \
         -e 's/^Closure authority: present$/Closure authority: absent/' \
-        -e 's/^Logical-whole closure: closed$/Logical-whole closure: not-closed/' \
+        -e 's/^Logical-whole closure: closed-by-ORCHESTRATOR$/Logical-whole closure: not-closed/' \
         "$signals/closed" > "$signals/published-not-closed"
     validate_closure_signal_fixture "$signals/published-not-closed" || return 1
 
@@ -8117,7 +8125,12 @@ validate_convergence_fixture() {
         implementation-PASS|acceptance-PASS|publication-PASS|deployment-PASS|production-acceptance-PASS|not-applicable) ;;
         *) return 1 ;;
     esac
-    if [ "$(sed -n 's/^Logical-whole closure: //p' "$file")" = closed ]; then
+    closure=$(sed -n 's/^Logical-whole closure: //p' "$file")
+    case "$closure" in
+        not-closed|closed-by-ORCHESTRATOR) ;;
+        *) return 1 ;;
+    esac
+    if [ "$closure" = closed-by-ORCHESTRATOR ]; then
         [ "$(sed -n 's/^Closure actor: //p' "$file")" = ORCHESTRATOR ] || return 1
         [ "$(sed -n 's/^Required preceding results: //p' "$file")" = satisfied ] || return 1
         [ "$(sed -n 's/^Cooperator-owned decisions: //p' "$file")" = satisfied ] || return 1
@@ -8193,6 +8206,9 @@ EOF
     grep -F 'This file owns what' "$REPO/AP.md" >/dev/null || return 1
     grep -F 'Escalation disposition: NEEDS_ORCHESTRATOR_DECISION' "$REPO/AP.md" >/dev/null || return 1
     grep -F 'Escalation disposition: NEEDS_ORCHESTRATOR_DECISION' "$REPO/PROMPT_CONTRACTS.md" >/dev/null || return 1
+    [ "$(grep -Ec '^Logical-whole closure: not-closed \| closed-by-ORCHESTRATOR$' \
+        "$REPO/PROMPT_CONTRACTS.md")" -eq 2 ] || return 1
+    [ "$(grep -c '^Logical-whole closure:' "$REPO/PROMPT_CONTRACTS.md")" -eq 2 ] || return 1
 
     fixtures=$TMPROOT/convergence-fixtures
     mkdir -p "$fixtures"
@@ -8235,9 +8251,37 @@ EOF
         -e 's/^Residual-risk disposition:.*$/Residual-risk disposition: satisfied/' \
         -e 's/^Upgrade-ledger reconciliation:.*$/Upgrade-ledger reconciliation: complete/' \
         -e 's/^Closure actor:.*$/Closure actor: ORCHESTRATOR/' \
-        -e 's/^Logical-whole closure:.*$/Logical-whole closure: closed/' \
+        -e 's/^Logical-whole closure:.*$/Logical-whole closure: closed-by-ORCHESTRATOR/' \
         "$fixtures/fresh-acceptance" > "$fixtures/closure"
     validate_convergence_fixture "$fixtures/closure" || return 1
+
+    # The exact acceptance bypass must not evade actor or prerequisite gates.
+    sed -e 's/^Closure actor:.*$/Closure actor: WORKER/' \
+        -e 's/^Logical-whole closure:.*$/Logical-whole closure: closed-by-ORCHESTRATOR/' \
+        "$fixtures/fresh-acceptance" > "$fixtures/f01-bypass"
+    ! validate_convergence_fixture "$fixtures/f01-bypass" || return 1
+
+    # Closure values are an exact enum; legacy, substituted, and malformed
+    # values cannot evade validation.
+    sed 's/^Logical-whole closure:.*$/Logical-whole closure: closed/' \
+        "$fixtures/closure" > "$fixtures/legacy-closed"
+    ! validate_convergence_fixture "$fixtures/legacy-closed" || return 1
+    sed 's/^Logical-whole closure:.*$/Logical-whole closure: closed-by-WORKER/' \
+        "$fixtures/closure" > "$fixtures/unknown-closure-value"
+    ! validate_convergence_fixture "$fixtures/unknown-closure-value" || return 1
+    sed 's/^Logical-whole closure:.*$/Logical-whole closure:/' \
+        "$fixtures/implementation" > "$fixtures/empty-closure"
+    ! validate_convergence_fixture "$fixtures/empty-closure" || return 1
+    sed '/^Logical-whole closure:/d' \
+        "$fixtures/implementation" > "$fixtures/missing-closure"
+    ! validate_convergence_fixture "$fixtures/missing-closure" || return 1
+    sed '/^Logical-whole closure:/p' \
+        "$fixtures/implementation" > "$fixtures/duplicate-closure"
+    ! validate_convergence_fixture "$fixtures/duplicate-closure" || return 1
+
+    sed 's/^Residual-risk disposition:.*$/Residual-risk disposition: pending/' \
+        "$fixtures/closure" > "$fixtures/pending-closure-risk"
+    ! validate_convergence_fixture "$fixtures/pending-closure-risk" || return 1
 
     # Negative controls exercise relationships rather than favored prose.
     sed 's/^Planning authority after terminal report:.*$/Planning authority after terminal report: active-by-UI-approval/' \
