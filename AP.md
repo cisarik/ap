@@ -45,9 +45,20 @@ those structures mean. `AP_ORCHESTRATOR.md` and `AP_WORKER.md` are operational
 projections; `PROMPT_ENGINEERING_PATTERNS.md` and activated `INFOSEC.md` are
 advisory projections; `README.md`, `FAQ.md`, and `GLOSSARY.md` are explanatory
 projections; `ARTIFACT_LIFECYCLE.md`, `INTEGRATION.md`, and `UPDATING.md` are
-operational projections; ADRs and `CHANGELOG.md` are historical; `ap` and its
-tests are executable; and a managed `AGENTS.md` block plus project-owned rules
+operational projections; ADRs and `CHANGELOG.md` are historical; `ap` is the
+executable projection; and a managed `AGENTS.md` block plus project-owned rules
 form a consumer projection.
+
+AP protocol and documentation evolution do not require a repository-wide test
+suite that mirrors every rule, field, phrase, projection, relationship, or
+example. Documentation changes use proportional direct semantic review,
+ownership and projection review, exact diff inspection, link and path
+inspection, bounded repository and Git evidence, independent review when risk
+warrants it, and practical AP use. Observed friction in real AP work is
+first-class protocol-evolution evidence when reconciled with current repository
+truth. Tests remain possible evidence for executable behavior in consuming
+software projects; this protocol does not claim that ordinary software should
+be developed without tests.
 
 ### Canonical Semantic-Owner Map
 
@@ -58,24 +69,24 @@ for that rule family. Other columns name deliberate projections or enforcement;
 | ID | Durable rule family and canonical semantic home | Deliberate projections and enforcement |
 |---|---|---|
 | RF-01 | [Cooperator sovereignty and material decisions](#rf-01-cooperator-sovereignty-and-material-decisions) | Orchestrator operations; explanatory role summaries; consumer-local product decisions |
-| RF-02 | [Orchestrator decision, reconciliation, and closure authority](#rf-02-orchestrator-decision-reconciliation-and-closure-authority) | Orchestrator operations; closure structural record; relationship tests |
-| RF-03 | [Worker bounded authority and report expiry](#rf-03-worker-bounded-authority-and-report-expiry) | Worker operations; prompt/report structures; negative-route tests |
-| RF-04 | [Planning ownership and Plan-to-Execution](#rf-04-planning-ownership-and-plan-to-execution) | role operations; planning structures; transition fixtures |
-| RF-05 | [Fresh/current routing and independent acceptance](#rf-05-freshcurrent-routing-and-independent-acceptance) | role operations; routing structures; positive/negative fixtures |
-| RF-06 | [Capability, reasoning, permission, containment, and authority](#rf-06-capability-reasoning-permission-containment-and-authority) | capability structures; advisory patterns; contradiction tests |
-| RF-07 | [Evidence tiers and risk-sensitive acceptance](#rf-07-evidence-tiers-and-risk-sensitive-acceptance) | evidence-envelope structures; role decision tables; scenario tests |
-| RF-08 | [Planning, reporting, audit, and blocker budgets](#rf-08-planning-reporting-audit-and-blocker-budgets) | convergence records; role stop rules; recursion tests |
-| RF-09 | [Upgrade-ledger lifecycle](#rf-09-upgrade-ledger-lifecycle) | lifecycle operations; ledger fields and fixtures |
-| RF-10 | [Provider accounting and continuous closure](#rf-10-provider-accounting-and-continuous-closure) | activated provider annex; accounting fixtures |
-| RF-11 | [Browser recovery and amendment](#rf-11-browser-recovery-and-amendment) | activated browser annex; recovery/amendment fixtures |
+| RF-02 | [Orchestrator decision, reconciliation, and closure authority](#rf-02-orchestrator-decision-reconciliation-and-closure-authority) | Orchestrator operations; closure structural record |
+| RF-03 | [Worker bounded authority and report expiry](#rf-03-worker-bounded-authority-and-report-expiry) | Worker operations; prompt/report structures |
+| RF-04 | [Planning ownership and Plan-to-Execution](#rf-04-planning-ownership-and-plan-to-execution) | role operations; planning structures |
+| RF-05 | [Fresh/current routing and independent acceptance](#rf-05-freshcurrent-routing-and-independent-acceptance) | role operations; routing structures |
+| RF-06 | [Capability, reasoning, permission, containment, and authority](#rf-06-capability-reasoning-permission-containment-and-authority) | capability structures; advisory patterns |
+| RF-07 | [Evidence tiers and risk-sensitive acceptance](#rf-07-evidence-tiers-and-risk-sensitive-acceptance) | evidence-envelope structures; role decision tables |
+| RF-08 | [Planning, reporting, audit, and blocker budgets](#rf-08-planning-reporting-audit-and-blocker-budgets) | convergence records; role stop rules |
+| RF-09 | [Upgrade-ledger lifecycle](#rf-09-upgrade-ledger-lifecycle) | lifecycle operations; ledger fields |
+| RF-10 | [Provider accounting and continuous closure](#rf-10-provider-accounting-and-continuous-closure) | activated provider annex; accounting structures |
+| RF-11 | [Browser recovery and amendment](#rf-11-browser-recovery-and-amendment) | activated browser annex; recovery and amendment structures |
 | RF-12 | [Git and recovery classification](#rf-12-git-and-recovery-classification) | Worker operations; recovery fields; executable Git checks |
-| RF-13 | [Remote privilege and authenticated readback](#rf-13-remote-privilege-and-authenticated-readback) | activated privilege/readback annexes; evidence fixtures |
+| RF-13 | [Remote privilege and authenticated readback](#rf-13-remote-privilege-and-authenticated-readback) | activated privilege/readback annexes; evidence structures |
 | RF-14 | [Artifact ownership and lifecycle](#rf-14-artifact-ownership-and-lifecycle) | lifecycle operations; discovery/retention structures |
 | RF-15 | [Protocol variants and stable integration](#rf-15-protocol-variants-and-stable-integration) | integration operations; managed consumer block; executable doctor checks |
-| RF-16 | [Baseline-bound project execution](#rf-16-baseline-bound-project-execution) | project contract; `ap project check` and `ap exec`; executable tests |
-| RF-17 | [Closure and anti-stall rules](#rf-17-closure-and-anti-stall-rules) | closure record; Orchestrator stop rules; negative-route tests |
-| RF-18 | [Authority, security, and untrusted-content boundaries](#rf-18-authority-security-and-untrusted-content-boundaries) | activated INFOSEC profile; role operations; security fixtures |
-| RF-19 | [External analytic trace and Worker exchange identity](#rf-19-external-analytic-trace-and-worker-exchange-identity) | prompt/report structures; role and lifecycle operations; explanatory and historical projections; exchange fixtures |
+| RF-16 | [Baseline-bound project execution](#rf-16-baseline-bound-project-execution) | project contract; `ap project check` and `ap exec` |
+| RF-17 | [Closure and anti-stall rules](#rf-17-closure-and-anti-stall-rules) | closure record; Orchestrator stop rules |
+| RF-18 | [Authority, security, and untrusted-content boundaries](#rf-18-authority-security-and-untrusted-content-boundaries) | activated INFOSEC profile; role operations |
+| RF-19 | [External analytic trace and Worker exchange identity](#rf-19-external-analytic-trace-and-worker-exchange-identity) | prompt/report structures; role and lifecycle operations; explanatory and historical projections |
 
 ### Rule-Family Owners
 

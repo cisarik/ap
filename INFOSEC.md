@@ -60,11 +60,12 @@ Non-goals:
 | [AP_WORKER.md](AP_WORKER.md) | Worker-side evidence, containment, and reporting duties |
 | [PROMPT_ENGINEERING_PATTERNS.md](PROMPT_ENGINEERING_PATTERNS.md) | Advisory prompt patterns P15, P16, P17, and P04 apply unchanged; this profile adds no new pattern identifiers |
 | [ARTIFACT_LIFECYCLE.md](ARTIFACT_LIFECYCLE.md) | Operational lifecycle projection for sensitive-security evidence |
-| ADRs | ADR-0010 records this profile's ownership decision and deferrals |
-| `tests/ap_tool_tests.sh` | Enforces the ownership and contradiction invariants semantically |
+| ADRs | ADR-0010 records this profile's ownership decision and deferrals; ADR-0015 retires suite-backed AP-repository enforcement while preserving the defensive-security decision |
 
 This profile introduces no new persistent role and no new AP phase. It reuses
-the existing Worker session profiles.
+the existing Worker session profiles. Ownership and contradiction invariants are
+validated by proportional documentation and repository review under
+[AP.md](AP.md), not by a live AP-repository conformance suite.
 
 ## 3. Risk-Weighted Routing
 

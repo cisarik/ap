@@ -23,7 +23,7 @@ Canonical repository: `https://github.com/cisarik/ap`
 | newcomer concepts | [FAQ.md](FAQ.md), [GLOSSARY.md](GLOSSARY.md) | explanatory projections |
 | adoption and updates | [INTEGRATION.md](INTEGRATION.md), [UPDATING.md](UPDATING.md) | operational guides |
 | rationale and delivery | [ADRs](docs/adr/), [CHANGELOG.md](CHANGELOG.md) | historical records |
-| enforcement | [ap](ap), [tests/](tests/) | executable projection |
+| enforcement | [ap](ap) | executable projection |
 | project overlay | managed root `AGENTS.md` block plus project rules | consumer projection |
 
 No subordinate artifact independently defines AP meaning. A task prompt remains

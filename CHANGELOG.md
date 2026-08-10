@@ -7,6 +7,14 @@ remains the sole live normative protocol.
 
 ## Unreleased
 
+- Retired the monolithic AP repository suite `tests/ap_tool_tests.sh` and removed
+  live claims that it is current semantic enforcement. Protocol and
+  documentation evolution now use documentation-first proportional validation:
+  direct semantic review, ownership and projection review, exact diff and
+  link/path inspection, bounded repository and Git evidence, independent review
+  when risk warrants it, and practical AP use. Executable `ap`, schema v1,
+  stable integration, the managed consumer block, consumer pins, and ordinary
+  consumer/software testing evidence are unchanged. Recorded by ADR-0015.
 - Added the prospective AP-native logical-whole, Worker-session, and exchange
   coordinates plus an optional subordinate external analytic-development trace,
   standard Markdown/Git exchange grammar, atomic after-outcome archival, and
