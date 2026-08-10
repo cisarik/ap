@@ -25,7 +25,7 @@ Programming.
 | [0011](0011-risk-routed-planning-and-bounded-closure.md) | Risk-routed planning and bounded closure | Accepted | Current planning, freshness, evidence-tier, anti-stall, authority-envelope, operational-evidence, and human-governance decision |
 | [0012](0012-baseline-bound-project-execution.md) | Baseline-bound project execution envelope | Accepted | Adds the project contract, sanitized direct execution, and CPython provenance boundary without changing protocol authority |
 | [0013](0013-semantic-ownership-and-convergence.md) | Semantic ownership and finite convergence | Accepted | Establishes the semantic-owner registry, projection taxonomy, structural-field ownership, and bounded convergence contract |
-| [0014](0014-external-analytic-trace-and-worker-exchange-identity.md) | External analytic trace and Worker exchange identity | Implementation candidate | Historical rationale for RF-19; suite-enforcement detail superseded by ADR-0015; AP.md remains the sole live semantic owner and fresh independent acceptance is still required |
+| [0014](0014-external-analytic-trace-and-worker-exchange-identity.md) | External analytic trace and Worker exchange identity | Accepted | Originated as an implementation candidate at `f117457a1e346278ad3fe6c22c3ab57db2217374`; the unchanged RF-19 decision was later independently accepted and published at corrected tip `81dee2c182322ac95999e5d4ee42072b6040e44a`; ORCHESTRATOR logical-whole closure recorded separately by the successor-handout closure record; suite-enforcement detail superseded by ADR-0015 only; AP.md remains the sole live semantic owner |
 | [0015](0015-monolithic-ap-test-suite-retirement.md) | Monolithic AP test-suite retirement | Accepted | Deletes the live monolithic suite; documentation-first proportional validation; supersedes suite-enforcement details in ADR-0010 and ADR-0014 only |
 
 ADR-0009 permits only an explicit bounded parallel exception. It does not
@@ -46,12 +46,16 @@ other live artifacts as projections or enforcement. It refines planning and
 acceptance budgets without changing the roles, stable variant tuple, executable
 runtime, or earlier ADR bodies.
 
-ADR-0014 records candidate rationale for AP-native logical-whole/session/exchange
-coordinates and an optional subordinate external trace. Its live meaning is
-owned only by
+ADR-0014 records the historical rationale for the unchanged RF-19
+logical-whole/session/exchange coordinates and an optional subordinate external
+trace. It originated as an implementation candidate and was later
+independently accepted and published at corrected tip
+`81dee2c182322ac95999e5d4ee42072b6040e44a`; ORCHESTRATOR logical-whole closure
+is recorded separately on the basis of the successor-handout closure record.
+Its live meaning is owned only by
 [RF-19](../../AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity);
-the ADR does not claim public acceptance, publication, or closure. ADR-0015
-supersedes only its suite-enforcement detail.
+`AP.md` remains the sole semantic owner and this ADR remains a historical
+projection. ADR-0015 supersedes only its suite-enforcement detail.
 
 ADR-0015 retires the live monolithic AP repository suite, records
 documentation-first proportional validation, and leaves no replacement

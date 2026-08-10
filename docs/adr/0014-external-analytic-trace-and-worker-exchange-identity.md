@@ -2,8 +2,16 @@
 
 ## Status
 
-Accepted as an implementation candidate decision record. Public acceptance,
-publication, and logical-whole closure are not claimed.
+Historical projection of the unchanged RF-19 decision. The decision originated
+as an implementation-candidate decision record at
+`f117457a1e346278ad3fe6c22c3ab57db2217374`, was later corrected to exact tip
+`81dee2c182322ac95999e5d4ee42072b6040e44a`, received fresh independent
+acceptance for that exact candidate, and was published at that exact corrected
+tip. Acceptance, publication, and ORCHESTRATOR logical-whole closure remain
+distinct lifecycle events; closure is recorded only on the basis of the durable
+successor-handout ORCHESTRATOR closure record. This convergence changes
+lifecycle status, not decision content. `AP.md` remains the sole live normative
+semantic owner.
 
 ## Context
 

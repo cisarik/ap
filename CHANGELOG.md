@@ -22,9 +22,11 @@ remains the sole live normative protocol.
   [RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity).
   Historical prompts retain their original AP pins. CLI behavior, schema v1,
   the managed block, stable variant selection, and consumer pins are unchanged.
-  This local implementation candidate still requires fresh independent
-  acceptance and does not claim publication or closure; rationale is recorded
-  by ADR-0014.
+  The entry originally recorded a local implementation candidate; the unchanged
+  decision was later independently accepted at corrected tip
+  `81dee2c182322ac95999e5d4ee42072b6040e44a`, published at that exact tip, and
+  ORCHESTRATOR logical-whole closure is recorded separately by the
+  successor-handout closure record. Rationale is recorded by ADR-0014.
 - Consolidated every durable AP rule family under a stable semantic-owner map
   in `AP.md`; classified subordinate artifacts as structural, operational,
   advisory, explanatory, historical, executable, or consumer projections;
