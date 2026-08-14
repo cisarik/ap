@@ -1,6 +1,6 @@
 # ADR-0016: Universal Continuation and Upgrade-Ledger Storage
 
-Status: Implementation candidate
+Status: Accepted
 
 ## Date
 
