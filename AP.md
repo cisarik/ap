@@ -117,7 +117,10 @@ authority. A Worker never closes the logical whole.
 
 The Orchestrator owns orchestration planning; an explicitly routed Worker may
 own bounded repository-grounded implementation planning. Planning never grants
-execution. The exact finite transition is defined in
+execution. A client-native planner artifact is not the separately required
+terminal Worker report; the bounded completion route for a missing report
+cannot reopen planning or grant implementation authority. The exact finite
+transition is defined in
 [Planning Budget and Expiry](#planning-budget-and-expiry) and
 [Implementation Authority](#implementation-authority).
 
@@ -153,9 +156,11 @@ authority.
 
 The upgrade observation ledger is non-authoritative discovery input with the
 states and deterministic transitions defined under
-[Upgrade Observation Ledger](#upgrade-observation-ledger). Only a current task
-grant authorizes implementation; closure reconciles active entries without
-destroying provenance.
+[Upgrade Observation Ledger](#upgrade-observation-ledger). A consuming project
+may optionally commit one explicitly declared Markdown storage projection per
+canonical target; declaration, storage, and every retained entry remain
+non-authorizing. Only a current task grant authorizes implementation; closure
+reconciles active entries without destroying provenance.
 
 #### RF-10 — Provider Accounting and Continuous Closure
 
@@ -320,6 +325,19 @@ There is no second automatic targeted revision. Unresolved repetition returns
 `NEEDS_ORCHESTRATOR_DECISION`. Planning authority expires at the terminal
 planning report, cancellation, or supersession. Retained context, Plan UI
 approval, or an automatic mode transition supplies no implementation authority.
+
+A client-native planner artifact does not replace AP's separately required
+terminal Worker report. If an otherwise healthy planning exchange produces a
+frozen, decision-complete artifact but no terminal report, the exchange is
+structurally incomplete and is not planning PASS. The Orchestrator may issue a
+complete next exchange to the same healthy Worker session, with the next
+exchange ordinal, `Native planning mode: not-used`, the frozen artifact as its
+continuity anchor, and report-rendering-only authority. That repair renders the
+missing report prospectively; it does not overwrite the earlier exchange,
+change or reopen the plan, grant implementation or other mutation authority,
+consume another planning cycle, or authorize acceptance, publication, or
+closure. `Native planning mode: not-used` is routing metadata, never execution
+authority. Exact repair spellings belong to `PROMPT_CONTRACTS.md`.
 
 ### Implementation Authority
 
@@ -2050,6 +2068,76 @@ and provenance must never be destroyed merely to make the active ledger
 smaller. An entry that produced a ledger item still grants no mutation
 authority by itself.
 
+A consuming project may optionally activate durable storage for active
+observations. The projection is consumer-owned, committed in that consuming
+repository, retained discovery evidence, and public-safe by default. It stores
+only active improvement observations about one canonical target repository. It
+is not a roadmap, issue tracker, current-task or NEXT file, Worker registry,
+transcript, memory dump, specification, ADR, project-rule substitute, or second
+semantic owner. Accepted conclusions still move to their established durable
+owners: architecture to ADRs, product behavior to specifications, operating
+policy to project rules, deferred work to a roadmap or issue, and security
+policy to its security owner. The live ledger retains only active lifecycle
+input.
+
+Activation uses exactly one project-owned Markdown file for each declared
+canonical target. Multiple targets use multiple declaration blocks and files;
+one target maps to one file and one file to one target. The canonical target is
+the exact repository identity already accepted by the consuming project's
+durable rules. AP introduces no new normalization algorithm: the declaration
+and file header repeat that identity byte-for-byte and never rewrite it to a
+display name, local path, provider shorthand, or `owner/name` form. If project
+rules have not established one exact identity, activation is not ready and the
+project first reconciles that identity.
+
+Discovery is explicit. A declaration belongs in project-owned root
+`AGENTS.md` text outside the unchanged AP-managed block and points to a
+normalized repository-relative Markdown path committed in the same repository.
+Do not scan the tree or guess filenames. The exact declaration, file header,
+entry record, path constraints, and allowed values are the structural
+[Upgrade Observation Ledger Contract](PROMPT_CONTRACTS.md#upgrade-observation-ledger-contract).
+
+Each stored entry has a stable, immutable, public-safe, non-empty single-line
+identifier unique within its ledger. The identifier is opaque: AP imposes no
+global regular expression, and ordering by identifier is presentation only.
+Entries record observation and revalidation identities, evidence class,
+disposition and promotion evidence, task-grant history, implementation status,
+closure action, and historical provenance. Stored content excludes secrets,
+credentials, private host/path/media identifiers, full transcripts, hidden
+reasoning, and unnecessary production detail.
+
+A new observation begins `untriaged`. Unknown observation identity may preserve
+a candidate safely but cannot support mutation until revalidated. A task grant
+recorded by an `accepted` entry remains valid only inside its exact original
+Worker boundary, expires with that authority, and thereafter is historical
+evidence. After a pause, active entries are revalidated against current
+repository and durable external truth before they inform selection of the next
+logical whole. Stronger contradictory evidence moves an entry to `invalidated`
+with disposition evidence. Promotion never authorizes work.
+
+Active states (`untriaged`, `accepted`, and `parked`) remain in the live file.
+Terminal states (`implemented`, `rejected`, `duplicate`, and `invalidated`) are
+removed from it only after immutable historical provenance is named. Git
+history and the promoted durable owner retain that record; no second growing
+archive file is created. Entry ordering is deterministic by stable identifier
+and changes only in an authorized reconciliation commit.
+
+No declaration is valid compatibility behavior: it means no AP-contracted
+durable ledger is activated, not that no unresolved observation exists. A valid
+declared file with its required header and no entries means zero active entries
+for that target. An undeclared lookalike is ordinary project content. A stale
+but structurally valid entry remains non-authoritative evidence to revalidate,
+not an automatic structural failure.
+
+A declared missing file, missing required header, target/path/version mismatch,
+duplicate target/path/entry identity, unknown storage version, invalid record,
+conflict marker, or path escape is malformed non-authorizing evidence.
+Read-only restoration may continue, but the Orchestrator cannot claim ledger
+reconciliation complete or issue mutation authority that relies on it. Route a
+bounded repair or reconciliation decision to the Cooperator. Repository and
+current durable truth win every contradiction. A public AP `main` ahead of a
+consumer pin does not alter the pin; updating it is a separate explicit task.
+
 ## 14. Session Rotation and Dynamic Prompts
 
 Conversational context is temporary. Repository files, tests, commits, ADRs,
@@ -2149,6 +2237,43 @@ material state cannot be safely reconstructed from durable repository evidence
 and the next authoritative task. If required, a Worker writes it under an exact
 Orchestrator task with explicit consumer, lifecycle, and Git authority. The
 Cooperator is not required to manually edit and commit such a handoff.
+
+### Continuation Bootstrap
+
+After a pause, session rotation, or minimal resume seed, project continuation
+has two distinct stages. This bootstrap is a reconciliation rule, not a durable
+authority artifact and not a new AP phase.
+
+**Stage 1 — read-only restoration and reconciliation.** Read the consumer root
+`AGENTS.md` and the immutable AP documents named by its managed block. Verify
+the canonical project repository, governing AP pin, current public or external
+anchors relevant to the task, and current durable project truth. Restore in the
+RF-19 source-precedence order: governing AP, canonical repository and current
+external truth, accepted durable decisions, optional supporting trace, then
+tentative narrative. Prior handouts, conversational memory, planner artifacts,
+old prompts, and optional trace remain subordinate and non-authorizing.
+
+Discover an upgrade ledger only through an explicit project-owned declaration
+outside the managed block; never scan for guessed filenames. Validate the
+declared file and revalidate every active entry against current repository and
+durable external truth before relying on it. A ledger never outranks repository
+truth or an explicit current Cooperator decision. Surface contradictions,
+missing evidence, malformed declared storage, and stale observations. Evidence
+gathering may continue read-only, but restoration must not claim completed
+reconciliation while a material gap remains.
+
+**Stage 2 — select one bounded logical whole.** Present the restored state,
+remaining active observations, material uncertainty, and one evidence-backed
+recommended next logical whole to the Cooperator. Obtain the Cooperator's
+explicit selection of exactly one bounded next logical whole, or the decision
+to gather more evidence. Only after that selection may the Orchestrator issue a
+complete current Worker prompt containing its own exact authority record. A
+resume seed, handout, planner artifact, stale task grant, ledger, trace, or
+previous Worker prompt never supplies current mutation authority.
+
+The operational checklist and non-normative minimal seed are in the early
+[Continuation Bootstrap](AP_ORCHESTRATOR.md#continuation-bootstrap) section of
+the already-required Orchestrator handbook.
 
 ## 15. Fresh-Slice Implementation and Diagnostic Closeout
 

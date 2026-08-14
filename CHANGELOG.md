@@ -7,6 +7,15 @@ remains the sole live normative protocol.
 
 ## Unreleased
 
+- Added the two-stage Continuation Bootstrap, optional explicitly declared
+  consumer-owned Markdown storage for active RF-09 upgrade observations, and a
+  bounded same-session report-rendering repair for a frozen planner artifact
+  that lacks AP's separate terminal Worker report. Seeds, ledgers, artifacts,
+  old grants, and repairs remain non-authorizing. Existing consumers remain
+  unchanged until an explicit AP pin update and optional project-local ledger
+  adoption; the managed block, CLI, schema v1, executable validation, tests,
+  providers, deployments, and production are unchanged. Recorded by
+  [ADR-0016](docs/adr/0016-universal-continuation-and-upgrade-ledger-storage.md).
 - Retired the monolithic AP repository suite `tests/ap_tool_tests.sh` and removed
   live claims that it is current semantic enforcement. Protocol and
   documentation evolution now use documentation-first proportional validation:

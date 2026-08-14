@@ -60,6 +60,30 @@ Do not edit inside the markers manually unless you are deliberately repairing a
 failed integration under project authority. Run `./.ap/ap init` to refresh the
 managed block.
 
+## Optional Consumer Upgrade Ledger
+
+A consuming project may optionally commit durable active observations for one
+canonical target repository. Activation is project-owned: add the exact
+[upgrade-ledger declaration](PROMPT_CONTRACTS.md#project-rule-declaration) to
+root `AGENTS.md` outside the managed AP block and commit the declared Markdown
+file in the same repository. Do not edit, refresh, or migrate the managed block
+for this feature, and do not rerun `init` merely to advertise it.
+
+Each canonical target has one declaration and one path; multiple targets use
+multiple declaration blocks and files. The target identity must already be
+established by durable project rules and must match the file header exactly.
+There is no fixed filename or discovery scan. The declaration contract owns the
+normalized repository-relative `.md` path rules, and the
+[ledger-file contract](PROMPT_CONTRACTS.md#ledger-file) owns the header and
+entry spellings.
+
+Absence of a declaration preserves existing integration behavior and makes no
+claim that all possible observations are resolved. A malformed declaration or
+file remains non-authorizing evidence: continuation can inspect other sources
+read-only, but the Orchestrator routes repair or reconciliation before issuing
+mutation authority that relies on that ledger. No executable `ap` or schema-v1
+behavior is added by optional adoption.
+
 ## Clone Workflow
 
 Preferred clone:

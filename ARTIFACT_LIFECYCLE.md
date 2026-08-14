@@ -124,6 +124,30 @@ context, carries active unresolved states, and preserves stable identity and
 historical provenance. The Orchestrator owns reconciliation; no ledger state
 authorizes implementation or cleanup.
 
+The optional committed storage projection is a consumer-owned retained-evidence
+artifact, one explicitly declared Markdown file per canonical target. Its
+consumer is the Orchestrator restoring or reconciling that target. Discovery is
+only through project-owned root `AGENTS.md` text outside the AP-managed block;
+an undeclared lookalike has no AP ledger lifecycle. The declaration and
+[structural contract](PROMPT_CONTRACTS.md#upgrade-observation-ledger-contract)
+define the target, version, path, header, entry shape, and malformed behavior.
+No fixed filename, scan fallback, schema, or executable validator is implied.
+
+The live file retains only active `untriaged`, `accepted`, and `parked`
+observations. Terminal `implemented`, `rejected`, `duplicate`, and `invalidated`
+entries are removed only in an authorized reconciliation commit after immutable
+historical evidence is named. The consuming project and Orchestrator own that
+reconciliation decision; a lifecycle trigger never grants deletion authority.
+Git history and the promoted ADR, specification, project rule, roadmap, issue,
+logical whole, security document, changelog, decision, or closure report retain
+provenance. Do not create a second ledger archive.
+
+Public-safe content is the retention default. Stale active entries are
+revalidated rather than silently removed. Malformed declared storage remains
+non-authorizing evidence and blocks a completed ledger reconciliation, while no
+declaration preserves ordinary AP compatibility and claims nothing about
+observations outside durable storage.
+
 ## AP Distribution Relationships
 
 | Artifact | Declared relationship and lifecycle |
@@ -137,6 +161,7 @@ authorizes implementation or cleanup.
 | ADR bodies and `CHANGELOG.md` | historical rationale and delivery record |
 | `ap` and tests | executable enforcement |
 | managed `AGENTS.md` block and project rules | consumer projection |
+| optional declared consumer upgrade-ledger file | consumer-owned retained evidence; non-authorizing RF-09 storage projection |
 
 Earlier protocol generations remain in Git history. Static BOOT, NEXT,
 WORKERS, prompt archive, generated protocol variant, or restoration archive is

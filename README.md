@@ -17,6 +17,8 @@ Canonical repository: `https://github.com/cisarik/ap`
 | protocol meaning and convergence | [AP.md](AP.md) | sole live normative protocol and semantic owner |
 | exact prompt/report fields, exchange coordinates, and standard trace grammar | [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md) | structural projection |
 | role decisions | [AP_ORCHESTRATOR.md](AP_ORCHESTRATOR.md), [AP_WORKER.md](AP_WORKER.md) | operational projections |
+| continuation after a pause | [Continuation Bootstrap](AP_ORCHESTRATOR.md#continuation-bootstrap) | operational entry point to the two-stage AP rule |
+| optional durable upgrade observations | [Upgrade Observation Ledger Contract](PROMPT_CONTRACTS.md#upgrade-observation-ledger-contract) | structural declaration and Markdown storage projection |
 | optional prompt craft | [PROMPT_ENGINEERING_PATTERNS.md](PROMPT_ENGINEERING_PATTERNS.md) | first-class universal advisory projection |
 | activated defensive security | [INFOSEC.md](INFOSEC.md) | advisory profile; all procedures apply when activated |
 | artifact and activated external-trace handling | [ARTIFACT_LIFECYCLE.md](ARTIFACT_LIFECYCLE.md) | operational lifecycle projection |
@@ -34,6 +36,9 @@ and activated surfaces.
 owns universal logical-whole, Worker-session, exchange, and external-trace
 meaning. An external analytic-development trace is subordinate historical
 evidence and remains optional unless authorized project rules activate it.
+Continuation begins read-only and requires Cooperator selection of one bounded
+next logical whole before a current mutation grant. Optional declared upgrade
+ledger storage remains non-authorizing RF-09 evidence.
 
 ## Stable Pinned Distribution
 

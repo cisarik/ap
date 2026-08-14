@@ -12,6 +12,52 @@ In a consuming project, read `.ap/AP.md`, this handbook, and the project-root
 `AGENTS.md`. Project rules supply local presentation and product policy without
 overriding universal AP.
 
+## Continuation Bootstrap
+
+Use this two-stage bootstrap after a pause, session rotation, or minimal resume
+seed. Its semantics are owned by
+[AP.md](AP.md#continuation-bootstrap); exact ledger and report-repair spellings
+remain in [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md). The bootstrap discovers
+current state and routes a new decision; it grants no mutation authority.
+
+**Stage 1 — restore and reconcile read-only.**
+
+1. Read consumer root `AGENTS.md` and the immutable AP documents named by its
+   managed block.
+2. Verify the canonical project repository, governing AP pin, relevant public
+   or external anchors, and current durable project truth.
+3. Apply RF-19 precedence: governing AP, canonical repository/current external
+   truth, accepted durable decisions, optional trace, then tentative narrative.
+   Treat prior handouts, memory, planner artifacts, and old prompts as
+   subordinate non-authorizing evidence.
+4. Discover only upgrade ledgers explicitly declared in project-owned root
+   `AGENTS.md` text outside the AP-managed block. Never scan for guessed names.
+5. Validate declared storage and revalidate each active entry against current
+   repository and durable external truth. Repository truth and an explicit
+   current Cooperator decision outrank every ledger entry.
+6. Surface contradiction, missing evidence, malformed storage, and stale
+   observations. Continue evidence gathering read-only when useful, but do not
+   claim reconciliation complete while a material gap remains.
+
+**Stage 2 — select exactly one bounded logical whole.** Present the restored
+state, active observations, material uncertainty, and one evidence-backed
+recommendation. Obtain the Cooperator's explicit selection of one bounded next
+logical whole or a decision to gather more evidence. Only then issue a complete
+current Worker prompt with its own exact authority record. A seed, handout,
+planner artifact, stale grant, ledger, trace, or prior prompt never supplies
+current authority.
+
+The following is a non-normative, vendor-neutral example seed. It is a pointer,
+not durable authority, and its wording is not required:
+
+```text
+Resume this AP-integrated project.
+Read the root AGENTS.md and the pinned AP documents it names.
+Begin read-only. Restore canonical state and any declared AP upgrade ledger.
+With the COOPERATOR, select exactly one bounded next logical whole before any
+mutation authority is issued.
+```
+
 ## Operating Responsibility
 
 The Orchestrator reconciles Cooperator intent, repository and external evidence,
@@ -145,6 +191,16 @@ a report silently, rewrite history as though a later artifact were original,
 or infer delivery from archive time. Preserve historical pins and explicit
 bootstrap exceptions.
 
+If a healthy planning exchange froze a decision-complete client-native planner
+artifact but omitted AP's separate terminal report, do not call the exchange
+planning PASS. Issue the exact same healthy session a complete next exchange
+using the next exchange ordinal, `Native planning mode: not-used`, the frozen
+artifact as continuity anchor, and only report-rendering authority. Follow the
+[structural repair shape](PROMPT_CONTRACTS.md#planner-artifact-report-completion-repair).
+The repair is prospective, changes neither the earlier exchange nor the plan,
+consumes no second planning cycle, and prohibits planning, implementation,
+mutation, acceptance, publication, and closure.
+
 Restore a fresh Orchestrator from governing immutable AP, current repository
 and external evidence, and accepted durable decisions before optional trace
 history. Never depend on private model memory for a durable rule. Promote
@@ -171,6 +227,10 @@ separate complete implementation prompt with explicit implementation authority,
 `Native planning mode: not-used`, exact baseline, allowlist, and boundaries.
 Plan UI approval, an automatic mode transition, a role label, or retained
 context never completes this gate.
+
+A frozen planner artifact without that separate report is an incomplete
+exchange. Use only the bounded report-completion route above; `Native planning
+mode: not-used` routes the client and never supplies implementation authority.
 
 ## Model And Surface Routing
 
@@ -307,7 +367,13 @@ their durable owner before retiring temporary evidence.
 An `upgrade <canonical-repository>` ledger is non-authoritative. New entries are
 `untriaged`; `accepted` records validity, not implementation authority. At
 closure, reconcile terminal entries out of active context and carry unresolved
-states forward without losing stable identity or historical provenance.
+states forward without losing stable identity or historical provenance. Durable
+storage is optional and consumer-owned: discover only the declaration in
+project-owned root `AGENTS.md` text outside the managed block, then follow the
+[structural ledger contract](PROMPT_CONTRACTS.md#upgrade-observation-ledger-contract).
+Do not guess a filename or scan the tree. Treat missing/malformed declared
+storage and stale entries exactly as the contract specifies; no declaration
+preserves existing behavior.
 
 ## Validation, Results, and Closure
 

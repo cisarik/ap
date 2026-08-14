@@ -337,24 +337,33 @@ evidence classes for this handshake are owned by
 
 Separate Orchestrator planning from Worker implementation planning, route
 fresh/current sessions and native Plan mode by uncertainty, and prevent plan
-approval from becoming implementation authority or a plan-only loop.
+approval from becoming implementation authority or a plan-only loop. Complete
+a missing terminal report for a frozen planner artifact without reopening the
+plan.
 
 #### Use when
 
 Use for every Orchestrator-to-Worker prompt; include the full planning contract
-only when repository-grounded implementation planning is actually needed.
+only when repository-grounded implementation planning is actually needed. Use
+the report-completion branch only when an otherwise healthy exchange has a
+frozen decision-complete planner artifact and omitted only AP's separate
+terminal report.
 
 #### Do not use when
 
 Do not use task complexity, a UI button, profile name, retained chat, requested
 mode, or proposed plan as authority. Do not duplicate a decision-complete
-Orchestrator prompt in Plan mode.
+Orchestrator prompt in Plan mode. Do not treat a planner artifact as its
+terminal report or use report repair to revise the plan, implement it, mutate
+state, or consume another planning cycle.
 
 #### Adaptation questions
 
 Which planning layer owns the unresolved decision? Which exact session receives
 the task? Is Plan mode materially useful? May the healthy current Worker
-implement after approval? What ends planning and authorizes execution?
+implement after approval? What ends planning and authorizes execution? Does a
+frozen planner artifact lack only its standard report, and can the same healthy
+session render it without re-planning?
 
 #### Template fragment
 
@@ -370,12 +379,18 @@ Targeted revision record: <none|prior report, permitted basis, changed boundary,
 preserved decisions>; no second automatic revision.
 A UI approval or accepted plan grants no implementation authority.
 Execution requires a separate complete Orchestrator prompt with not-used.
+If a frozen planner artifact lacks only the terminal report, apply the exact
+Planner-Artifact Report Completion Repair in PROMPT_CONTRACTS.md unchanged.
+That branch renders the missing report only; it never changes the artifact,
+reopens planning, implements, mutates, accepts, publishes, closes, or consumes
+another planning cycle.
 ```
 
 #### Failure it prevents
 
 Plan duplication, plan-only stall, context churn, wrong-session routing, wrong
-client-mode delivery, accidental implementation, and UI-authority confusion.
+client-mode delivery, accidental implementation, UI-authority confusion, and a
+planner artifact being mistaken for a complete planning exchange.
 
 #### Evidence/source
 

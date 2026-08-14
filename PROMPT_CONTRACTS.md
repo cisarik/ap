@@ -120,6 +120,39 @@ assumption produces a terminal `PARTIAL` or `BLOCKED` record containing exactly:
 Escalation disposition: NEEDS_ORCHESTRATOR_DECISION
 ```
 
+#### Planner-Artifact Report Completion Repair
+
+A frozen decision-complete planner artifact without AP's separate terminal
+Worker report leaves the planning exchange structurally incomplete. It is not a
+planning PASS. The same healthy Worker session may receive a complete next
+exchange only in this shape, using the next contiguous exchange ordinal:
+
+```text
+Worker session target: current-worker-session
+Native planning mode: not-used
+Continuity anchor: frozen planner artifact <stable identity> from Worker exchange <NN>
+Authority renewal: prior planning authority expired; this exchange grants report-rendering-only authority
+Repair output: standard terminal Worker report for the frozen planner artifact
+Phase-qualified result: not-applicable
+Frozen plan changes: prohibited
+Re-planning: prohibited
+Implementation: prohibited
+Repository and external mutation: prohibited
+Acceptance: prohibited
+Publication: prohibited
+Logical-whole closure: not-closed
+Planning cycle effect: none
+```
+
+The complete prompt also carries the unchanged logical-whole and Worker-session
+coordinates, the next Worker-exchange ordinal, the required current-session
+re-gates, and the standard report contract. The repair creates the missing
+report prospectively and never overwrites the earlier exchange or changes the
+artifact. It uses an existing terminal status, phase-result spelling, report
+justification, and exchange filename rule as applicable; it creates none. The
+`not-used` value is client-mode routing and supplies no implementation
+authority.
+
 ### Implementation Authority Record
 
 An implementation prompt contains exactly one value for every routing field and
@@ -597,6 +630,13 @@ A terminal planning report, cancellation, or supersession expires planning
 authority. No Plan UI approval, retained context, or automatic mode transition
 changes that result. A prohibited second automatic targeted revision returns
 the exact escalation disposition defined in the Planning Record.
+
+A client-native planner artifact never substitutes for that terminal report.
+When the artifact is frozen and decision-complete but the otherwise healthy
+exchange omitted only its report, use the
+[Planner-Artifact Report Completion Repair](PROMPT_CONTRACTS.md#planner-artifact-report-completion-repair).
+Do not reopen planning, start implementation, treat the artifact as planning
+PASS, or count the rendering repair as another planning cycle.
 
 ## Worker Capability Handshake Contract
 
@@ -1404,40 +1444,127 @@ manual repair after a provider result destroys the acceptance evidence.
 ## Upgrade Observation Ledger Contract
 
 Improvement work on a canonical repository uses the ledger defined in
-[AP.md](AP.md#upgrade-observation-ledger). The ledger name carries no ordinal:
+[AP.md](AP.md#upgrade-observation-ledger). This section is the sole structural
+owner of durable declaration, file-header, and entry spellings. It adds no
+parser, schema, or runtime validation semantics.
+
+### Project-Rule Declaration
+
+Durable storage is optional. When a consumer activates it, project-owned root
+`AGENTS.md` text outside the AP-managed block contains one repeatable block per
+canonical target:
 
 ```text
+AP upgrade ledger declaration:
 Upgrade ledger: upgrade <canonical-repository>
-Activation snapshot: <bounded identity of the candidate observations at activation>
+Ledger storage version: 1
+Ledger path: <normalized repository-relative Markdown path>
 ```
 
-Every entry records exactly one lifecycle state and its reconciliation
-outcome:
+The file is committed in the same consuming repository. The normalized path is
+relative to its root, ends in `.md`, contains no `..` segment, and resolves
+inside the repository without symlink escape. One target maps to one path and
+one path maps to one target. Duplicate target declarations, duplicate path
+declarations, target or version mismatches, and conflict markers are malformed.
+There is no required filename and no discovery by tree scanning or filename
+guessing. The AP-managed block is unchanged.
+
+`<canonical-repository>` is the exact repository identity established by the
+consumer's durable project rules. The declaration and file header repeat it
+byte-for-byte; no AP-wide `owner/name`, display-name, local-path, or
+provider-shorthand normalization applies. If the project has no single exact
+identity, activation is not structurally ready.
+
+A presentation ordinal identifies neither a target nor an entry and is not
+part of either identity.
+
+### Ledger File
+
+The declared file is plain UTF-8 Markdown with AP-native, line-oriented text
+records. It uses no YAML, JSON, TOML, front matter, external schema file, or
+executable parser expectation. Its required header is:
 
 ```text
-Entry: <stable entry identifier>
+Ledger storage version: 1
+Upgrade ledger: upgrade <canonical-repository>
+Activation snapshot: <bounded identity of candidate observations at activation>
+```
+
+The target and storage version match the declaration exactly. Each committed
+entry then uses every field below exactly once:
+
+```text
+Entry: <stable non-ordinal identifier unique within this ledger>
 Entry state: untriaged | accepted | duplicate | rejected | invalidated | implemented | parked
 Entry authority: non-authorizing
+Summary: <one public-safe line>
+Evidence class: repository | project-rule | cooperator | worker-observed | external | inference
+Observed against: <immutable commit or other durable evidence identity> | unknown because <reason>
+Last revalidated against: <immutable commit or other durable evidence identity> | none
 Implementation task grant: none | exact Orchestrator task <task-id> for <Worker boundary>
 Implementation status: not-started | authorized | not-applicable | implemented with <durable evidence>
+Disposition evidence: <durable evidence identity> | none
+Promotion target: adr | specification | project-rules | roadmap | issue | logical-whole | security-document | none
 Closure action: retain-active | remove-from-active-ledger
-Historical evidence: <commit, decision, changelog, or closure report holding the provenance>
+Historical evidence: <commit, decision, changelog, or closure report holding the provenance> | none
 Provenance destroyed: no
 ```
 
-`Entry authority: non-authorizing` is the only accepted value. `untriaged` is
-active, awaiting disposition, and uses no task grant. `accepted` records
-validity only: it remains non-authorizing unless the separate
-`Implementation task grant` names one exact current Orchestrator task and
-Worker boundary. Generic renewal text is invalid. An `implemented` entry names
-both the exact task grant and durable completion evidence.
+`Entry` is opaque, public-safe, non-empty, single-line, immutable after first
+commit, and unique within its ledger. AP imposes no identifier regular
+expression. Collision or reuse is malformed until reconciled. Records are
+ordered deterministically by stable identifier; ordering is presentation only
+and changes only in an authorized reconciliation commit.
 
-An `implemented`, `rejected`, `duplicate`, or `invalidated` entry uses
-`Closure action: remove-from-active-ledger` and must name where its immutable
-historical evidence remains. An `untriaged`, `accepted`, or `parked` entry uses
-`Closure action: retain-active`. New observations enter `untriaged`, and
-terminal removal never changes stable entry identity or deletes provenance.
-`Provenance destroyed: no` is the only valid value.
+RF-09 owns all seven states and transitions. `Entry authority:
+non-authorizing` and `Provenance destroyed: no` are the only valid values for
+those fields. `Summary` and every evidence or stored identity are public-safe;
+exclude secrets, credentials, private host/path/media identifiers, full
+transcripts, hidden reasoning, and unnecessary production detail.
+
+A new observation is `untriaged`. `Disposition evidence: none` is valid only
+before a disposition; every later state names bounded durable disposition
+evidence. `Observed against` records the evidence actually observed. `unknown
+because <reason>` preserves a candidate but cannot support mutation until
+revalidation. `Last revalidated against: none` is valid before the first
+revalidation. After a pause, revalidate every active entry before relying on it;
+stronger contradictory evidence moves it to `invalidated` with disposition
+evidence.
+
+`accepted` records validity only and never authorizes implementation. A named
+task grant is current only within that exact original Worker boundary, expires
+with its authority, and remains historical evidence rather than resumable
+authority. `implemented` names the exact task grant and durable implementation
+evidence. `Promotion target` routes accepted meaning to an established durable
+owner and never grants work.
+
+Active `untriaged`, `accepted`, and `parked` entries use `retain-active`.
+Terminal `implemented`, `rejected`, `duplicate`, and `invalidated` entries use
+`remove-from-active-ledger` and require non-`none` historical evidence before
+removal. Terminal reconciliation removes them only after immutable provenance
+is named. Git history and the named durable owner retain the record; do not
+create a second growing archive file.
+
+### Discovery and Failure Behavior
+
+- **No declaration:** valid compatibility behavior. No AP-contracted durable
+  ledger is activated. Continue from canonical sources and Cooperator
+  reconciliation; do not infer zero unresolved observations everywhere.
+- **Valid declared file with no entries:** zero active entries for that target.
+- **Undeclared lookalike:** ordinary project content, not an AP ledger.
+- **Malformed declared storage:** a missing file, empty file without the
+  required header, target/path/version mismatch, duplicate target/path/entry
+  identity, unknown version, invalid record, conflict marker, or path/symlink
+  escape is malformed non-authorizing evidence. Read-only restoration may
+  continue, but ledger reconciliation is incomplete and mutation authority may
+  not rely on it. Route bounded reconciliation or repair to the Cooperator.
+- **Stale structurally valid entry:** preserve as non-authoritative evidence,
+  revalidate, and disposition from current truth; staleness alone is not
+  malformed.
+- **Repository contradiction:** current repository and durable truth win;
+  record `invalidated` with evidence.
+- **Public AP ahead of a consumer pin:** the pin still governs; update is a
+  separate explicit task.
 
 ## Worker Session Profile Contracts
 

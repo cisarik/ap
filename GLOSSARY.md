@@ -74,12 +74,14 @@ Follow the linked AP rule family and structural contracts for exact behavior.
 | Independent Certification | Evidence from a fresh verifier that did not materially implement the candidate. |
 | Diagnostic Closeout | Bounded, normally read-only review of the same implemented slice. |
 | Compact Communication | Links stable owners while retaining complete task-specific authority and evidence. |
+| Continuation Bootstrap | Two-stage post-pause rule: restore and reconcile read-only, then obtain Cooperator selection of exactly one bounded next logical whole before any mutation grant; see [AP semantics](AP.md#continuation-bootstrap) and the [operational entry point](AP_ORCHESTRATOR.md#continuation-bootstrap). |
 | Discovery Record | Optional non-authoritative exploration artifact with consumer, promotion target, and lifecycle. |
 | External Analytic Development Trace | Optional explicitly activated selective historical-evidence projection subordinate to governing AP and current project/external truth; see [RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity). |
 | Trace Projection | Replaceable storage, layout, discovery, index, and validation representation of RF-19 semantics; it does not own those semantics. |
 | Interruption Companion | Non-Worker-owned historical outcome used only when no terminal report exists, recording safely known cancellation, interruption, or supersession facts. |
 | Atomic Archival Transaction | First archival of an exact prompt and existing outcome together; in Git both have the same unique first-add commit. |
 | Upgrade Observation Ledger | Non-authoritative `upgrade <canonical-repository>` entries in `untriaged`, `accepted`, `duplicate`, `rejected`, `invalidated`, `implemented`, or `parked` states. |
+| Durable Upgrade-Ledger Storage Projection | Optional consumer-owned Markdown retention of active RF-09 observations, discovered only by an explicit project-rule declaration and never a semantic or authority owner; exact structure is in [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md#upgrade-observation-ledger-contract). |
 | Active-Context Reconciliation | Closure removal of terminal ledger entries from active context while preserving unresolved entries and historical provenance. |
 | Restoration Prompt / Readiness | Self-contained context transfer without mutation authority / PASS-PARTIAL-BLOCKED completeness review. |
 | Repository Handoff | Exceptional lifecycle-bound context for state not reconstructable from durable evidence and the next task. |

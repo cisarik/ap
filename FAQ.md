@@ -13,7 +13,7 @@ spellings live in the structural [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md).
 Role handbooks are operational; this FAQ and the glossary are explanatory;
 ADRs and the changelog are historical. Git history holds earlier generations.
 
-## How do I adopt or resume a project?
+## How do I adopt or restore a project checkout?
 
 For a clean project:
 
@@ -32,6 +32,17 @@ git submodule update --init --recursive
 
 Review and commit `.gitmodules`, the `.ap` gitlink, and `AGENTS.md` only under a
 project task. [INTEGRATION.md](INTEGRATION.md) owns the operational workflow.
+
+## How do I continue after a pause or session rotation?
+
+Use the named
+[Continuation Bootstrap](AP_ORCHESTRATOR.md#continuation-bootstrap). First
+restore and reconcile read-only from root `AGENTS.md`, the pinned AP documents,
+current repository/external truth, durable decisions, and any explicitly
+declared upgrade ledger. Then present current state and one evidence-backed
+recommendation so the Cooperator can select exactly one bounded next logical
+whole or request more evidence. No resume seed, memory, handout, old prompt,
+planner artifact, or ledger grants mutation authority.
 
 ## Why may `.ap` use detached HEAD?
 
@@ -218,6 +229,17 @@ Records and upgrade ledgers are non-authoritative; promote accepted decisions
 to their durable owner. Restoration prompts grant no mutation authority, and
 repository handoffs are exceptional. See
 [ARTIFACT_LIFECYCLE.md](ARTIFACT_LIFECYCLE.md).
+
+## Must a project keep a durable upgrade observation ledger?
+
+No. Durable storage is optional, consumer-owned, and non-authorizing. If a
+project activates it, root `AGENTS.md` declares one Markdown file per canonical
+target outside the unchanged managed block; the exact declaration, header,
+entry fields, and malformed/stale behavior are in the
+[Upgrade Observation Ledger Contract](PROMPT_CONTRACTS.md#upgrade-observation-ledger-contract).
+No declaration preserves current behavior and does not assert that all
+observations everywhere are resolved. Never discover a ledger by guessing or
+scanning for a filename.
 
 ## Related Reading
 
