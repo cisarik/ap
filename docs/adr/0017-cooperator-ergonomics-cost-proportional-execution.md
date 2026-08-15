@@ -1,6 +1,6 @@
 # ADR-0017: Cooperator Ergonomics and Cost-Proportional Execution
 
-Status: Implementation candidate
+Status: Accepted
 
 ## Date
 

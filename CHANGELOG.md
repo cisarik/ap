@@ -16,7 +16,7 @@ remains the sole live normative protocol.
   project-owned. No executable `ap`, schema, managed-block, Meta, or FrameNest
   mutation. Recorded by
   [ADR-0017](docs/adr/0017-cooperator-ergonomics-cost-proportional-execution.md)
-  as an implementation candidate; independent acceptance, publication, and
+  as accepted historical rationale. Consumer adoption and logical-whole
   closure remain separate.
 - Added the two-stage Continuation Bootstrap, optional explicitly declared
   consumer-owned Markdown storage for active RF-09 upgrade observations, and a

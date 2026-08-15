@@ -28,7 +28,7 @@ Programming.
 | [0014](0014-external-analytic-trace-and-worker-exchange-identity.md) | External analytic trace and Worker exchange identity | Accepted | Originated as an implementation candidate at `f117457a1e346278ad3fe6c22c3ab57db2217374`; the unchanged RF-19 decision was later independently accepted and published at corrected tip `81dee2c182322ac95999e5d4ee42072b6040e44a`; ORCHESTRATOR logical-whole closure recorded separately by the successor-handout closure record; suite-enforcement detail superseded by ADR-0015 only; AP.md remains the sole live semantic owner |
 | [0015](0015-monolithic-ap-test-suite-retirement.md) | Monolithic AP test-suite retirement | Accepted | Deletes the live monolithic suite; documentation-first proportional validation; supersedes suite-enforcement details in ADR-0010 and ADR-0014 only |
 | [0016](0016-universal-continuation-and-upgrade-ledger-storage.md) | Universal continuation and upgrade-ledger storage | Accepted | Adds the two-stage continuation bootstrap, optional consumer-owned RF-09 storage projection, and bounded planner-report completion repair; AP.md remains the sole live semantic owner |
-| [0017](0017-cooperator-ergonomics-cost-proportional-execution.md) | Cooperator ergonomics and cost-proportional execution | Implementation candidate | Extends existing RF families with compact Worker grants, activatable ladder/loop/envelope/delivery records, and project-owned Cooperator presentation; AP.md remains the sole live semantic owner; no public acceptance, publication, or closure claim |
+| [0017](0017-cooperator-ergonomics-cost-proportional-execution.md) | Cooperator ergonomics and cost-proportional execution | Accepted | Extends existing RF families with compact Worker grants, activatable ladder/loop/envelope/delivery records, and project-owned Cooperator presentation; AP.md remains the sole live semantic owner |
 
 ADR-0009 permits only an explicit bounded parallel exception. It does not
 supersede fresh sequential independent audit or the remaining decisions in
@@ -69,7 +69,7 @@ and existing restoration/report-completion rules without adding a rule family,
 runtime, schema, managed-block migration, fixed ledger filename, consumer
 adoption, or new semantic owner. Publication and logical-whole closure remain separate.
 
-ADR-0017 records an implementation candidate. It extends existing RF families
+ADR-0017 records an accepted decision. It extends existing RF families
 so an Orchestrator can emit a compact cost-proportional Worker grant plus a
 project-owned Cooperator delivery package. It does not add a rule family,
 runtime, schema, managed-block migration, Meta grammar, FrameNest envelope, or
