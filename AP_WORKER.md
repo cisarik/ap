@@ -218,10 +218,17 @@ Apply a surface annex only when the prompt activates and authorizes it:
 
 ## Validation
 
-Run the positive and negative evidence required by the prompt and risk tier.
-Inspect the final diff and state. Documentation normally needs structure,
-semantics, links, and Git checks; executable work needs behavioral evidence;
-security/durable/destructive work needs strict negative and recovery paths.
+Run the positive and negative evidence required by the selected validation
+ladder and risk tier. Obey an activated development envelope by reference; do
+not reconstruct environments to force PASS. Inspect the final diff and state.
+Documentation normally needs structure, semantics, links, and Git checks;
+executable work needs behavioral evidence; security/durable/destructive work
+needs strict negative and recovery paths.
+
+Classify a failure before repair. Do not rerun an unchanged broad gate. A broad
+or full suite runs only when the prompt requires it for a project rule or named
+decision risk. Diagnose with the smallest reproducer and use narrow checks
+before re-broadening.
 
 For failure-sensitive shell, HTTP, parser, temporary-state, or cleanup work,
 preserve the first causal error. Capture transport status/body separately,
@@ -233,7 +240,7 @@ Classify local, public, browser/engine, provider, Cooperator, inference, and
 missing evidence distinctly. Direct Git is preferred for public refs; exact-SHA
 content alone does not prove branch-head equality, and public evidence does not
 prove local state. Report validator unavailability or ambiguity; never hide or
-waive it.
+waive it. Non-zero remains non-zero.
 
 ## Reporting
 

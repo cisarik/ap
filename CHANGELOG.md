@@ -7,6 +7,17 @@ remains the sole live normative protocol.
 
 ## Unreleased
 
+- Extended existing RF families so an Orchestrator can emit a compact,
+  cost-proportional Worker grant plus a project-owned Cooperator delivery
+  package: selected validation ladder, reasoning and repeated-gate stop,
+  development-envelope activation by reference, and trace-destination
+  projection. `AP.md` remains the sole semantic owner. New records default
+  `not-used`. Presentation, envelope, and local-trace grammar stay
+  project-owned. No executable `ap`, schema, managed-block, Meta, or FrameNest
+  mutation. Recorded by
+  [ADR-0017](docs/adr/0017-cooperator-ergonomics-cost-proportional-execution.md)
+  as an implementation candidate; independent acceptance, publication, and
+  closure remain separate.
 - Added the two-stage Continuation Bootstrap, optional explicitly declared
   consumer-owned Markdown storage for active RF-09 upgrade observations, and a
   bounded same-session report-rendering repair for a frozen planner artifact

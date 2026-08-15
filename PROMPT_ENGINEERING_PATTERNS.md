@@ -568,8 +568,9 @@ publication, production effects, or difficult rollback.
 
 #### Do not use when
 
-Do not require maximum reasoning, mandatory audit for every change, or label
-same-session review independent.
+Do not require maximum reasoning, recommend client maximum or enhanced mode
+merely because it is available, mandate a full suite as a Worker tax, or label
+same-session review independent. Do not rerun an unchanged broad gate.
 
 #### Adaptation questions
 
@@ -583,18 +584,24 @@ materially shape the result? Is the audit budget already consumed?
 Reasoning profile: <lowest sufficient level>, because <risk/ambiguity>.
 Evidence tier: <E0|E1|E2|E3|E4>, because <consequence/reversibility/uncertainty/boundary>.
 Required evidence: <deterministic checks and observations>.
+Validation ladder: <selected steps and why; broad/full only if a project rule or named risk requires it>.
 Self-review may establish: <bounded claims>.
 Combined implementation envelope: <allowed|prohibited>.
 Independent acceptance: <not-required|recommended|required-separate-fresh-worker>.
 Audit budget: one primary fresh acceptance plus at most one correction re-acceptance.
 Correction boundary: <scoped when semantics are unchanged|full fresh>.
+Escalate only on: <named missing evidence | none>.
+Downgrade after: <convergence or named risk removal>.
+Unchanged hypothesis + candidate + failing gate: not-progress.
+Client maximum/enhanced mode: never inferred; never recommended merely because available.
 Repeated same assumption: NEEDS_ORCHESTRATOR_DECISION.
 ```
 
 #### Failure it prevents
 
-Under-validation, ceremonial over-validation, false independence, and resource
-maximization as a goal.
+Under-validation, ceremonial over-validation, false independence, reasoning
+maximization, full-suite-as-Worker-tax, and treating an unchanged failing gate
+as progress.
 
 #### Evidence/source
 
@@ -764,24 +771,30 @@ Do not impose structured-output ceremony on unrelated simple commands.
 
 Which interface and property are required? What is the first causal operation?
 How are status, body, and parsing separated? Which exact paths are owned for
-cleanup? What fallback is safe and authorized?
+cleanup? What fallback is safe and authorized? Which declared project tooling
+or development envelope already names the interpreter, virtualenv, or console
+scripts?
 
 #### Template fragment
 
 ```text
 Required interface: <tool/capability and material property>.
+Declared project tooling or envelope: <reference or not-used>; do not recopy or rediscover it.
 Permitted use: <bounded operations>. Environment changes: <forbidden/authorized>.
+Working-copy topology: <canonical-checkout | isolated-worktree | contained-clone> because <why>.
 Expected observation/output: <shape>; preserve first causal error.
 Transport status/body/parser: <separate evidence and explicit parser failure>.
 Temporary paths/cleanup: <exact owned paths, owner, and outcomes; no globs>.
 Cleanup or reporting failure must not overwrite the primary result.
 If unavailable or incompatible, use <approved fallback> or stop; do not install.
+Do not reconstruct an environment to force PASS.
 ```
 
 #### Failure it prevents
 
 Tool drift, hidden dependency mutation, brittle structured parsing, cleanup
-collateral, masked root cause, ambiguous output, and invented capability.
+collateral, masked root cause, ambiguous output, invented capability,
+isolation-as-virtue, and recopying stable tooling.
 
 #### Evidence/source
 
@@ -1102,7 +1115,123 @@ semantics, and no textual prompt guarantees injection or disclosure prevention.
 | S14–S20 / agent/reasoning research | [ReAct](https://arxiv.org/abs/2210.03629), [Self-Refine](https://arxiv.org/abs/2303.17651), [self-correction limits](https://arxiv.org/abs/2310.01798), [Lost in the Middle](https://arxiv.org/abs/2307.03172), [SWE-agent](https://arxiv.org/abs/2405.15793), [DSPy](https://arxiv.org/abs/2310.03714), [instruction hierarchy](https://arxiv.org/abs/2404.13208) | P01, P04–P06, P08, P10, P16, P18 | bounded benchmarks/systems; no authority semantics |
 | S21–S24 / security standards/guidance | [NIST taxonomy](https://nvlpubs.nist.gov/nistpubs/ai/NIST.AI.100-2e2025.pdf), [OWASP prompt injection](https://genai.owasp.org/llmrisk/llm01-prompt-injection/), [OWASP disclosure](https://genai.owasp.org/llmrisk/llm022025-sensitive-information-disclosure/), [OWASP excessive agency](https://genai.owasp.org/llmrisk/llm062025-excessive-agency/) | P10, P12, P13, P15–P18 | broad risk guidance, not complete guarantees |
 
-## 15. Related AP Artifacts
+## 15. Cost-Proportional Prompt Fixtures
+
+These fixtures illustrate compact grants. They are advisory examples, not task
+authority. Current prompt fields and `AP.md` take precedence.
+
+### Positive: simple Worker prompt
+
+```text
+Persistent role identity: WORKER
+Logical whole identity: catalog-copy-fix
+Worker session ordinal: 01
+Worker exchange ordinal: 01
+Worker session target: fresh-worker-session
+Native planning mode: not-used
+Worker session profile: Fresh Implementation Worker
+Phase: implementation
+Recommended reasoning: Medium
+Recommendation basis: bounded documentation edit against a known path
+Development envelope activation: not-used
+Validation ladder: selected
+Inspection and provenance: required
+Existing focused tests: none
+Affected tests: none
+New causal regression: none
+Broad or full suite: not-used
+Runtime or testbed: not-used
+Independent acceptance: not-required
+Repeated-gate or reasoning-loop stop: configured
+Broad gate: once per materially changed candidate
+Cooperator delivery / trace destination: not-used
+External trace disposition: not-used
+Working-copy topology: canonical-checkout
+Topology rationale: owner checkout is free and the edit is documentation-only
+```
+
+### Positive: planning prompt
+
+```text
+Persistent role identity: WORKER
+Logical whole identity: checkout-topology-choice
+Worker session ordinal: 01
+Worker exchange ordinal: 01
+Worker session target: fresh-worker-session
+Native planning mode: required
+Worker session profile: Fresh Implementation Worker
+Phase: plan
+Planning layer: implementation-planning
+Implementation in same Worker session: prohibited
+Recommended reasoning: High
+Recommendation basis: named architectural ambiguity in working-copy topology
+Escalation or downgrade gate: Extra High only for a genuine unresolved semantic-owner contradiction
+Development envelope activation: not-used
+Validation ladder: selected
+Inspection and provenance: required
+Broad or full suite: not-used
+Independent acceptance: not-required
+Cooperator delivery / trace destination: not-used
+External trace disposition: not-used
+```
+
+### Positive: testbed-envelope prompt
+
+```text
+Persistent role identity: WORKER
+Logical whole identity: runtime-probe-in-declared-testbed
+Worker session ordinal: 02
+Worker exchange ordinal: 01
+Worker session target: fresh-worker-session
+Native planning mode: not-used
+Worker session profile: Fresh Implementation Worker
+Phase: implementation
+Recommended reasoning: Medium
+Recommendation basis: bounded runtime check against a declared envelope
+Development envelope activation: activated
+Development envelope identity: project-testbed/v1
+Declared reversible class: reversible local mutation
+Working-copy topology: canonical-checkout
+Topology rationale: the declared envelope's interpreter and console scripts live here
+Irreversible exclusions: secrets, destruction, accounts, public exposure, unrelated owner data, publication, closure
+Validation ladder: selected
+Inspection and provenance: required
+Existing focused tests: tests/test_probe.py
+Affected tests: tests/test_probe.py
+New causal regression: none
+Broad or full suite: not-used
+Runtime or testbed: project-testbed/v1
+Independent acceptance: not-required
+Repeated-gate or reasoning-loop stop: configured
+Cooperator delivery / trace destination: configured
+Downloadable prompt filename: 02_implementation_00.md
+Destination path: <activated local destination>
+Archival: wait-for-report
+```
+
+### Negative: contained clone, no project environment, mandatory full suite
+
+This combination is invalid. Isolation is not a virtue, reconstructing an
+environment to force PASS is forbidden, and a full suite is not an automatic
+Worker tax.
+
+```text
+# INVALID — do not issue
+Working-copy topology: contained-clone
+Topology rationale: isolation is safer
+Development envelope activation: not-used
+Environment changes: create .venv; install all extras
+Validation ladder: selected
+Broad or full suite: required
+Required evidence: entire repository pytest suite
+Recommended reasoning: Extra High
+Recommendation basis: the client exposes maximum mode
+```
+
+Failure class: isolation-as-virtue plus full-suite-as-Worker-tax plus
+reasoning-maximization plus recopying undeclared tooling.
+
+## 16. Related AP Artifacts
 
 - [AP.md](AP.md) — sole live normative protocol and semantic owner.
 - [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md) — structural projection.

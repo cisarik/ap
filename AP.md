@@ -104,7 +104,9 @@ The Orchestrator owns routing recommendations, evidence reconciliation,
 accept/correct/escalate decisions, ledger reconciliation, and the deterministic
 closure transition after all predeclared evidence and Cooperator-owned decisions
 are satisfied. It may not substitute its judgement for a material human
-decision.
+decision. When project rules activate a Cooperator presentation profile, the
+Orchestrator must emit that project-owned package after the copyable,
+structurally English Worker prompt. Presentation marks are not task authority.
 
 #### RF-03 — Worker Bounded Authority and Report Expiry
 
@@ -272,7 +274,10 @@ authority source. A public trace is public-safe by default and excludes
 secrets, credentials, private locations, environment values, private media,
 sensitive payloads, and unnecessary production detail. AP owns these semantics
 and coordinates; replaceable trace implementations own only their storage,
-layout, discovery, indexes, and local validation under AP precedence.
+layout, discovery, indexes, local filename grammar, and local validation under
+AP precedence. An activated trace's local filename grammar is the archival
+destination the Orchestrator must project. Local grammar is never universal AP
+meaning.
 
 When the standard Markdown/Git projection is activated, exchange `01` uses
 `NN_<phase>.md` with `NN_report.md`; later exchanges use
@@ -280,7 +285,9 @@ When the standard Markdown/Git projection is activated, exchange `01` uses
 is the exchange ordinal, unsuffixed means `01`, and `_01` is invalid. Ordinals
 are two-digit and contiguous; `<phase>` is lowercase kebab-case and is not
 `report`, `interruption`, or `handout`. One exchange has exactly one prompt and
-one mutually exclusive `report` or `interruption` companion.
+one mutually exclusive `report` or `interruption` companion. That interoperable
+unsuffixed exchange-`01` grammar remains the AP default even when an activated
+trace stores a different local spelling.
 
 A completed prompt/report pair is first archived together after the report
 exists; in Git both files have the same unique first-add commit. Until then,
@@ -831,6 +838,14 @@ Consuming project rules, normally in a project-owned file such as `AGENTS.md`,
 supply the actual routing values. Universal AP does not hardcode a project,
 person, execution client, vendor, natural language, host, or local shell label.
 
+When those project rules activate a Cooperator presentation profile, the
+Orchestrator must emit it after the copyable, structurally English Worker
+prompt. The package states the selected route, Plan Mode on or off without
+showing a plan-mode mark when off, the lowest-sufficient reasoning, the exact
+downloadable prompt filename, the activated-trace destination when a trace is
+configured, and archival wait or allow. Presentation marks are not task
+authority and are not copied into the Worker grant as semantic fields.
+
 The routing model preserves human-governed collaboration. The Cooperator sees
 material objective, routing, authority, risk, acceptance, and closure decisions
 in understandable form, while deterministic internal steps stay inside their
@@ -885,6 +900,13 @@ secret authority, validation, acceptance criteria, stopping conditions, and
 report format.
 
 Omitted permission is not implied permission.
+
+A current prompt may activate a named, versioned, project-owned development
+envelope by reference. Activation grants only the declared reversible class.
+Secrets, destruction, accounts, public exposure, unrelated owner data,
+publication, and closure remain ungranted. Residual task-specific exclusions
+remain explicit. Working-copy topology is selected: canonical checkout,
+isolated worktree, or contained clone; none is universally mandatory.
 
 Role, capability, reasoning, technical permission, approval mode,
 containment or sandboxing, task authority, provider safety policy, credentials,
@@ -1022,18 +1044,24 @@ a choice:
 | Profile | Use for |
 |---|---|
 | Light or Low | mechanical localized edits, deterministic formatting, tiny reversible changes, or exact instructions with strong validation |
-| Standard or Medium | normal bounded features, familiar repository patterns, limited cross-file reasoning, reversible implementation with tests, or ordinary documentation |
-| High | architecture or ADR work, cross-cutting repository changes, persistence and data integrity, complex debugging, operational preflight, broad documentation/code reconciliation, or diagnostic review of a substantial slice |
-| Extra High | protocol architecture, authentication or authorization architecture, cryptography or secret-handling design, destructive or irreversible data migration, complex concurrency or corruption risk, very large durable-state preservation, unusually ambiguous multi-source architecture, or exceptionally high-impact independent audit |
+| Standard or Medium | default for ordinary bounded work: familiar repository patterns, limited cross-file reasoning, reversible implementation with tests, ordinary documentation, or other named bounded tasks |
+| High | only with a named risk: security, destructive mutation, concurrency, publication, or architectural ambiguity that Medium cannot resolve |
+| Extra High | exceptional; only a genuine unresolved cross-cutting contradiction that High cannot resolve |
 
 No reasoning recommendation is required for work the Orchestrator performs
 directly without assigning a Worker. Higher reasoning effort is not broader
-authority. Extra High is not the default. Reasoning should be chosen separately
-for preflight, implementation, diagnostic closeout, and independent audit.
-Intentional context, token, time, or credit exhaustion is not a goal. If a
-client exposes no explicit setting, the Orchestrator describes the required
-reasoning characteristics instead of inventing labels or telemetry. The
-Cooperator retains final selection among available client settings.
+authority. Extra High is not the default. Client maximum or enhanced mode is
+never inferred and never recommended merely because it is available; only an
+explicit Cooperator selection may use it. Escalate only by naming the missing
+evidence the higher profile must solve. Downgrade after convergence or after
+the named risk is removed. An unchanged hypothesis, unchanged candidate, and
+unchanged failing gate is not progress. Cost cannot falsify evidence.
+Reasoning should be chosen separately for preflight, implementation, diagnostic
+closeout, and independent audit. Intentional context, token, time, or credit
+exhaustion is not a goal. If a client exposes no explicit setting, the
+Orchestrator describes the required reasoning characteristics instead of
+inventing labels or telemetry. The Cooperator retains final selection among
+available client settings.
 
 The Orchestrator selects the lowest sufficient evidence profile. AP uses this
 adaptive evidence ladder as a selection guide, not a mandatory sequence:
@@ -1055,7 +1083,7 @@ into a mandatory pipeline:
 |---|---|---|
 | E0 — informational | read-only analysis or non-behavioral documentation | direct inspection plus applicable diff, link, or status checks; no independent audit |
 | E1 — bounded reversible | localized known path, strong focused tests, easy rollback, or routine reversible non-force Git publication | focused positive and negative checks, diff and Git evidence, and public equality when published; no independent audit unless evidence is anomalously weak |
-| E2 — cross-cutting reversible | multiple layers, user-visible compatibility, moderate uncertainty, weak mocks, or reversible development-surface mutation | affected full suite, behavioral and rollback evidence, public verification when applicable; fresh audit recommended when uncertainty remains |
+| E2 — cross-cutting reversible | multiple layers, user-visible compatibility, moderate uncertainty, weak mocks, or reversible development-surface mutation | selected affected tests, behavioral and rollback evidence, public verification when applicable; a broad or full suite only when a project rule or named decision risk requires it; fresh audit recommended when uncertainty remains |
 | E3 — high impact | security boundary, durable migration, material privilege, or remote or production mutation with material operational, durable, trust-boundary, availability, security, or recovery consequences | separate preflight, checkpoint and negative paths, public or operational evidence, a bounded implementation envelope, and fresh independent audit before final acceptance |
 | E4 — critical or irreversible | destructive data, credentials or access control, irreversible migration, broad production impact, or recovery uncertainty that cannot be bounded adequately | Cooperator approval at material decisions, strict stage separation, rehearsal and recovery where possible, mandatory fresh audit, and fresh re-audit after material correction |
 
@@ -1169,13 +1197,17 @@ evidence classes; it never names a vendor, client, or model as a requirement.
 - **Quota and independence.** Quota, cost, subscription, and rate limits are
   legitimate routing inputs. They never silently weaken required acceptance
   evidence, and security-audit independence overrides token-saving
-  preference. When the required evidence cannot be produced, escalate the
-  route or report the limitation.
+  preference. Cost cannot falsify evidence. When the required evidence cannot
+  be produced, escalate the route or report the limitation; unaffordable
+  required evidence is a limitation, not PASS.
 - **Lowest sufficient reasoning.** The Orchestrator recommends the lowest
-  sufficient reasoning profile from the table above. Higher or maximum effort
-  is proportionate for protocol evolution, architecture, adversarial security
-  review, ambiguous high-impact findings, and other justified high-risk
-  tasks. Reasoning effort is never authority.
+  sufficient reasoning profile from the table above. Medium is the default for
+  ordinary bounded work. High requires a named risk. Extra High is exceptional.
+  Client maximum or enhanced mode is never inferred and never recommended
+  merely because it is available. Escalate only on named missing evidence;
+  downgrade after convergence. An unchanged hypothesis, unchanged candidate,
+  and unchanged failing gate is not progress. Reasoning effort is never
+  authority.
 - **No silent fallback.** A weaker or different model is never substituted
   silently when the required evidence depends on capabilities that may be
   lost; report or explicitly reroute. A provider refusal is narrowed to a
@@ -1235,6 +1267,11 @@ The Orchestrator should:
   recommendations, and rejected or superseded options;
 - identify repository checkout topology and specify the identity,
   synchronization, branch, and public-ref invariants that actually apply;
+- select working-copy topology and test-breadth with a why; none is
+  universally mandatory;
+- when a Cooperator presentation profile is activated, emit it after the
+  copyable, structurally English Worker prompt as a project-owned delivery
+  package, not as task authority;
 - review Worker reports against the original task contract;
 - verify public commits when available;
 - classify outcomes as PASS, PARTIAL, or BLOCKED;
@@ -1267,10 +1304,12 @@ required capabilities, preflight choice, path and command authority, negative
 scope, Git authority, public verification method and fallback, acceptance mode,
 artifact lifecycle, context-pressure rule, stopping conditions, report
 structure, explicit project-specific deviations, contradiction and omission
-review, and enough self-contained authority for the intended Worker session to
-understand the task. The readiness gate optimizes for evidence density and
-completeness, not maximum length or repeated universal rules when references are
-sufficient.
+review, activated compact records only, selected working-copy topology and
+validation ladder with a why, and enough self-contained authority for the
+intended Worker session to understand the task. The readiness gate optimizes
+for evidence density and completeness, not maximum length or repeated universal
+rules when references are sufficient. Prefer current-session reuse inside a
+healthy whole. One accountable Worker is the default.
 
 The Orchestrator is not a passive prompt relay and must not treat a Worker
 report as proof without evidence.
@@ -1838,7 +1877,19 @@ expectation under test; it never changes who owns rendered acceptance.
 
 ## 12. Validation and Public Verification
 
-Validation is proportional to risk.
+Validation is proportional to risk. The current prompt selects a validation
+ladder and states why. Typical steps are inspection and provenance, existing
+focused tests, selected affected tests, a new causal regression that names the
+uncovered invariant or an explicit none, a broad or full suite only when a
+project rule or named decision risk requires it, runtime or testbed evidence
+when an activated envelope supplies it, and independent acceptance when
+required. A full suite is not an automatic Worker tax. Classify a failure
+before repair. Run a broad gate once per materially changed candidate; diagnose
+with the smallest reproducer and use narrow checks before re-broadening. An
+unchanged hypothesis, unchanged candidate, and unchanged failing gate is not
+progress. Pre-existing classification requires exact baseline identity, test
+identity, and failure signature. Non-zero remains non-zero. Documentation-first
+AP protocol evolution remains unchanged.
 
 Documentation work may require formatting, link, semantic, and Git status
 checks. Code work usually requires automated tests or direct behavioral
@@ -2343,13 +2394,15 @@ current task.
 Repositories may use compact communication when stable protocol documents
 already define safety rules.
 
-A compact Worker prompt may reference `.ap/AP.md`, `.ap/AP_WORKER.md`, and
-project-specific `AGENTS.md` instead of repeating them. It must still define the
-Worker session target, Worker session profile, task-specific goal, repository
-gate, allowed paths, prohibitions, Git authority, validation, acceptance
-criteria, reasoning recommendation, stopping conditions, and report format. A
-current-session prompt must also carry its continuity anchor and complete
-authority-renewal grant.
+A compact Worker prompt may reference `.ap/AP.md`, `.ap/AP_WORKER.md`,
+project-specific `AGENTS.md`, and a declared project tooling or development
+envelope instead of rediscovering or recopying them. Common Worker Task Fields
+are a catalog, not a dump: include only material rows and omit inactive
+annexes. The prompt must still define the Worker session target, Worker session
+profile, task-specific goal, repository gate, allowed paths, prohibitions, Git
+authority, validation, acceptance criteria, reasoning recommendation, stopping
+conditions, and report format. A current-session prompt must also carry its
+continuity anchor and complete authority-renewal grant.
 
 Worker reports should be evidence-dense. Unless a task requires more detail, a
 report should include status, start and end commit, changed files, validation,
@@ -2398,6 +2451,15 @@ AP rejects:
 - treating reports as proof;
 - treating role, reasoning, capability, permission, containment, UI approval,
   or evidence as task authority;
+- treating a Cooperator presentation profile, emoji, localized capsule, or
+  downloadable filename as task authority;
+- treating isolation as a virtue when the authorized environment is the
+  canonical checkout or a declared development envelope;
+- treating a full or repository-wide suite as an automatic Worker tax;
+- ceremonial extra Workers inside one healthy whole when current-session reuse
+  is lawful and independence is not required;
+- recopying stable AP rules or declared project tooling instead of referencing
+  them;
 - treating plan approval or an automatic interface transition as execution
   authority;
 - routing Plan mode merely because a task is described as complex;
@@ -2449,8 +2511,12 @@ AP rejects:
   depends on capabilities that may be lost;
 - letting quota or cost silently weaken required acceptance evidence or
   security-audit independence;
+- treating cost as falsifying evidence;
 - intentional context exhaustion;
-- mandatory maximum reasoning;
+- mandatory maximum reasoning, or recommending client maximum or enhanced mode
+  merely because it is available;
+- repeating an unchanged hypothesis, candidate, and failing gate as if
+  repetition were progress;
 - treating a successful privilege probe as privilege for a later process;
 - weakening ownership or permissions to work around a bounded access failure;
 - allowing parser, cleanup, or reporting failure to overwrite the first causal

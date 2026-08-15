@@ -244,6 +244,11 @@ The compact core activates rather than weakens surface evidence:
 Phase gates never leak into unrelated prompts merely because their structures
 exist here.
 
+Include only material rows from the catalog below. Inactive annexes are
+omitted. Stable AP rules and declared project tooling or envelopes are
+referenced rather than recopied. Common Worker Task Fields are a catalog, not
+a dump.
+
 ## Common Worker Task Fields
 
 | Field | Purpose |
@@ -262,6 +267,7 @@ exist here.
 | Communication routing | Project-configured operator, Orchestrator, Worker prompt/report/direct-user, report-header, documentation, and shell/platform presentation values when relevant |
 | Human-governance routing | Cooperator visibility, material human decision points, deterministic steps inside authority, brainstorming classification, and internal-delegation posture when relevant |
 | Repository checkout topology | Declared repository context such as standalone checkout or pinned submodule checkout |
+| Working-copy topology | Selected canonical checkout, isolated worktree, or contained clone with a why; none is universally mandatory; omit when not material |
 | Repository identity | URL, applicable branch, accepted URL spellings, expected refs, containing repository, submodule path, and gitlink where relevant |
 | Working directory | Exact path or discovery rule |
 | Baseline | Expected commit, parent, subject, changed paths, or empty-state rule |
@@ -543,6 +549,116 @@ Concrete project, date, and directory layout remains trace-owned. A filename,
 ordinal, archived record, or first-add commit is evidence only and never task,
 independence, acceptance, publication, or closure authority.
 
+### Validation Ladder Record
+
+Inactive ladder selection is exactly:
+
+```text
+Validation ladder: not-used
+```
+
+When the current prompt selects a ladder, the compact record is:
+
+```text
+Validation ladder: selected
+Inspection and provenance: required
+Existing focused tests: <identity or none>
+Affected tests: <selected identities or none>
+New causal regression: <named uncovered invariant or none>
+Broad or full suite: not-used | required-because <project rule or named decision risk>
+Runtime or testbed: not-used | <declared envelope reference>
+Independent acceptance: not-required | required-separate-fresh-worker
+```
+
+An issued record contains one value rather than literal alternatives. The
+selected fields are absent when the ladder is `not-used`. A full suite is not
+an automatic Worker tax.
+
+### Repeated-Gate and Reasoning-Loop Stop Record
+
+Inactive loop-stop configuration is exactly:
+
+```text
+Repeated-gate or reasoning-loop stop: not-used
+```
+
+When configured, the compact record is:
+
+```text
+Repeated-gate or reasoning-loop stop: configured
+Broad gate: once per materially changed candidate
+Narrow before re-broad: required
+Unchanged hypothesis, candidate, and failing gate: not-progress
+Escalate only on: named missing evidence the higher profile must solve
+Downgrade after: convergence or named risk removal
+Cost cannot falsify evidence: yes
+```
+
+The configured fields are absent when disposition is `not-used`. Repeating an
+unchanged failing check is not progress.
+
+### Development Envelope Activation Record
+
+Inactive envelope configuration is exactly:
+
+```text
+Development envelope activation: not-used
+```
+
+When the current prompt activates a declared envelope, the compact record is:
+
+```text
+Development envelope activation: activated
+Development envelope identity: <named, versioned, project-owned reference>
+Declared reversible class: <class>
+Working-copy topology: canonical-checkout | isolated-worktree | contained-clone
+Topology rationale: <why this topology>
+Irreversible exclusions: secrets, destruction, accounts, public exposure, unrelated owner data, publication, closure, <task-specific>
+```
+
+An issued record contains one topology value rather than literal alternatives.
+The configured fields are absent when activation is `not-used`. Activation
+grants only the declared reversible class. None of the three topologies is
+universally mandatory.
+
+### Cooperator Delivery and Trace Destination Record
+
+Inactive delivery configuration is exactly:
+
+```text
+Cooperator delivery / trace destination: not-used
+```
+
+When project or task rules activate Cooperator delivery, the compact record is:
+
+```text
+Cooperator delivery / trace destination: configured
+Downloadable prompt filename: <exact filename>
+Destination path: <activated local destination or not-applicable>
+Archival: wait-for-report | allow-now
+```
+
+An issued record contains one archival value rather than literal alternatives.
+The configured fields are absent when disposition is `not-used`. Filename and
+destination are delivery evidence, not task authority. The Worker does not
+archive the current pair. This record does not encode a natural language,
+emoji, or a particular trace implementation as required AP fields.
+
+### Trace-Local Filename Mapping Example
+
+The following mapping is a **trace-local storage example**, not AP grammar.
+The interoperable unsuffixed exchange-`01` spelling in the Standard
+Markdown/Git Exchange Projection is unchanged.
+
+```text
+meta_exchange_index = Worker exchange ordinal - 1
+AP Worker session 01 / exchange 01 -> 01_<phase>_00.md + 01_report_00.md
+AP Worker session 01 / exchange 02 -> 01_<phase>_01.md + 01_report_01.md
+```
+
+Local grammar is the archival destination the Orchestrator must project when
+that trace is activated. It is never universal AP meaning.
+
 ## Session-And-Mode Routing Contract
 
 Every newly issued, renewed, or reissued authoritative Worker prompt contains
@@ -744,6 +860,11 @@ Worker topology: <single-active | parallel-exception reference>
 Required tools: <material requirements>
 Quota/cost routing note: <constraint acknowledged; evidence unchanged>
 ```
+
+Recommended reasoning is the lowest sufficient profile from the AP table.
+Medium is the ordinary default. High needs a named risk. Extra High is
+exceptional. Client maximum or enhanced mode is never inferred and never
+recommended merely because it is available. Cost cannot falsify evidence.
 
 At a logical-whole start or a material phase gate, the recommendation and the
 Cooperator's decision are recorded as separate facts:

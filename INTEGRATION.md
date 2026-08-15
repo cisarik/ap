@@ -84,6 +84,40 @@ read-only, but the Orchestrator routes repair or reconciliation before issuing
 mutation authority that relies on that ledger. No executable `ap` or schema-v1
 behavior is added by optional adoption.
 
+## Optional Presentation Profile, Development Envelope, and Trace Grammar
+
+A consuming project may declare, in root `AGENTS.md` outside the managed AP
+block:
+
+- a Cooperator presentation profile;
+- a named, versioned development envelope covering tooling, interpreter,
+  working-copy topology preference, reversible class, and irreversible
+  exclusions; and
+- an optional pointer to the activated trace's local filename grammar.
+
+Do not edit, refresh, or migrate the managed block for these declarations, and
+do not rerun `init` merely to advertise them. Absence of a declaration
+preserves current behavior. The declarations are project-owned. They are not AP
+semantics, do not grant Worker authority, and do not make a natural language,
+emoji set, topology, or trace implementation universally required.
+
+A non-normative project-owned Cooperator capsule may look like the following.
+It is one project's presentation, labelled as such, and is not AP protocol.
+Plan Mode is omitted here because it is off.
+
+```text
+# Project-owned example only. Not AP semantics. Not Worker authority.
+Route: Worker
+Reasoning: Medium
+Downloadable prompt filename: 02_implementation_00.md
+Activated-trace destination: <project-local path using the activated local grammar>
+Archival: wait-for-report
+```
+
+A project may localize language or marks in that capsule. Those marks remain
+presentation. The copyable, structurally English Worker prompt and the compact
+AP records stay the authority grant.
+
 ## Clone Workflow
 
 Preferred clone:
@@ -239,7 +273,9 @@ executable relationship.
 
 Project-specific rules live in the consuming project. The root `AGENTS.md` is
 the normal place for language rules, product invariants, local paths, source of
-truth, tool limits, and security constraints.
+truth, tool limits, security constraints, an optional Cooperator presentation
+profile, an optional development envelope, and an optional local-trace grammar
+pointer.
 
 If universal AP and project rules conflict, identify the exact conflict. A
 project may impose stricter local rules, but it should not edit `.ap/` to do so.

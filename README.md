@@ -19,6 +19,7 @@ Canonical repository: `https://github.com/cisarik/ap`
 | role decisions | [AP_ORCHESTRATOR.md](AP_ORCHESTRATOR.md), [AP_WORKER.md](AP_WORKER.md) | operational projections |
 | continuation after a pause | [Continuation Bootstrap](AP_ORCHESTRATOR.md#continuation-bootstrap) | operational entry point to the two-stage AP rule |
 | optional durable upgrade observations | [Upgrade Observation Ledger Contract](PROMPT_CONTRACTS.md#upgrade-observation-ledger-contract) | structural declaration and Markdown storage projection |
+| optional presentation, development envelope, and local-trace grammar | [INTEGRATION.md](INTEGRATION.md#optional-presentation-profile-development-envelope-and-trace-grammar) | consumer declaration; absence preserves current behavior |
 | optional prompt craft | [PROMPT_ENGINEERING_PATTERNS.md](PROMPT_ENGINEERING_PATTERNS.md) | first-class universal advisory projection |
 | activated defensive security | [INFOSEC.md](INFOSEC.md) | advisory profile; all procedures apply when activated |
 | artifact and activated external-trace handling | [ARTIFACT_LIFECYCLE.md](ARTIFACT_LIFECYCLE.md) | operational lifecycle projection |

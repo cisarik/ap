@@ -179,11 +179,13 @@ the renewal.
 
 Treat external trace configuration as project/task context. A trace is inactive
 unless authorized project rules configure it, and its availability never
-becomes a universal prerequisite. When configured, archive—or ask the
-separately authorized Cooperator or archive owner to archive—the exact prompt
-and actual outcome together only after the outcome exists. Keep launch prompts
-outside mutation-gated worktrees until then unless an authorized workflow owns
-a safe staging location.
+becomes a universal prerequisite. When configured, project the activated
+trace's local filename grammar as the archival destination; that local grammar
+is storage, not AP meaning. Archive—or ask the separately authorized Cooperator
+or archive owner to archive—the exact prompt and actual outcome together only
+after the outcome exists. Keep launch prompts outside mutation-gated worktrees
+until then unless an authorized workflow owns a safe staging location. The
+downloadable prompt file is transient delivery evidence.
 
 Reconcile interruption companions, late or contradictory reports, corrections,
 redactions, and supersession prospectively. Never impersonate a Worker, replace
@@ -237,9 +239,12 @@ mode: not-used` routes the client and never supplies implementation authority.
 At the start of a logical whole and each material phase gate, recommend the
 lowest sufficient available route: fresh/current session, model or capability
 class, reasoning effort, native planning state, permissions, independence, and
-tools, with a concise basis. The Cooperator selects the route. Record requested,
-selected, directly observed, inferred, unknown, and independently attested facts
-separately.
+tools, with a concise basis. Medium is the default for ordinary bounded work.
+High needs a named risk. Extra High is exceptional. Client maximum or enhanced
+mode is never inferred and never recommended merely because it is available.
+Escalate only on named missing evidence; downgrade after convergence. The
+Cooperator selects the route. Record requested, selected, directly observed,
+inferred, unknown, and independently attested facts separately.
 
 Capability, model intelligence, reasoning, permission, containment, task
 authority, provider policy, credentials, and evidence are distinct. Requested
@@ -258,17 +263,21 @@ routing.
 
 Select E0–E4 from consequence, reversibility, uncertainty, and trust-boundary
 impact. Use the least costly evidence that can establish the named claims.
-E0/E1 normally use direct or implementation evidence; E2 uses affected broad
-validation and may require fresh acceptance; E3 requires a separate fresh final
-acceptance even when implementation stages are combined; E4 preserves strict
-separation when destructive, irreversible, credential, access-control,
+E0/E1 normally use direct or implementation evidence; E2 uses selected affected
+tests and a broad or full suite only when a project rule or named decision risk
+requires it, and may require fresh acceptance; E3 requires a separate fresh
+final acceptance even when implementation stages are combined; E4 preserves
+strict separation when destructive, irreversible, credential, access-control,
 broad-production, or recovery triggers demand it. Do not require independent
-audit for every commit.
+audit for every commit. Do not treat a full suite as an automatic Worker tax.
 
 Independent acceptance is bounded and sequential. Same-session self-review,
 tests, and diagnostic work are useful but non-independent. One primary audit
-and one correction re-acceptance exhaust the ordinary budget. Do not audit an
-audit or create another Worker to reinterpret an unchanged blocker.
+and one correction re-acceptance exhaust the ordinary budget. Prefer
+current-session reuse inside a healthy whole. Do not audit an
+audit or create another Worker to reinterpret an unchanged blocker. An
+unchanged hypothesis, unchanged candidate, and unchanged failing gate is not
+progress.
 
 ## Preflight Selection
 
@@ -309,8 +318,11 @@ order, and stale/overlap stop rules. Coordinated work is not independent.
 ## Prompt Construction
 
 Build prompts from the compact core and only activated annexes in
-[PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md#activated-surface-annexes). Every
-Worker task remains self-contained for its task-specific authority:
+[PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md#activated-surface-annexes). Include
+only material Common Worker Task Fields. Inactive records stay `not-used` or
+are omitted. Reference stable AP and declared project tooling or envelopes
+instead of recopying them. Every Worker task remains self-contained for its
+task-specific authority:
 
 - persistent WORKER identity, session target/profile, phase, and native mode;
 - continuity anchor and complete renewal for current-session routing;
@@ -318,9 +330,24 @@ Worker task remains self-contained for its task-specific authority:
 - one goal, accepted decisions, and positive/negative scope;
 - path, command, dependency, network, browser, secret, filesystem, side-effect,
   and Git authority as applicable;
-- evidence tier, implementation and independent-acceptance envelopes, recovery,
-  validation, stopping conditions, terminal report, and authority expiry;
+- evidence tier, selected validation ladder with a why, implementation and
+  independent-acceptance envelopes, recovery, validation, stopping conditions,
+  terminal report, and authority expiry;
+- activated development-envelope, loop-stop, and delivery/trace-destination
+  records when used;
 - Cooperator decision/visibility points and one smallest next step.
+
+Select working-copy topology and test-breadth with a why. Canonical checkout,
+isolated worktree, and contained clone are alternatives; none is universally
+mandatory. Prefer current-session reuse inside a healthy whole. One accountable
+Worker is the default.
+
+After the copyable, structurally English Worker prompt, when project rules
+activate a Cooperator presentation profile, emit that project-owned delivery
+package: selected route, Plan Mode on or off without showing a plan-mode mark
+when off, lowest-sufficient reasoning, exact downloadable filename,
+activated-trace destination, and archival wait or allow. Presentation marks are
+not task authority.
 
 Omitted permission is not permission. Use the advisory
 [pattern library](PROMPT_ENGINEERING_PATTERNS.md) selectively; never concatenate

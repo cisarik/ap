@@ -57,7 +57,14 @@ applicable public-ref commit and push protections. See
 
 Outside the AP-managed block in the consuming project's root `AGENTS.md`. The
 block points to pinned AP; it does not copy the protocol. Do not edit `.ap/`
-during ordinary project work.
+during ordinary project work. Optional Cooperator presentation profile,
+development envelope, and local-trace grammar pointer are also declared there;
+absence preserves current behavior.
+
+## Is a full test suite an automatic Worker tax?
+
+No. The prompt selects a validation ladder. A broad or full suite runs only
+when a project rule or named decision risk requires it.
 
 ## How do updates and rollback work?
 

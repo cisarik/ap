@@ -74,6 +74,10 @@ Follow the linked AP rule family and structural contracts for exact behavior.
 | Independent Certification | Evidence from a fresh verifier that did not materially implement the candidate. |
 | Diagnostic Closeout | Bounded, normally read-only review of the same implemented slice. |
 | Compact Communication | Links stable owners while retaining complete task-specific authority and evidence. |
+| Validation ladder | Prompt-selected evidence sequence from inspection through independent acceptance; a broad or full suite is not automatic. |
+| Development envelope | Named, versioned, project-owned tooling, interpreter, topology, and reversible-class declaration activated only by the current prompt. |
+| Cooperator presentation profile | Project-owned Cooperator-facing routing package emitted after the copyable, structurally English Worker prompt when activated; marks are not task authority. |
+| Local trace filename grammar | Activated trace storage spelling projected as archival destination; never universal AP meaning. |
 | Continuation Bootstrap | Two-stage post-pause rule: restore and reconcile read-only, then obtain Cooperator selection of exactly one bounded next logical whole before any mutation grant; see [AP semantics](AP.md#continuation-bootstrap) and the [operational entry point](AP_ORCHESTRATOR.md#continuation-bootstrap). |
 | Discovery Record | Optional non-authoritative exploration artifact with consumer, promotion target, and lifecycle. |
 | External Analytic Development Trace | Optional explicitly activated selective historical-evidence projection subordinate to governing AP and current project/external truth; see [RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity). |

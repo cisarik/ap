@@ -69,10 +69,16 @@ restoration prompt, repository handoff, or current authority source.
 
 First archive an exact prompt and its actual terminal report together only
 after the report exists. For Git, both files have the same unique first-add
-commit. Keep the externally delivered prompt outside mutation-gated worktrees
+commit and the archived bytes are the exact issued prompt and the exact actual
+report. Keep the externally delivered prompt outside mutation-gated worktrees
 until then unless a separately authorized workflow owns a safe staging
 location. The implementation Worker does not archive its current exchange
 without a later exact archival grant.
+
+A downloadable prompt file shown to the Cooperator is transient delivery
+evidence. It does not prove issuance, success, independence, or archival. Local
+trace filename grammar is storage, not authority; when a trace is activated,
+that local grammar is the archival destination the Orchestrator must project.
 
 Only when no terminal Worker report exists may an authorized non-Worker owner
 write a mutually exclusive interruption companion from safely known
