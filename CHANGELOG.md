@@ -7,6 +7,23 @@ remains the sole live normative protocol.
 
 ## Unreleased
 
+- Clarified existing RF-06 and RF-16 semantics and their projections so that,
+  when a consuming project has an applicable usable declared execution
+  operation or project-owned capability gate, the Orchestrator resolves it
+  before prompt issuance, the authoritative Worker prompt makes it the
+  canonical execution or capability path, a silent equivalent-looking ambient
+  parallel route is prohibited, and deviation is lawful only through explicit
+  bounded task-specific authority. Ambient IDE, terminal, login-shell,
+  inherited-environment, and retained-socket state is classified as
+  convenience state, not authority or guaranteed capability. `AP.md` remains
+  the sole semantic owner; existing Common Worker Task Fields carry the
+  binding with no new record or field. No executable `ap`, schema,
+  managed-block, Meta, or FrameNest mutation, and no mechanical prompt
+  validation. Recorded by
+  [ADR-0018](docs/adr/0018-consumer-declared-execution-route-binding.md) as an
+  implementation candidate. Existing consumer pins retain their original
+  meaning; independent acceptance, publication, consumer adoption, and
+  logical-whole closure remain separate.
 - Extended existing RF families so an Orchestrator can emit a compact,
   cost-proportional Worker grant plus a project-owned Cooperator delivery
   package: selected validation ladder, reasoning and repeated-gate stop,

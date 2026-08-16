@@ -773,13 +773,20 @@ Which interface and property are required? What is the first causal operation?
 How are status, body, and parsing separated? Which exact paths are owned for
 cleanup? What fallback is safe and authorized? Which declared project tooling
 or development envelope already names the interpreter, virtualenv, or console
-scripts?
+scripts? Is an applicable declared execution route present — a baseline-declared
+project operation or a project-owned capability gate — and is it named as the
+canonical path? Does any draft text offer an equivalent-looking ambient route
+as a silent parallel alternative? If the declared route cannot be used, is the
+deviation explicit and bounded? If no route is declared, is the guidance exact
+and project-owned rather than an invented toolchain?
 
 #### Template fragment
 
 ```text
 Required interface: <tool/capability and material property>.
 Declared project tooling or envelope: <reference or not-used>; do not recopy or rediscover it.
+Declared execution route: <applicable declared route or none>; when present, it is the canonical path.
+Parallel ambient route: prohibited unless an explicit bounded deviation names the unused declared route, exact alternate, rationale, evidence class, authority, and stop condition.
 Permitted use: <bounded operations>. Environment changes: <forbidden/authorized>.
 Working-copy topology: <canonical-checkout | isolated-worktree | contained-clone> because <why>.
 Expected observation/output: <shape>; preserve first causal error.
@@ -794,7 +801,22 @@ Do not reconstruct an environment to force PASS.
 
 Tool drift, hidden dependency mutation, brittle structured parsing, cleanup
 collateral, masked root cause, ambiguous output, invented capability,
-isolation-as-virtue, and recopying stable tooling.
+isolation-as-virtue, recopying stable tooling, and a silent ambient parallel
+route bypassing an applicable declared route.
+
+#### Bounded negative fixture
+
+Advisory evidence only; not a validator or structural contract.
+
+```text
+Invalid (silent parallel route): project rules declare the project-owned
+operation `ci-checks` as the canonical route, but the prompt adds "or run the
+equivalent raw interpreter command from any convenient shell if that is
+simpler" with no deviation. The equivalent-looking ambient route is not
+authorized. Remove it, or add an explicit bounded deviation naming the declared
+route that could not be used, the exact alternate path, rationale, evidence
+class, bounded authority, and stopping condition.
+```
 
 #### Evidence/source
 

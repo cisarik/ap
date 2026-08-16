@@ -292,6 +292,17 @@ a dump.
 | Report justification and escalation | One allowed justification; repeated-blocker capsule when triggered |
 | Context-pressure rule | Whether visible usage must be reported |
 
+The `Commands`, `Positive authority`, and `Negative authority` fields also
+carry the execution-route binding owned by
+[RF-16](AP.md#rf-16-baseline-bound-project-execution). When an applicable and
+usable consumer-declared route exists, `Commands` and `Positive authority` name
+or activate it as the canonical execution or capability path, and `Negative
+authority` excludes silent equivalent-looking ambient parallel routes. An
+explicit bounded deviation is expressed inside these existing fields and
+task-specific prose — naming the declared route that could not be used, the
+exact alternate path, rationale, evidence class, bounded authority, and
+stopping condition — without any new field or record.
+
 Omitted permission is not implied.
 
 ## Repository Checkout Topology Contract

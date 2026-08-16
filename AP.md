@@ -83,7 +83,7 @@ for that rule family. Other columns name deliberate projections or enforcement;
 | RF-13 | [Remote privilege and authenticated readback](#rf-13-remote-privilege-and-authenticated-readback) | activated privilege/readback annexes; evidence structures |
 | RF-14 | [Artifact ownership and lifecycle](#rf-14-artifact-ownership-and-lifecycle) | lifecycle operations; discovery/retention structures |
 | RF-15 | [Protocol variants and stable integration](#rf-15-protocol-variants-and-stable-integration) | integration operations; managed consumer block; executable doctor checks |
-| RF-16 | [Baseline-bound project execution](#rf-16-baseline-bound-project-execution) | project contract; `ap project check` and `ap exec` |
+| RF-16 | [Baseline-bound project execution](#rf-16-baseline-bound-project-execution) | project contract; `ap project check` and `ap exec`; role route-resolution operations |
 | RF-17 | [Closure and anti-stall rules](#rf-17-closure-and-anti-stall-rules) | closure record; Orchestrator stop rules |
 | RF-18 | [Authority, security, and untrusted-content boundaries](#rf-18-authority-security-and-untrusted-content-boundaries) | activated INFOSEC profile; role operations |
 | RF-19 | [External analytic trace and Worker exchange identity](#rf-19-external-analytic-trace-and-worker-exchange-identity) | prompt/report structures; role and lifecycle operations; explanatory and historical projections |
@@ -139,7 +139,10 @@ prove independence.
 Role, capability, reasoning, client permission, technical containment, task
 authority, provider policy, credentials, verified gates, and evidence are
 separate dimensions. An action requires all applicable dimensions; no one
-dimension expands another.
+dimension expands another. Ambient session state — an open IDE or editor,
+integrated terminal, login shell, inherited environment variable, retained
+socket, or previous Worker session — is convenience state. It is not authority,
+durable configuration, or a capability guaranteed in another process boundary.
 
 #### RF-07 — Evidence Tiers and Risk-Sensitive Acceptance
 
@@ -208,6 +211,33 @@ rules may extend project policy but cannot blend or override universal AP.
 The tracked `ap.project.conf` and executable `ap` enforce the closed project
 schema, sanitized direct execution, declared operation, baseline equality, and
 runtime provenance described by ADR-0012. Readiness never grants task authority.
+
+A consuming project owns its exact operations and command values, environment
+and tooling policy, project-owned capability gates, local capability values,
+and credentials and privilege mechanics. AP remains provider-, project-,
+language-, runtime-, shell-, IDE-, host-, and credential-neutral, and not every
+project declares either surface.
+
+When the current task has an applicable and usable consumer-declared execution
+route — a baseline-declared `ap.project.conf` operation or a project-owned
+capability gate named in the project's governing rules — the Orchestrator
+resolves it before prompt issuance, and the authoritative Worker prompt names
+or activates it as the canonical execution or capability path for the
+authorized task. Listing project files as required reading alone is not that
+binding. The prompt must not silently present an equivalent-looking ambient
+route — a copied raw interpreter, shell, SSH, ambient-session reconstruction,
+or equivalent-looking command — as a parallel alternative. An alternate route
+is lawful only through explicit task-specific prompt authority that names the
+declared route that could not be used, the exact alternate path, the rationale,
+the evidence class, the bounded authority, and the stopping condition; a
+deviation never becomes a second standing canonical route by accident. When no
+applicable declared route exists, the fallback is exact project-owned guidance
+inside the prompt, never an AP-invented toolchain or operation.
+
+`ap project check` and `ap exec` enforce their declared project-operation
+boundary only when used. Executable `ap` does not construct or validate Worker
+prompts; this binding is normative and operational, not mechanical prompt
+validation.
 
 #### RF-17 — Closure and Anti-Stall Rules
 
@@ -1301,7 +1331,9 @@ continuity anchor and authority-renewal language when the current session is
 targeted, exact repository and baseline, accepted-decision versus brainstorm
 distinction, one coherent outcome, lowest sufficient reasoning recommendation,
 required capabilities, preflight choice, path and command authority, negative
-scope, Git authority, public verification method and fallback, acceptance mode,
+scope, resolution and canonical binding of any applicable consumer-declared
+execution route, Git authority, public verification method and fallback,
+acceptance mode,
 artifact lifecycle, context-pressure rule, stopping conditions, report
 structure, explicit project-specific deviations, contradiction and omission
 review, activated compact records only, selected working-copy topology and
@@ -1884,7 +1916,12 @@ uncovered invariant or an explicit none, a broad or full suite only when a
 project rule or named decision risk requires it, runtime or testbed evidence
 when an activated envelope supplies it, and independent acceptance when
 required. A full suite is not an automatic Worker tax. Classify a failure
-before repair. Run a broad gate once per materially changed candidate; diagnose
+before repair. When an ambient route fails and an applicable consumer-declared
+sanitized route exists, classify the ambient failure before remediation, prefer
+one focused reproduction through the declared route, and do not reconstruct,
+repair, replace, or weaken the environment without explicit authority; when the
+declared route is unusable and no bounded deviation is authorized, stop. Run a
+broad gate once per materially changed candidate; diagnose
 with the smallest reproducer and use narrow checks before re-broadening. An
 unchanged hypothesis, unchanged candidate, and unchanged failing gate is not
 progress. Pre-existing classification requires exact baseline identity, test
@@ -2396,7 +2433,11 @@ already define safety rules.
 
 A compact Worker prompt may reference `.ap/AP.md`, `.ap/AP_WORKER.md`,
 project-specific `AGENTS.md`, and a declared project tooling or development
-envelope instead of rediscovering or recopying them. Common Worker Task Fields
+envelope instead of rediscovering or recopying them. When an applicable and
+usable consumer-declared execution route exists, listing project files as
+mandatory reading is not enough: the prompt names or activates that route as
+the canonical execution or capability path for the task. Common Worker Task
+Fields
 are a catalog, not a dump: include only material rows and omit inactive
 annexes. The prompt must still define the Worker session target, Worker session
 profile, task-specific goal, repository gate, allowed paths, prohibitions, Git
@@ -2428,7 +2469,10 @@ A Worker must stop when repository identity fails, a precondition fails,
 authority is missing, required evidence is missing, required capabilities are
 unavailable, secrets would be exposed, validation requires a forbidden command,
 the task would require unauthorized destructive action, authentication fails in
-an unsafe way, completion would require out-of-scope changes, the Worker session
+an unsafe way, completion would require out-of-scope changes, an authoritative
+prompt silently offers an equivalent-looking ambient parallel route against an
+applicable consumer-declared execution route without explicit bounded deviation
+authority, the Worker session
 target is missing or contradictory, or a current-session continuity anchor does
 not match the actual session history.
 
@@ -2460,6 +2504,12 @@ AP rejects:
   is lawful and independence is not required;
 - recopying stable AP rules or declared project tooling instead of referencing
   them;
+- presenting a copied raw interpreter, shell, or ambient-session reconstruction
+  as a silent parallel alternative to an applicable consumer-declared execution
+  route;
+- treating ambient IDE, terminal, login-shell, inherited-environment, or
+  retained-socket state as durable configuration, guaranteed capability, or
+  authority;
 - treating plan approval or an automatic interface transition as execution
   authority;
 - routing Plan mode merely because a task is described as complex;

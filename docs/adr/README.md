@@ -29,6 +29,7 @@ Programming.
 | [0015](0015-monolithic-ap-test-suite-retirement.md) | Monolithic AP test-suite retirement | Accepted | Deletes the live monolithic suite; documentation-first proportional validation; supersedes suite-enforcement details in ADR-0010 and ADR-0014 only |
 | [0016](0016-universal-continuation-and-upgrade-ledger-storage.md) | Universal continuation and upgrade-ledger storage | Accepted | Adds the two-stage continuation bootstrap, optional consumer-owned RF-09 storage projection, and bounded planner-report completion repair; AP.md remains the sole live semantic owner |
 | [0017](0017-cooperator-ergonomics-cost-proportional-execution.md) | Cooperator ergonomics and cost-proportional execution | Accepted | Extends existing RF families with compact Worker grants, activatable ladder/loop/envelope/delivery records, and project-owned Cooperator presentation; AP.md remains the sole live semantic owner |
+| [0018](0018-consumer-declared-execution-route-binding.md) | Consumer-declared execution route and capability-gate binding | Implementation candidate | Extends RF-06/RF-16 so an applicable consumer-declared route is resolved before prompt issuance, made canonical, protected from silent ambient parallel routes, and deviated from only through explicit bounded authority; no public acceptance, publication, or closure claim |
 
 ADR-0009 permits only an explicit bounded parallel exception. It does not
 supersede fresh sequential independent audit or the remaining decisions in
@@ -74,6 +75,15 @@ so an Orchestrator can emit a compact cost-proportional Worker grant plus a
 project-owned Cooperator delivery package. It does not add a rule family,
 runtime, schema, managed-block migration, Meta grammar, FrameNest envelope, or
 new semantic owner. Publication and logical-whole closure remain separate.
+
+ADR-0018 records an implementation candidate. It extends RF-06 and RF-16 so an
+applicable consumer-declared execution route or project-owned capability gate
+is resolved before prompt issuance, made canonical in the authoritative Worker
+prompt, protected from silent equivalent-looking ambient parallel routes, and
+deviated from only through explicit bounded task-specific authority. It adds no
+rule family, record, field, runtime, schema, managed-block migration,
+validator, or new semantic owner. Independent acceptance, publication, consumer
+adoption, and logical-whole closure remain separate.
 
 ## Lifecycle Rule
 

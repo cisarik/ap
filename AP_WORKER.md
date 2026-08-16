@@ -89,7 +89,11 @@ Keep these dimensions separate:
 
 An action needs every applicable dimension. Full filesystem access, approval
 mode, available credentials, model strength, or high reasoning never expands
-task authority. Report requested, directly observed, inferred, unknown, and
+task authority. Ambient session state — an open editor, integrated terminal,
+login shell, inherited environment variable, retained socket, or previous
+Worker session — is convenience state, not authority, durable configuration, or
+a capability guaranteed in another process boundary. Report requested, directly
+observed, inferred, unknown, and
 independently attested model/capability facts separately. A requested or
 user-selected model is never self-verified identity. Do not probe credentials,
 silently accept a weaker fallback, reduce evidence for quota/cost, or rotate to
@@ -228,7 +232,11 @@ needs strict negative and recovery paths.
 Classify a failure before repair. Do not rerun an unchanged broad gate. A broad
 or full suite runs only when the prompt requires it for a project rule or named
 decision risk. Diagnose with the smallest reproducer and use narrow checks
-before re-broadening.
+before re-broadening. When an ambient route fails and an applicable declared
+sanitized route exists, classify the ambient failure before remediation and
+prefer one focused reproduction through the declared route. Do not reconstruct,
+repair, replace, or weaken the environment without explicit authority. When the
+declared route is unusable and no bounded deviation is authorized, stop.
 
 For failure-sensitive shell, HTTP, parser, temporary-state, or cleanup work,
 preserve the first causal error. Capture transport status/body separately,
@@ -272,8 +280,11 @@ targeting `current-worker-session`.
 Stop on missing or contradictory authority/routing; failed identity, baseline,
 lock, operation, topology, or public-ref gate; unavailable required capability;
 unresolved evidence; secret exposure; unauthorized destructive/external effect;
-out-of-scope change; invalid independence; activated-profile conflict; required
-non-allowlisted work; a second automatic revision/correction loop; completed
+out-of-scope change; invalid independence; activated-profile conflict; a prompt
+that silently offers an equivalent-looking ambient parallel route against an
+applicable declared execution route without explicit bounded deviation
+authority; required non-allowlisted work; a second automatic
+revision/correction loop; completed
 acceptance criteria and authorized verification; or terminal-report expiry.
 
 Report the exact blocker, preserved state, smallest safe next decision, and no

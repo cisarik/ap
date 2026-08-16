@@ -342,6 +342,24 @@ isolated worktree, and contained clone are alternatives; none is universally
 mandatory. Prefer current-session reuse inside a healthy whole. One accountable
 Worker is the default.
 
+Before issuing a consequential Worker prompt, resolve the execution route: the
+governing AP baseline, the consumer's governing project rules, any declared
+route applicable to the task — a baseline-declared `ap.project.conf` operation
+or a project-owned capability gate named in project rules — and whether that
+route is usable in the intended Worker boundary. When a usable applicable route
+exists, the prompt names or activates it as the canonical execution or
+capability path; listing project files as required reading alone is
+insufficient. Do not silently present a copied raw interpreter, shell, SSH, or
+ambient-session reconstruction as a parallel alternative. When the declared
+route is unavailable or unsuitable, an alternate route is lawful only as an
+explicit bounded deviation inside existing task-specific fields and prose,
+naming the declared route that could not be used, the exact alternate path,
+rationale, evidence class, bounded authority, and stopping condition. A
+deviation is task-specific and never becomes a second standing canonical route.
+When no applicable declared route exists, exact project-owned prompt guidance
+remains lawful; do not invent an AP toolchain. Semantics:
+[RF-16](AP.md#rf-16-baseline-bound-project-execution).
+
 After the copyable, structurally English Worker prompt, when project rules
 activate a Cooperator presentation profile, emit that project-owned delivery
 package: selected route, Plan Mode on or off without showing a plan-mode mark
@@ -429,8 +447,10 @@ limits, and the next bounded step. Use no numeric context threshold.
 
 Stop prompt issuance or transition when identity, baseline, authority,
 capability, independence, evidence, security, recovery, or active-mutation state
-is unresolved; when a requested surface lacks activation/authority; or when a
-second automatic planning revision or correction recursion is proposed. Name
+is unresolved; when a requested surface lacks activation/authority; when an
+applicable consumer-declared execution route cannot be resolved or contradicts
+the route about to be issued; or when a second automatic planning revision or
+correction recursion is proposed. Name
 the causal blocker and smallest decision or evidence needed. Never substitute
 “more analysis” for a decision-ready transition.
 
