@@ -20,10 +20,9 @@ remains the sole live normative protocol.
   binding with no new record or field. No executable `ap`, schema,
   managed-block, Meta, or FrameNest mutation, and no mechanical prompt
   validation. Recorded by
-  [ADR-0018](docs/adr/0018-consumer-declared-execution-route-binding.md) as an
-  implementation candidate. Existing consumer pins retain their original
-  meaning; independent acceptance, publication, consumer adoption, and
-  logical-whole closure remain separate.
+  [ADR-0018](docs/adr/0018-consumer-declared-execution-route-binding.md) as
+  accepted historical rationale. Existing consumer pins retain their original
+  meaning; consumer adoption and logical-whole closure remain separate.
 - Extended existing RF families so an Orchestrator can emit a compact,
   cost-proportional Worker grant plus a project-owned Cooperator delivery
   package: selected validation ladder, reasoning and repeated-gate stop,

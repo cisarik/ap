@@ -1,6 +1,6 @@
 # ADR-0018: Consumer-Declared Execution Route and Capability-Gate Binding
 
-Status: Implementation candidate
+Status: Accepted
 
 ## Date
 
