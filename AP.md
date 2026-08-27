@@ -60,6 +60,23 @@ truth. Tests remain possible evidence for executable behavior in consuming
 software projects; this protocol does not claim that ordinary software should
 be developed without tests.
 
+### Per-Role Minimum-Reading Spine
+
+Before a role's first exchange in a logical whole, the role's spine rows
+below are its required minimum reading.
+
+| Role | Required AP.md anchors | Required projections | Reference-on-demand |
+|---|---|---|---|
+| COOPERATOR | [opening](#analytic-programming-protocol); [Semantic Authority](#semantic-authority-and-artifact-relationships); [§2 Roles](#2-roles); [RF-01](#rf-01-cooperator-sovereignty-and-material-decisions); [Cooperator Participation and Deterministic Closure](#cooperator-participation-and-deterministic-closure); [§16](#16-numbered-cooperator-acceptance-feedback) | project-root `AGENTS.md` | [FAQ.md](FAQ.md); all other surfaces |
+| ORCHESTRATOR | [§2](#2-roles); [§3](#3-instances-sessions-and-worker-session-profiles) through [Plan-to-Execution Gate](#plan-to-execution-gate); [Planning Budget and Expiry](#planning-budget-and-expiry); [Implementation Authority](#implementation-authority); [Acceptance, Correction, and Escalation](#acceptance-correction-and-escalation); [Phase-Qualified Results](#phase-qualified-results-and-closure); [§5](#5-task-authority); [§6](#6-adaptive-orchestration-lifecycle) including [provider-neutral routing](#provider-neutral-model-and-surface-routing); [§7](#7-orchestrator-responsibilities); [§13](#13-artifact-lifecycle-and-repository-hygiene); [§15](#15-fresh-slice-implementation-and-diagnostic-closeout); [§17](#17-compact-communication); [§19](#19-anti-patterns) (skim); [RF-01](#rf-01-cooperator-sovereignty-and-material-decisions)–[RF-05](#rf-05-freshcurrent-routing-and-independent-acceptance), [RF-07](#rf-07-evidence-tiers-and-risk-sensitive-acceptance), [RF-08](#rf-08-planning-reporting-audit-and-blocker-budgets), [RF-14](#rf-14-artifact-ownership-and-lifecycle), [RF-15](#rf-15-protocol-variants-and-stable-integration), [RF-17](#rf-17-closure-and-anti-stall-rules), [RF-19](#rf-19-external-analytic-trace-and-worker-exchange-identity) capsules | [AP_ORCHESTRATOR.md](AP_ORCHESTRATOR.md); [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md) (prompt issuance and activated annexes); project-root `AGENTS.md` | [PROMPT_ENGINEERING_PATTERNS.md](PROMPT_ENGINEERING_PATTERNS.md) (advisory); [INFOSEC.md](INFOSEC.md) (only when activated); [ARTIFACT_LIFECYCLE.md](ARTIFACT_LIFECYCLE.md) (artifact work); [INTEGRATION.md](INTEGRATION.md)/[UPDATING.md](UPDATING.md) (integration or update tasks); [INTUITION.md](INTUITION.md) (optional, never required); [FAQ.md](FAQ.md)/[GLOSSARY.md](GLOSSARY.md) |
+| WORKER | [§2](#2-roles); [§3](#3-instances-sessions-and-worker-session-profiles) ([Worker Session Target](#worker-session-target) and profiles); [§5](#5-task-authority); [§8](#8-worker-responsibilities); [§9](#9-git-and-remote-safety); [§10](#10-security-boundaries); [§12](#12-validation-and-public-verification); [§17](#17-compact-communication); [§18](#18-stopping-conditions); [RF-03](#rf-03-worker-bounded-authority-and-report-expiry), [RF-06](#rf-06-capability-reasoning-permission-containment-and-authority), [RF-07](#rf-07-evidence-tiers-and-risk-sensitive-acceptance), [RF-12](#rf-12-git-and-recovery-classification), [RF-18](#rf-18-authority-security-and-untrusted-content-boundaries), [RF-19](#rf-19-external-analytic-trace-and-worker-exchange-identity) capsules | [AP_WORKER.md](AP_WORKER.md); [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md) (report header and activated annexes); project-root `AGENTS.md` | everything else, plus any prompt-named required reading |
+
+The spine is a floor, never a ceiling: prompt-named required reading and
+activated surfaces add to it and are unaffected. `AP_ORCHESTRATOR.md`,
+`AP_WORKER.md`, `INTUITION.md`, and every other projection may point to this
+spine and never own it. Ownership of the spine is this subsection, per the
+canonical semantic-owner map below.
+
 ### Canonical Semantic-Owner Map
 
 The identifier and linked AP section in each row are the unique semantic home
@@ -87,6 +104,40 @@ for that rule family. Other columns name deliberate projections or enforcement;
 | RF-17 | [Closure and anti-stall rules](#rf-17-closure-and-anti-stall-rules) | closure record; Orchestrator stop rules |
 | RF-18 | [Authority, security, and untrusted-content boundaries](#rf-18-authority-security-and-untrusted-content-boundaries) | activated INFOSEC profile; role operations |
 | RF-19 | [External analytic trace and Worker exchange identity](#rf-19-external-analytic-trace-and-worker-exchange-identity) | prompt/report structures; role and lifecycle operations; explanatory and historical projections |
+
+The per-role spine and the detectability classes below are owned by this
+Semantic Authority section; they are not a separate rule family.
+
+### Rule Detectability Classes and Detection-Surface Requirement
+
+Every durable AP rule belongs to exactly one of three detectability classes,
+owned here:
+
+1. **Artifact-detectable** — a violation leaves evidence in a protocol-named
+   report, record, repository, or trace artifact.
+2. **Behavioral-normative** — binding conduct whose violation is observable
+   only in behavior at a protocol boundary; no defined artifact would reveal
+   it. A behavioral-normative rule lives only in its single owner and is never
+   restated in another surface.
+3. **Undetectable-and-unenforced** — neither artifact evidence nor observable
+   conduct at any AP boundary could reveal a violation. Such text is advisory,
+   or it is not a rule.
+
+Every newly added or materially revised normative rule must name its detection
+surface — the report, record, artifact, or observable conduct in which its
+violation becomes visible — and its class: artifact-detectable,
+behavioral-normative, or advisory. A rule with no detection surface is
+advisory, or it is not added.
+
+A paraphrase of a rule owned elsewhere is converted to a pointer plus at most
+one orientation sentence naming the owner and when the rule applies; the
+paraphrase does not survive as an independent statement of the rule.
+[§19](#19-anti-patterns) is this file's in-file digest of rejected patterns
+(same owner, not a second surface) and is not a restatement-conversion target.
+The per-item corpus classification is a historical record in
+[ADR-0021](docs/adr/0021-followable-spine-and-restatement-conversion.md);
+this subsection owns the class definitions and the forward-looking
+requirement only.
 
 ### Rule-Family Owners
 
@@ -1136,12 +1187,13 @@ explicit Cooperator selection may use it. Escalate only by naming the missing
 evidence the higher profile must solve. Downgrade after convergence or after
 the named risk is removed. An unchanged hypothesis, unchanged candidate, and
 unchanged failing gate is not progress. Cost cannot falsify evidence.
-Reasoning should be chosen separately for preflight, implementation, diagnostic
-closeout, and independent audit. Intentional context, token, time, or credit
-exhaustion is not a goal. If a client exposes no explicit setting, the
-Orchestrator describes the required reasoning characteristics instead of
-inventing labels or telemetry. The Cooperator retains final selection among
-available client settings.
+Advisory: choosing reasoning separately for preflight, implementation,
+diagnostic closeout, and independent audit is recommended practice with no
+detection surface; it is not a binding rule. Intentional context, token,
+time, or credit exhaustion is not a goal. If a client exposes no explicit
+setting, the Orchestrator describes the required reasoning characteristics
+instead of inventing labels or telemetry. The Cooperator retains final
+selection among available client settings.
 
 The Orchestrator selects the lowest sufficient evidence profile. AP uses this
 adaptive evidence ladder as a selection guide, not a mandatory sequence:
@@ -2547,6 +2599,7 @@ AP rejects:
   or evidence as task authority;
 - treating a Cooperator presentation profile, emoji, localized capsule, or
   downloadable filename as task authority;
+- adding a normative rule without naming its detection surface;
 - treating isolation as a virtue when the authorized environment is the
   canonical checkout or a declared development envelope;
 - treating a full or repository-wide suite as an automatic Worker tax;
