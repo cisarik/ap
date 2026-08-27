@@ -15,6 +15,7 @@ Canonical repository: `https://github.com/cisarik/ap`
 | Need | Read | Relationship |
 |---|---|---|
 | protocol meaning and convergence | [AP.md](AP.md) | sole live normative protocol and semantic owner |
+| per-role minimum reading before first exchange | [Per-Role Minimum-Reading Spine](AP.md#per-role-minimum-reading-spine) | owned in AP.md; floor, never a ceiling |
 | exact prompt/report fields, exchange coordinates, and standard trace grammar | [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md) | structural projection |
 | role decisions | [AP_ORCHESTRATOR.md](AP_ORCHESTRATOR.md), [AP_WORKER.md](AP_WORKER.md) | operational projections |
 | continuation after a pause | [Continuation Bootstrap](AP_ORCHESTRATOR.md#continuation-bootstrap) | operational entry point to the two-stage AP rule |

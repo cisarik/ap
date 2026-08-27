@@ -15,7 +15,9 @@ A brief intuition aid for Orchestrators who already know AP. It compresses the
 capability-profile, dispatch, and intuition-boundary rules into quick-rules and
 links every durable rule to its owner. When this file and [AP.md](AP.md)
 disagree, [AP.md](AP.md) wins. Consumers that never read this file lose
-nothing.
+nothing. Minimum reading for each role is owned by the
+[per-role minimum-reading spine](AP.md#per-role-minimum-reading-spine);
+this file is never part of that spine.
 
 ## 2. Roles and Capability Profiles in One Page
 

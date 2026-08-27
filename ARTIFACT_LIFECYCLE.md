@@ -154,6 +154,18 @@ non-authorizing evidence and blocks a completed ledger reconciliation, while no
 declaration preserves ordinary AP compatibility and claims nothing about
 observations outside durable storage.
 
+## Per-Whole Orchestrator Notes (`00_notes.md`)
+
+An AP-run logical whole may keep an Orchestrator-only notes file named exactly
+`00_notes.md` beside the whole's handout. It is an operational lifecycle
+artifact: consumer = Orchestrator, auditable by the Cooperator; retention =
+life of the whole's trace, then frozen historical evidence; cleanup owner =
+Orchestrator under Cooperator authority. The `00_notes.md` filename is a local
+AP-run convention, not a universal AP field, never a task-authority gate, and
+never a required universal artifact; its absence weakens no AP rule. Operational
+how belongs to
+[AP_ORCHESTRATOR.md](AP_ORCHESTRATOR.md#per-whole-orchestrator-notes-00_notesmd).
+
 ## AP Distribution Relationships
 
 | Artifact | Declared relationship and lifecycle |
@@ -169,6 +181,7 @@ observations outside durable storage.
 | `ap` and tests | executable enforcement |
 | managed `AGENTS.md` block and project rules | consumer projection |
 | optional declared consumer upgrade-ledger file | consumer-owned retained evidence; non-authorizing RF-09 storage projection |
+| `00_notes.md` (AP-run convention) | operational lifecycle artifact; Orchestrator-only author; Cooperator-auditable; retained for the life of the whole's trace, then frozen historical evidence; cleanup owner = Orchestrator under Cooperator authority. The `00_notes.md` filename is a local AP-run convention, not a universal AP field, never a task-authority gate, and never a required universal artifact; its absence weakens no AP rule |
 
 Earlier protocol generations remain in Git history. Static BOOT, NEXT,
 WORKERS, prompt archive, generated protocol variant, or restoration archive is

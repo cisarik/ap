@@ -17,8 +17,8 @@ Follow the linked AP rule family and structural contracts for exact behavior.
 | Logical Whole Identity | Stable lowercase kebab-case coordinate for one bounded objective until closure, cancellation, or material objective change; see [RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity). |
 | Worker Session Ordinal | Two-digit coordinate for one concrete Worker session inside one logical whole; it is not a session target or proof of independence. |
 | Worker Exchange Ordinal | Two-digit coordinate for one separately authorized prompt/outcome lifecycle inside a Worker session; current-session renewal increments it. |
-| Worker session target | Exact routing value `fresh-worker-session` or `current-worker-session`; it is not authority or proof of independence. |
-| Fresh Worker Session | New session that inherits no prior grant and re-establishes evidence; freshness alone is not independence. |
+| Worker session target | Exact routing value `fresh-worker-session` or `current-worker-session`; it is not authority or proof of independence; see [RF-05](AP.md#rf-05-freshcurrent-routing-and-independent-acceptance). |
+| Fresh Worker Session | New session that inherits no prior grant and re-establishes evidence; freshness versus independence is owned by [RF-05](AP.md#rf-05-freshcurrent-routing-and-independent-acceptance). |
 | Current Worker Session | Exact healthy session reused under a complete renewed grant and continuity anchor; evidence remains non-independent. |
 | Worker Session Profile | Bounded authority/evidence posture such as implementation, probe, correction, audit, or re-audit; not a role or phase. |
 | Continuity Anchor | Precise prior task/report/commit boundary identified by a current-session prompt. |
@@ -41,7 +41,7 @@ Follow the linked AP rule family and structural contracts for exact behavior.
 | Implementation Planning | Explicit Worker-owned repository-grounded technical planning; never execution authority. |
 | Native Planning Mode | Optional client state structurally recorded as `required` or `not-used`; not a phase or grant. |
 | Plan-to-Execution Gate | Terminal planning report expires planning authority; execution needs a separate complete `not-used` prompt. |
-| Planning Budget | One initial implementation-planning cycle and at most one qualifying targeted revision; repetition escalates. |
+| Planning Budget | One initial implementation-planning cycle and at most one qualifying targeted revision; see [Planning Budget and Expiry](AP.md#planning-budget-and-expiry). |
 | Phase | Adaptive work mode such as Discovery, Preflight, Implementation, Acceptance, Diagnostic Closeout, Independent Audit, or Restoration. |
 | Embedded / Separate Preflight | Checks inside every implementation / distinct read-only preparation used when mutation authority is premature. |
 | Worker-Executed Preflight | Read-only Worker collection of bounded current-state evidence. |

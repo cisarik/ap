@@ -221,9 +221,10 @@ Active mutation: none
 Closure actor: ORCHESTRATOR
 ```
 
-A Worker report always uses `Logical-whole closure: not-closed`; a Worker never
-emits the project closure signal. No implementation, acceptance, publication,
-deployment, or production-acceptance PASS implies closure.
+A Worker report always uses `Logical-whole closure: not-closed`. The Worker
+closure-signal prohibition is owned by
+[Closure Signal](AP.md#closure-signal). No implementation, acceptance,
+publication, deployment, or production-acceptance PASS implies closure.
 
 ### Activated Surface Annexes
 
@@ -303,7 +304,8 @@ task-specific prose — naming the declared route that could not be used, the
 exact alternate path, rationale, evidence class, bounded authority, and
 stopping condition — without any new field or record.
 
-Omitted permission is not implied.
+Omitted permission is not implied permission; see
+[§5 Task Authority](AP.md#5-task-authority).
 
 ## Repository Checkout Topology Contract
 
@@ -366,7 +368,8 @@ current repository evidence, and require a new terminal report.
 Prefer current-session targeting for approved implementation after a healthy
 repository-grounded plan, focused correction, bounded deployment or restart
 continuation, and narrow closure when retained understanding reduces error and
-independence is not required. Freshness alone never establishes independence.
+independence is not required. Freshness versus independence is owned by
+[RF-05](AP.md#rf-05-freshcurrent-routing-and-independent-acceptance).
 
 Fresh Independent Audit, Fresh Independent Re-Audit, and independent
 certification require `fresh-worker-session`. A prompt combining
@@ -653,7 +656,8 @@ An issued record contains one archival value rather than literal alternatives.
 The configured fields are absent when disposition is `not-used`. Filename and
 destination are delivery evidence, not task authority. The Worker does not
 archive the current pair. This record does not encode a natural language,
-emoji, or a particular trace implementation as required AP fields.
+emoji, or a particular trace implementation as required AP fields; see
+[§19](AP.md#19-anti-patterns).
 
 ### Trace-Local Filename Mapping Example
 
@@ -727,11 +731,12 @@ Post-plan implementation session: current-worker-session | fresh-worker-session 
 Maximum plan-only cycles: 1
 ```
 
-One initial cycle is followed by at most one explicitly authorized targeted
-revision using the [Planning Record](PROMPT_CONTRACTS.md#planning-record). A changed objective
-supersedes the plan and begins a new bounded logical whole. When the Worker
-remains healthy and independence is not required, use `allowed` with
-`current-worker-session`; execution still requires the complete new prompt.
+Apply [Planning Budget and Expiry](AP.md#planning-budget-and-expiry) for the
+one-cycle default, the single targeted-revision route, and changed-objective
+supersession; field spellings live in the [Planning Record](#planning-record).
+When the Worker remains healthy and independence is not required, use
+`allowed` with `current-worker-session`; execution still requires the complete
+new prompt.
 
 The required transition is:
 
@@ -753,10 +758,11 @@ Once the plan establishes a safe bounded closure path, the Orchestrator must
 authorize and execute it, reject it for a concrete reason, or identify exact
 missing evidence. “More analysis” is not a transition decision.
 
-A terminal planning report, cancellation, or supersession expires planning
-authority. No Plan UI approval, retained context, or automatic mode transition
-changes that result. A prohibited second automatic targeted revision returns
-the exact escalation disposition defined in the Planning Record.
+Planning-authority expiry and the prohibition on a second automatic targeted
+revision are owned by
+[Planning Budget and Expiry](AP.md#planning-budget-and-expiry). A prohibited
+second automatic targeted revision returns the exact escalation disposition
+defined in the Planning Record.
 
 A client-native planner artifact never substitutes for that terminal report.
 When the artifact is frozen and decision-complete but the otherwise healthy

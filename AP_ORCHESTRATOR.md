@@ -8,9 +8,10 @@ does not grant Worker authority or add universal requirements. Worker exchange
 identity and trace operations project
 [RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity).
 
-In a consuming project, read `.ap/AP.md`, this handbook, and the project-root
-`AGENTS.md`. Project rules supply local presentation and product policy without
-overriding universal AP.
+In a consuming project, read the ORCHESTRATOR row of the
+[per-role minimum-reading spine](AP.md#per-role-minimum-reading-spine)
+before the first exchange. Project rules supply local presentation and product
+policy without overriding universal AP.
 
 ## Continuation Bootstrap
 
@@ -80,7 +81,7 @@ for microapproval of deterministic steps inside an approved envelope. See
 | Decision | Orchestrator action | Stop or escalate when |
 |---|---|---|
 | Objective or product boundary | synthesize evidence and recommend one route; obtain the Cooperator decision | intent is materially ambiguous or changed |
-| Planning | use one initial implementation-planning cycle only when repository-grounded uncertainty remains | a second automatic revision is requested |
+| Planning | apply [Planning Budget and Expiry](AP.md#planning-budget-and-expiry) when repository-grounded uncertainty remains | a second automatic revision is requested |
 | Implementation | issue one complete prompt with exact baseline, allowlist, boundaries, and `Native planning mode: not-used` | any material gate is unknown or contradictory |
 | Acceptance | fix the candidate, owner map, allowlist, risk claims, and control matrix | review expands into unknown-unknown hunting |
 | Correction | authorize one smallest coherent correction for a concrete finding | the same assumption survives correction and recheck |
@@ -124,8 +125,8 @@ and the [finite convergence contract](AP.md#finite-convergence-contract).
 
 | Evidence event | Next legal transition |
 |---|---|
-| Initial planning report | accept, reject, authorize the one targeted revision, or name exact missing evidence |
-| Targeted revision report | implement, reject, or `NEEDS_ORCHESTRATOR_DECISION`; never issue a second automatic revision |
+| Initial planning report | accept, reject, authorize the one targeted revision, or name exact missing evidence ([Planning Budget and Expiry](AP.md#planning-budget-and-expiry)) |
+| Targeted revision report | implement, reject, or `NEEDS_ORCHESTRATOR_DECISION` ([Planning Budget and Expiry](AP.md#planning-budget-and-expiry)) |
 | Implementation PASS | reconcile candidate evidence; request required fresh acceptance; do not close |
 | Acceptance PASS | correct one finding, proceed to an authorized later surface, or evaluate closure prerequisites |
 | Concrete finding | one smallest coherent correction; no self-certification |
@@ -149,11 +150,11 @@ complete renewed authority grant. The prompt identifies the continuity anchor,
 states that prior authority expired, re-gates repository and environment state,
 labels evidence non-independent, and stops on conflict with current evidence.
 
-Use `fresh-worker-session` for independent acceptance/audit, compromised
-context, a material route-assumption change, an unrelated logical whole, or an
-explicit independence trigger. Freshness is necessary for those routes but does
-not itself prove independence; the verifier also must not have materially
-implemented the candidate. Internal delegation remains one accountable WORKER.
+Use `fresh-worker-session` for the fresh-routing triggers owned by
+[RF-05](AP.md#rf-05-freshcurrent-routing-and-independent-acceptance) and
+[Implementation Authority](AP.md#implementation-authority). Freshness is
+necessary for those routes but does not itself prove independence.
+Internal delegation remains one accountable WORKER.
 
 A missing or contradictory target authorizes neither route. Communicate the
 selected target clearly to the Cooperator using project-configured presentation;
@@ -228,13 +229,9 @@ bootstrap exceptions.
 
 If a healthy planning exchange froze a decision-complete client-native planner
 artifact but omitted AP's separate terminal report, do not call the exchange
-planning PASS. Issue the exact same healthy session a complete next exchange
-using the next exchange ordinal, `Native planning mode: not-used`, the frozen
-artifact as continuity anchor, and only report-rendering authority. Follow the
+planning PASS. Follow the owner repair in
+[Planning Budget and Expiry](AP.md#planning-budget-and-expiry) and the
 [structural repair shape](PROMPT_CONTRACTS.md#planner-artifact-report-completion-repair).
-The repair is prospective, changes neither the earlier exchange nor the plan,
-consumes no second planning cycle, and prohibits planning, implementation,
-mutation, acceptance, publication, and closure.
 
 Restore a fresh Orchestrator from governing immutable AP, current repository
 and external evidence, and accepted durable decisions before optional trace
@@ -252,20 +249,23 @@ planning only when repository reconnaissance or unresolved architecture,
 migration, security, rollback, or cross-layer impact affects safe authority.
 Task size alone is not a trigger.
 
-Default to one initial planning cycle. One targeted revision may be authorized
-only for new repository/external evidence, newly identified material risk, or a
-specifically rejected assumption; use the exact structural record. A changed
-objective supersedes the plan and starts a new bounded logical whole.
+Apply [Planning Budget and Expiry](AP.md#planning-budget-and-expiry) for the
+one-cycle default; the single targeted revision (new evidence, newly identified
+material risk, or one specifically rejected assumption); and changed-objective
+supersession; use the exact structural record.
 
-The terminal planning report expires planning authority. After review, issue a
+After the terminal planning report expires planning authority
+([Plan-to-Execution Gate](AP.md#plan-to-execution-gate)), issue a
 separate complete implementation prompt with explicit implementation authority,
 `Native planning mode: not-used`, exact baseline, allowlist, and boundaries.
 Plan UI approval, an automatic mode transition, a role label, or retained
 context never completes this gate.
 
 A frozen planner artifact without that separate report is an incomplete
-exchange. Use only the bounded report-completion route above; `Native planning
-mode: not-used` routes the client and never supplies implementation authority.
+exchange. Use only the owner repair in
+[Planning Budget and Expiry](AP.md#planning-budget-and-expiry);
+`Native planning mode: not-used` routes the client and never supplies
+implementation authority.
 
 ## Model And Surface Routing
 
@@ -400,7 +400,8 @@ when off, lowest-sufficient reasoning, exact downloadable filename,
 activated-trace destination, and archival wait or allow. Presentation marks are
 not task authority.
 
-Omitted permission is not permission. Use the advisory
+Omitted permission is not implied permission; see
+[§5 Task Authority](AP.md#5-task-authority). Use the advisory
 [pattern library](PROMPT_ENGINEERING_PATTERNS.md) selectively; never concatenate
 patterns mechanically or treat them as hidden requirements. The intended Worker
 session must understand its complete authority without chat-only context, while
@@ -453,6 +454,28 @@ Do not guess a filename or scan the tree. Treat missing/malformed declared
 storage and stale entries exactly as the contract specifies; no declaration
 preserves existing behavior.
 
+## Per-Whole Orchestrator Notes (`00_notes.md`)
+
+When an AP-run logical whole has a trace directory beside its handout, the
+Orchestrator may keep a notes file named exactly `00_notes.md` in that
+directory. The `00_notes.md` filename is a local AP-run convention, not a
+universal AP field, never a task-authority gate, and never a required
+universal artifact; its absence weakens no AP rule. Local grammar is never
+universal AP meaning
+([RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity));
+this convention declares its own relationship and lifecycle
+([RF-14](AP.md#rf-14-artifact-ownership-and-lifecycle)).
+
+Create the file beside the whole's handout at open. Only the Orchestrator
+writes it; Workers never write it. Entries are append-only and dated.
+Superseded facts move to Git history rather than being silently rewritten.
+The final entry is at closure; the file then freezes as evidence. Notes are
+evidence, never authority.
+
+Typical content: restoration verification, per-exchange Worker-claim review
+results, Cooperator decisions verbatim, freezes and deviations, failure
+classifications, and artifact pointers (paths and SHAs). Public-safe default.
+
 ## Validation, Results, and Closure
 
 Compare each report with the prompt, exact candidate, changed paths, tests,
@@ -482,7 +505,8 @@ Stop prompt issuance or transition when identity, baseline, authority,
 capability, independence, evidence, security, recovery, or active-mutation state
 is unresolved; when a requested surface lacks activation/authority; when an
 applicable consumer-declared execution route cannot be resolved or contradicts
-the route about to be issued; or when a second automatic planning revision or
+the route about to be issued; or when a second automatic planning revision
+([Planning Budget and Expiry](AP.md#planning-budget-and-expiry)) or
 correction recursion is proposed. Name
 the causal blocker and smallest decision or evidence needed. Never substitute
 “more analysis” for a decision-ready transition.

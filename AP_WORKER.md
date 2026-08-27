@@ -8,8 +8,10 @@ does not grant task authority. Worker exchange identity and trace operations
 project
 [RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity).
 
-In a consuming project, read `.ap/AP.md`, this handbook, the project-root
-`AGENTS.md`, and the complete current Orchestrator prompt.
+In a consuming project, read the WORKER row of the
+[per-role minimum-reading spine](AP.md#per-role-minimum-reading-spine) before
+the first exchange; the current complete Orchestrator prompt adds to that
+floor.
 
 ## Role and Authority Boundary
 
@@ -39,13 +41,15 @@ The prompt must contain exactly one `Worker session target` value and one
 Missing, duplicated, mismatched, or contradictory routing stops work. A terminal
 planning report expires planning authority. Plan UI approval, `Yes`, `Build`,
 `Continue`, automatic mode transition, or an accepted plan never authorizes
-execution. One initial plan may receive only the explicitly authorized targeted
-revision defined by AP; a changed objective starts a new whole, and a second
-automatic revision requires `NEEDS_ORCHESTRATOR_DECISION`.
+execution. Apply [Planning Budget and Expiry](AP.md#planning-budget-and-expiry)
+for the one-cycle default; the single targeted revision (new evidence, newly
+identified material risk, or one specifically rejected assumption); and
+changed-objective supersession.
 
 Current-session continuation is legal only for the healthy same logical whole,
 unchanged assumptions, useful retained context, no independence requirement,
-and complete renewed authority. Freshness alone does not prove independence. A
+and complete renewed authority. Freshness versus independence is owned by
+[RF-05](AP.md#rf-05-freshcurrent-routing-and-independent-acceptance). A
 session delivered by Orchestrator dispatch is an ordinary Worker session: it
 receives one complete authoritative prompt and follows the same routing rules
 as any other session.
@@ -59,7 +63,8 @@ missing, duplicate, malformed, skipped, regressed, reused, or contradictory
 coordinates stop for correction. A current-session renewal preserves the
 logical-whole and session coordinates and advances exchange; a genuinely fresh
 session uses the next session ordinal and exchange `01`. A new ordinal alone
-never proves independence.
+never proves independence
+([RF-05](AP.md#rf-05-freshcurrent-routing-and-independent-acceptance)).
 
 Echo the exact three prompt coordinates once in the terminal report. Treat a
 trace, archived prompt, prior report, filename, ordinal, continuity memory, or
@@ -274,8 +279,9 @@ their required evidence.
 
 Implementation PASS means a bounded candidate was produced and validated; it
 is non-independent. Acceptance, publication, deployment, production acceptance,
-and ORCHESTRATOR closure are separate. A Worker always records logical-whole
-closure as not closed and never emits the project closure signal.
+and ORCHESTRATOR closure are separate. Worker closure-signal prohibition is
+owned by [Closure Signal](AP.md#closure-signal): a Worker records
+logical-whole closure as not closed and never emits the project signal.
 
 A terminal `PASS`, `PARTIAL`, or `BLOCKED` report, cancellation, or supersession
 expires the current authority. Stop autonomous work after the terminal report.
@@ -291,7 +297,10 @@ out-of-scope change; invalid independence; activated-profile conflict; a prompt
 that silently offers an equivalent-looking ambient parallel route against an
 applicable declared execution route without explicit bounded deviation
 authority; required non-allowlisted work; a second automatic
-revision/correction loop; completed
+revision/correction loop
+([Planning Budget and Expiry](AP.md#planning-budget-and-expiry);
+[Acceptance, Correction, and Escalation](AP.md#acceptance-correction-and-escalation));
+completed
 acceptance criteria and authorized verification; or terminal-report expiry.
 
 Report the exact blocker, preserved state, smallest safe next decision, and no

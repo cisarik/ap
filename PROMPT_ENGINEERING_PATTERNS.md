@@ -377,7 +377,9 @@ Post-plan implementation session: <current-worker-session|fresh-worker-session|n
 Maximum plan-only cycles: 1.
 Planning cycle: <initial|targeted-revision>.
 Targeted revision record: <none|prior report, permitted basis, changed boundary,
-preserved decisions>; no second automatic revision.
+preserved decisions>.
+The no-second-automatic-revision rule is owned by
+[Planning Budget and Expiry](AP.md#planning-budget-and-expiry).
 A UI approval or accepted plan grants no implementation authority.
 Execution requires a separate complete Orchestrator prompt with not-used.
 If a frozen planner artifact lacks only the terminal report, apply the exact

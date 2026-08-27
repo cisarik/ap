@@ -97,14 +97,14 @@ and [RF-02](AP.md#rf-02-orchestrator-decision-reconciliation-and-closure-authori
 
 Use implementation planning for unresolved repository-grounded architecture,
 migration, security, rollback, or cross-layer choices—not merely task size.
-There is one initial planning cycle and at most one explicitly authorized
-targeted revision for new evidence, a new material risk, or one rejected
-assumption. A changed objective starts a new logical whole.
+[Planning Budget and Expiry](AP.md#planning-budget-and-expiry) owns the
+one-cycle default; the single targeted revision (new evidence, a new material
+risk, or one rejected assumption); and changed-objective supersession.
 
-The terminal planning report expires planning authority. Plan UI approval or an
-automatic mode transition grants nothing. Implementation requires a separate
-complete Orchestrator prompt with explicit authority, `Native planning mode:
-not-used`, exact baseline, allowlist, and boundaries.
+[Implementation Authority](AP.md#implementation-authority) and the
+[Plan-to-Execution Gate](AP.md#plan-to-execution-gate) own expiry and the
+separate complete `not-used` implementation prompt; Plan UI approval grants
+nothing.
 
 ## When may a current Worker continue, and when must work be fresh?
 
@@ -112,8 +112,10 @@ A healthy current Worker may continue the same logical whole only under a
 complete renewed prompt, unchanged assumptions, useful retained context, and no
 independence requirement. A fresh session is required for independent
 acceptance/audit, compromised context, material route-assumption change, or an
-unrelated whole. Freshness alone is not independence: the verifier must not
-have materially implemented the candidate.
+unrelated whole.
+[RF-05](AP.md#rf-05-freshcurrent-routing-and-independent-acceptance) owns
+freshness versus independence, including that the verifier must not have
+materially implemented the candidate.
 
 After any terminal `PASS`, `PARTIAL`, or `BLOCKED` report, cancellation, or
 supersession, authority expires. An open chat and retained context grant no
