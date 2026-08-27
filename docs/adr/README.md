@@ -32,6 +32,7 @@ Programming.
 | [0018](0018-consumer-declared-execution-route-binding.md) | Consumer-declared execution route and capability-gate binding | Accepted | Extends RF-06/RF-16 so an applicable consumer-declared route is resolved before prompt issuance, made canonical, protected from silent ambient parallel routes, and deviated from only through explicit bounded authority |
 | [0019](0019-subagent-delivery-of-worker-sessions-and-orchestrator-capability-profiles.md) | Subagent delivery of Worker sessions and Orchestrator capability profiles | Accepted | Historical rationale for Agent/Read-Only capability-profile labels of one ORCHESTRATOR role, dispatch as one complete Worker prompt into one concrete session, and the parent-context independent-audit disqualifier |
 | [0020](0020-intuitive-mode-orchestrator-boundary-and-intuition-projection.md) | Intuitive mode, the Orchestrator intuition boundary, and the intuition projection | Accepted | Historical rationale for the RF-02 Orchestrator-direct/Worker-required boundary, dense grants by citation, the brief optional `INTUITION.md` projection, and opt-in signaling |
+| [0021](0021-followable-spine-and-restatement-conversion.md) | Followable spine, rule detectability, and restatement-to-pointer conversion | Accepted | Historical rationale for the per-role minimum-reading spine, three detectability classes and detection-surface requirement, restatement-to-pointer conversion, and the AP-run `00_notes.md` convention; `AP.md` remains the sole semantic owner |
 
 ADR-0009 permits only an explicit bounded parallel exception. It does not
 supersede fresh sequential independent audit or the remaining decisions in
@@ -92,6 +93,14 @@ existing RF-02, RF-05, and RF-06 semantics and add brief explanatory and
 advisory projections with no rule family, field, record, schema, executable
 surface, or managed-block change. Consumer adoption and logical-whole closure
 remain separate.
+
+ADR-0021 records an accepted decision. It adds a per-role minimum-reading
+spine and three rule-detectability classes inside existing Semantic Authority
+text, converts live restatements of owned rules to pointers, and formalizes
+the AP-run `00_notes.md` convention as a non-universal projection. It adds no
+rule family, field, record, schema, executable surface, managed-block change,
+or mechanical validator. Consumer adoption and logical-whole closure remain
+separate.
 
 ## Lifecycle Rule
 

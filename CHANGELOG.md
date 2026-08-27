@@ -7,6 +7,22 @@ remains the sole live normative protocol.
 
 ## Unreleased
 
+- Added a per-role minimum-reading spine owned in `AP.md`; defined three
+  rule-detectability classes (artifact-detectable, behavioral-normative,
+  undetectable-and-unenforced) with a detection-surface requirement for newly
+  added normative rules; converted cross-surface restatements of owned rules
+  to pointers with one orientation sentence (planning budget, freshness versus
+  independence, closure signal, omitted permission, and further inventoried
+  instances); formalized the AP-run per-whole Orchestrator notes convention
+  (`00_notes.md` — local grammar, never a universal field) in the Orchestrator
+  handbook and the artifact lifecycle projection; and defined
+  adopted-and-testable criteria for consumer pin adoption. `AP.md` remains the
+  sole semantic owner. No new RF family, field, record, executable `ap`,
+  schema, managed-block, Meta, or FrameNest mutation, and no mechanical
+  validation. Recorded by
+  [ADR-0021](docs/adr/0021-followable-spine-and-restatement-conversion.md).
+  Existing consumer pins retain their original meaning; consumer adoption and
+  logical-whole closure remain separate.
 - Clarified existing RF-02, RF-05, and RF-06 semantics and their projections
   so that an Orchestrator capability profile (Agent or Read-Only) remains a
   descriptive label of one ORCHESTRATOR role rather than a fourth persistent
