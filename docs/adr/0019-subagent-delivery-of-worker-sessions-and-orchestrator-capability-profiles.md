@@ -1,6 +1,6 @@
 # ADR-0019: Subagent Delivery of Worker Sessions and Orchestrator Capability Profiles
 
-Status: Implementation candidate
+Status: Accepted
 
 ## Date
 

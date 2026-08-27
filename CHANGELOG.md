@@ -27,9 +27,9 @@ remains the sole live normative protocol.
   [ADR-0019](docs/adr/0019-subagent-delivery-of-worker-sessions-and-orchestrator-capability-profiles.md)
   and
   [ADR-0020](docs/adr/0020-intuitive-mode-orchestrator-boundary-and-intuition-projection.md)
-  as implementation-candidate historical rationale. Existing consumer pins
-  retain their original meaning; publication, independent acceptance, consumer
-  adoption, and logical-whole closure remain separate.
+  as accepted historical rationale. Existing consumer pins retain their
+  original meaning; consumer adoption and logical-whole closure remain
+  separate.
 - Clarified existing RF-06 and RF-16 semantics and their projections so that,
   when a consuming project has an applicable usable declared execution
   operation or project-owned capability gate, the Orchestrator resolves it

@@ -1,6 +1,6 @@
 # ADR-0020: Intuitive Mode, the Orchestrator Intuition Boundary, and the Intuition Projection
 
-Status: Implementation candidate
+Status: Accepted
 
 ## Date
 
