@@ -108,6 +108,27 @@ decision. When project rules activate a Cooperator presentation profile, the
 Orchestrator must emit that project-owned package after the copyable,
 structurally English Worker prompt. Presentation marks are not task authority.
 
+**Orchestrator-direct versus Worker-required.** Orchestrator-direct action is
+lawful only when all of the following hold: it is inside an accepted logical
+whole's routing duty; it is deterministic or reversible; it does not mutate a
+semantic owner or another Worker-required surface; it makes no independence
+claim; it does not substitute for a Cooperator material decision; and it stays
+inside the accepted plan. Orchestrator-direct work may include synthesizing and
+readiness-reviewing Worker grants, read-only inspection and preflight, RF-19
+trace staging and archival only after the report exists, creating or removing a
+dispatch worktree when the accepted plan or task authority names that topology,
+emitting an activated project-owned Cooperator presentation after the copyable
+Worker prompt, and restoring or cleaning its own routing state. Direct
+acceptance at evidence-ladder rung 1 remains available only for E0 or E1 claims
+that do not require independence; it never waives independent acceptance where
+the selected evidence route requires a fresh Worker. Authoring protocol
+content, producing implementation PASS on a material candidate, any acceptance
+requiring independence, publication, deployment, production mutation, consumer
+pin updates, host or credential changes, and material protocol design not
+already locked by an accepted decision remain Worker-required through a
+complete authoritative prompt. Intuition never bypasses the
+[Plan-to-Execution Gate](#plan-to-execution-gate).
+
 #### RF-03 — Worker Bounded Authority and Report Expiry
 
 A Worker acts only under the current complete prompt, reports one bounded
@@ -132,7 +153,9 @@ Current-session continuation is a complete renewed grant for the healthy same
 logical whole when assumptions are unchanged and independence is unnecessary.
 Fresh routing is required by the triggers in
 [Implementation Authority](#implementation-authority); freshness alone does not
-prove independence.
+prove independence. A session spawned inside the parent Orchestrator's
+conversation, or inheriting its conversation history or reasoning, is not a
+fresh session and cannot provide independent acceptance.
 
 #### RF-06 — Capability, Reasoning, Permission, Containment, and Authority
 
@@ -143,6 +166,10 @@ dimension expands another. Ambient session state — an open IDE or editor,
 integrated terminal, login shell, inherited environment variable, retained
 socket, or previous Worker session — is convenience state. It is not authority,
 durable configuration, or a capability guaranteed in another process boundary.
+An Orchestrator capability-profile label, such as Agent or Read-Only, describes
+functionally available routing and delivery capabilities under the selected
+route; like every capability dimension, it never grants authority and never
+creates an additional persistent role.
 
 #### RF-07 — Evidence Tiers and Risk-Sensitive Acceptance
 
@@ -579,7 +606,9 @@ providers, IDEs, CLIs, hosted services, or concrete sessions.
 
 These three roles are the only persistent AP roles. Worker session profiles,
 capability profiles, phases, execution clients, and internal delegation
-arrangements do not create additional persistent roles.
+arrangements do not create additional persistent roles. Orchestrator
+capability profiles such as Agent or Read-Only are descriptive labels for what
+an Orchestrator's client and route permit, not additional persistent roles.
 
 ## 3. Instances, Sessions, and Worker Session Profiles
 
@@ -631,6 +660,27 @@ and is not an AP phase. Common profiles include Fresh Implementation Worker,
 Worker-Executed Preflight, Fresh Evidence Probe, Diagnostic Worker, Bounded
 Correction Worker, Fresh Independent Audit, and Fresh Independent Re-Audit.
 Discovery remains an AP phase, not a Worker role or profile.
+
+An **Orchestrator capability profile** describes what the current Orchestrator
+client can functionally do for routing and delivery. An **Agent Orchestrator**
+is an Orchestrator instance whose client exposes session-dispatch or
+tool-routing capabilities and whose Cooperator-selected route — or an accepted
+plan for that logical whole — authorizes using them. A **Read-Only
+Orchestrator** lacks those capabilities or is not authorized to use them; it
+remains fully valid, and ordinary copy-paste prompt delivery stays lawful.
+Both are the ORCHESTRATOR role; the names are descriptive labels, not
+additional persistent roles, and a capability profile never grants authority.
+
+When dispatch is authorized and available, it delivers exactly one complete
+authoritative Worker prompt — coordinates, session target, profile,
+boundaries, and report contract — into one concrete Worker session. A
+tool-task summary is not a prompt. The receiving session is an ordinary AP
+Worker session and the dispatcher remains the Orchestrator. A session spawned
+inside the dispatching Orchestrator's own conversation, or inheriting that
+conversation or its reasoning, is not a fresh session and cannot provide
+independent acceptance. When dispatch is absent, unauthorized, or cannot
+deliver the complete prompt, ordinary copy-paste delivery of the same complete
+prompt remains lawful.
 
 ### Worker Session Target
 
@@ -2526,6 +2576,12 @@ AP rejects:
 - requiring Cooperator approval for every deterministic step already inside a
   bounded authority envelope;
 - representing internal delegation as fresh independent audit;
+- dispatching opaque tool-task swarms as a substitute for one complete
+  authoritative Worker prompt and one accountable Worker session;
+- treating a parent-context subagent, or inherited Orchestrator conversation or
+  reasoning, as a fresh independent audit, or treating Orchestrator intuition,
+  signaling marks, or an explanatory projection such as `INTUITION.md` as
+  implementation authority or a second semantic owner;
 - mechanically concatenating every advisory prompt pattern;
 - demanding hidden chain-of-thought;
 - using model rotation to bypass a refusal or failed evidence;
@@ -2585,6 +2641,7 @@ AP rejects:
 - [INFOSEC.md](INFOSEC.md)
 - [ARTIFACT_LIFECYCLE.md](ARTIFACT_LIFECYCLE.md)
 - [GLOSSARY.md](GLOSSARY.md)
+- [INTUITION.md](INTUITION.md)
 - [INTEGRATION.md](INTEGRATION.md)
 - [UPDATING.md](UPDATING.md)
 - [CHANGELOG.md](CHANGELOG.md)

@@ -28,6 +28,9 @@ Follow the linked AP rule family and structural contracts for exact behavior.
 | Human-Governed Collaboration | Cooperator material decisions plus bounded deterministic execution without per-step microapproval. |
 | Cooperator Routing Sovereignty | Orchestrator recommends; Cooperator selects; a Worker does not reopen the selected route. |
 | Selected Route | Cooperator-chosen session/capability/reasoning/native-mode route, distinct from recommendation and observation and granting no authority. |
+| Agent Orchestrator | Descriptive capability-profile label for an Orchestrator whose client exposes session-dispatch capabilities and whose Cooperator-selected route or accepted plan authorizes them; still the ORCHESTRATOR role; see [RF-06](AP.md#rf-06-capability-reasoning-permission-containment-and-authority). |
+| Read-Only Orchestrator | Descriptive capability-profile label for an Orchestrator lacking dispatch capabilities or not authorized to use them; fully valid; copy-paste prompt delivery remains lawful. |
+| Subagent dispatch | Orchestrator delivery of one complete authoritative Worker prompt into one concrete session; the receiving session is an ordinary Worker; a parent-context spawn is not a fresh session and cannot provide independent acceptance; see [RF-05](AP.md#rf-05-freshcurrent-routing-and-independent-acceptance). |
 | Material Phase Gate | Routing reconsideration caused by a material objective, authority, independence, security, capability, external, acceptance, or recovery change—not an ordinary substep. |
 
 ## Planning, Execution, and Evidence

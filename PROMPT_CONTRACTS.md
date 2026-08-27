@@ -849,6 +849,13 @@ A routing decision records the material rows only:
 | Unavailable capabilities | what cannot be produced and the consequence |
 | Fallback or escalation decision | route change, escalation, or none, with reason |
 
+The `Sub-agents or internal delegation` row records **Worker-initiated**
+delegation inside one Worker run. Orchestrator dispatch of a complete Worker
+prompt into a concrete session is not Worker-initiated delegation; it is
+recorded through the existing `Worker session target`, exchange coordinates,
+Worker session profile, and the Cooperator-selected route. No new field or
+record is introduced.
+
 The Cooperator announcement states intended or available client, surface,
 model, quota, cost, and material environment constraints:
 
@@ -871,6 +878,10 @@ Worker topology: <single-active | parallel-exception reference>
 Required tools: <material requirements>
 Quota/cost routing note: <constraint acknowledged; evidence unchanged>
 ```
+
+The `Sub-agents/internal delegation` line records Worker-initiated delegation
+only; Orchestrator dispatch remains recorded through existing session-target,
+coordinate, profile, and selected-route fields.
 
 Recommended reasoning is the lowest sufficient profile from the AP table.
 Medium is the ordinary default. High needs a named risk. Extra High is
@@ -948,7 +959,11 @@ Routing invariants:
   evidence matters; enhanced or maximum mode remains requested until observed;
 - sub-agents, internal delegation, Explore-style tasks, and parallel topology
   are not-used unless explicitly authorized; internal delegation remains one
-  accountable WORKER and never establishes independent audit; and
+  accountable WORKER and never establishes independent audit; Worker-initiated
+  delegation is the only subject of the delegation fields, while Orchestrator
+  dispatch delivers one complete Worker prompt into one concrete session and
+  is recorded through existing session-target, coordinate, profile, and
+  selected-route fields; and
 - a provider refusal is narrowed to a safe authorized subset or reported,
   never bypassed by rewording, tool changes, or model switching; a model
   switch after a refusal is permitted only for a genuinely different safe

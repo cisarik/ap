@@ -164,6 +164,7 @@ observations outside durable storage.
 | `PROMPT_ENGINEERING_PATTERNS.md` | durable first-class universal advisory projection |
 | `INFOSEC.md` | durable activated advisory security profile |
 | `README.md`, `FAQ.md`, `GLOSSARY.md` | durable explanatory projections |
+| `INTUITION.md` | durable explanatory projection with advisory quick-rules; `AP.md` prevails; optional and never a semantic owner |
 | ADR bodies and `CHANGELOG.md` | historical rationale and delivery record |
 | `ap` and tests | executable enforcement |
 | managed `AGENTS.md` block and project rules | consumer projection |

@@ -24,6 +24,7 @@ Canonical repository: `https://github.com/cisarik/ap`
 | activated defensive security | [INFOSEC.md](INFOSEC.md) | advisory profile; all procedures apply when activated |
 | artifact and activated external-trace handling | [ARTIFACT_LIFECYCLE.md](ARTIFACT_LIFECYCLE.md) | operational lifecycle projection |
 | newcomer concepts | [FAQ.md](FAQ.md), [GLOSSARY.md](GLOSSARY.md) | explanatory projections |
+| optional intuition quick-rules | [INTUITION.md](INTUITION.md) | optional brief explanatory projection; never required; `AP.md` prevails |
 | adoption and updates | [INTEGRATION.md](INTEGRATION.md), [UPDATING.md](UPDATING.md) | operational guides |
 | rationale and delivery | [ADRs](docs/adr/), [CHANGELOG.md](CHANGELOG.md) | historical records |
 | enforcement | [ap](ap) | executable projection |

@@ -7,6 +7,29 @@ remains the sole live normative protocol.
 
 ## Unreleased
 
+- Clarified existing RF-02, RF-05, and RF-06 semantics and their projections
+  so that an Orchestrator capability profile (Agent or Read-Only) remains a
+  descriptive label of one ORCHESTRATOR role rather than a fourth persistent
+  role, dispatch delivers one complete authoritative Worker prompt into one
+  concrete ordinary Worker session under whole-or-route authorization, a
+  parent-context or inherited-reasoning session is not a fresh session and
+  cannot provide independent acceptance, and Orchestrator-direct action stays
+  inside a bounded intuition boundary that never replaces Worker authority or
+  required independent acceptance. Added the brief optional `INTUITION.md`
+  explanatory projection with advisory quick-rules, a `README.md` reading
+  pointer, an `ARTIFACT_LIFECYCLE.md` distribution row, three `GLOSSARY.md`
+  definitions, an operational `AP_ORCHESTRATOR.md` section with one
+  decision-table row, Worker-side stop-and-report sentences, clarifying
+  sentences at the existing delegation routing fields, and advisory pattern
+  P19. `AP.md` remains the sole semantic owner. No new rule family, field,
+  record, executable `ap` change, schema, managed-block, Meta, or FrameNest
+  mutation, and no mechanical prompt or independence validation. Recorded by
+  [ADR-0019](docs/adr/0019-subagent-delivery-of-worker-sessions-and-orchestrator-capability-profiles.md)
+  and
+  [ADR-0020](docs/adr/0020-intuitive-mode-orchestrator-boundary-and-intuition-projection.md)
+  as implementation-candidate historical rationale. Existing consumer pins
+  retain their original meaning; publication, independent acceptance, consumer
+  adoption, and logical-whole closure remain separate.
 - Clarified existing RF-06 and RF-16 semantics and their projections so that,
   when a consuming project has an applicable usable declared execution
   operation or project-owned capability gate, the Orchestrator resolves it

@@ -85,6 +85,7 @@ for microapproval of deterministic steps inside an approved envelope. See
 | Acceptance | fix the candidate, owner map, allowlist, risk claims, and control matrix | review expands into unknown-unknown hunting |
 | Correction | authorize one smallest coherent correction for a concrete finding | the same assumption survives correction and recheck |
 | Publication/deployment/production | activate only the applicable surface annex and verify exact artifact continuity | authority or direct evidence is absent |
+| Dispatch and direct action | dispatch only when the selected route or accepted plan authorizes it; deliver one complete Worker prompt into one concrete session; otherwise copy-paste | parent-context spawn claimed as independent; intuition used as implementation authority |
 | Closure | reconcile required results, Cooperator decisions, risk, ledger, and active mutation | any required condition remains open |
 
 Phase names never grant authority. Use only the phases that the selected risk
@@ -157,6 +158,38 @@ implemented the candidate. Internal delegation remains one accountable WORKER.
 A missing or contradictory target authorizes neither route. Communicate the
 selected target clearly to the Cooperator using project-configured presentation;
 universal AP does not prescribe localized labels, clients, models, or vendors.
+
+## Capability Profiles, Dispatch, and Direct Action
+
+Semantics:
+[RF-02](AP.md#rf-02-orchestrator-decision-reconciliation-and-closure-authority),
+[RF-05](AP.md#rf-05-freshcurrent-routing-and-independent-acceptance),
+[RF-06](AP.md#rf-06-capability-reasoning-permission-containment-and-authority),
+and [AP §3](AP.md#worker-session-target).
+
+An **Agent Orchestrator** is an Orchestrator whose client exposes
+session-dispatch capabilities and whose Cooperator-selected route, or accepted
+plan for the logical whole, authorizes them; a **Read-Only Orchestrator**
+lacks those capabilities or is not authorized to use them. Both are the
+ORCHESTRATOR role; the labels never grant authority, and copy-paste delivery
+remains lawful without them.
+
+When dispatch is authorized, it delivers **one complete authoritative Worker
+prompt** into **one concrete session**. The receiving session is an ordinary
+Worker session with its own target, coordinates, profile, and report contract;
+a tool-task summary is not a prompt. Authorization is whole-or-route level,
+never per-spawn microapproval, and the default stays not-used. Parallel
+dispatch stays under single-active and the bounded parallel exception, and an
+audit is never dispatched in parallel with implementation. If dispatch is
+absent, unauthorized, or cannot deliver the complete prompt, ordinary
+copy-paste delivery remains lawful.
+
+A session spawned inside your own conversation, or inheriting it or its
+reasoning, is not a fresh session and cannot provide independent acceptance.
+Direct action obeys the RF-02 intuition boundary: deterministic or reversible,
+inside the accepted plan, no semantic-owner mutation, no independence claim,
+and no substituted Cooperator decision. Mutation, protocol authoring, and
+independence-required acceptance remain Worker-required.
 
 ## Worker Exchange Coordinates and Optional Trace
 

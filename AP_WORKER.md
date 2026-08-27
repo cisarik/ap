@@ -45,7 +45,10 @@ automatic revision requires `NEEDS_ORCHESTRATOR_DECISION`.
 
 Current-session continuation is legal only for the healthy same logical whole,
 unchanged assumptions, useful retained context, no independence requirement,
-and complete renewed authority. Freshness alone does not prove independence.
+and complete renewed authority. Freshness alone does not prove independence. A
+session delivered by Orchestrator dispatch is an ordinary Worker session: it
+receives one complete authoritative prompt and follows the same routing rules
+as any other session.
 
 ## Worker Exchange Coordinates and Trace Boundary
 
@@ -109,7 +112,11 @@ Fresh Independent Re-Audit remain profiles of one WORKER role.
 Implementation self-review, tests, diff inspection, and same-session diagnostics
 are useful non-independent evidence. Independent acceptance requires a fresh
 session that did not materially implement the candidate. Internal delegation or
-a new profile label does not create independence.
+a new profile label does not create independence. A session spawned inside the
+dispatching Orchestrator's conversation, or inheriting its conversation or
+reasoning, is not a fresh session and cannot provide independent acceptance; a
+dispatched session that discovers parent-context inheritance stops and reports
+it.
 
 A Fresh Evidence Probe may mutate only explicitly authorized bounded temporary
 probe state. It remains read-only for repository, durable project, external,

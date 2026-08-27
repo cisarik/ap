@@ -30,6 +30,8 @@ Programming.
 | [0016](0016-universal-continuation-and-upgrade-ledger-storage.md) | Universal continuation and upgrade-ledger storage | Accepted | Adds the two-stage continuation bootstrap, optional consumer-owned RF-09 storage projection, and bounded planner-report completion repair; AP.md remains the sole live semantic owner |
 | [0017](0017-cooperator-ergonomics-cost-proportional-execution.md) | Cooperator ergonomics and cost-proportional execution | Accepted | Extends existing RF families with compact Worker grants, activatable ladder/loop/envelope/delivery records, and project-owned Cooperator presentation; AP.md remains the sole live semantic owner |
 | [0018](0018-consumer-declared-execution-route-binding.md) | Consumer-declared execution route and capability-gate binding | Accepted | Extends RF-06/RF-16 so an applicable consumer-declared route is resolved before prompt issuance, made canonical, protected from silent ambient parallel routes, and deviated from only through explicit bounded authority |
+| [0019](0019-subagent-delivery-of-worker-sessions-and-orchestrator-capability-profiles.md) | Subagent delivery of Worker sessions and Orchestrator capability profiles | Implementation candidate | Historical rationale for Agent/Read-Only capability-profile labels of one ORCHESTRATOR role, dispatch as one complete Worker prompt into one concrete session, and the parent-context independent-audit disqualifier; publication and independent acceptance remain separate |
+| [0020](0020-intuitive-mode-orchestrator-boundary-and-intuition-projection.md) | Intuitive mode, the Orchestrator intuition boundary, and the intuition projection | Implementation candidate | Historical rationale for the RF-02 Orchestrator-direct/Worker-required boundary, dense grants by citation, the brief optional `INTUITION.md` projection, and opt-in signaling; publication and independent acceptance remain separate |
 
 ADR-0009 permits only an explicit bounded parallel exception. It does not
 supersede fresh sequential independent audit or the remaining decisions in
@@ -84,6 +86,13 @@ deviated from only through explicit bounded task-specific authority. It adds no
 rule family, record, field, runtime, schema, managed-block migration,
 validator, or new semantic owner. Publication, consumer
 adoption, and logical-whole closure remain separate.
+
+ADR-0019 and ADR-0020 are recorded as implementation candidates, not public
+acceptances. They clarify existing RF-02, RF-05, and RF-06 semantics and add
+brief explanatory and advisory projections with no rule family, field, record,
+schema, executable surface, or managed-block change. Publication and
+independent acceptance of their shared candidate remain separate, as do
+consumer adoption and logical-whole closure.
 
 ## Lifecycle Rule
 

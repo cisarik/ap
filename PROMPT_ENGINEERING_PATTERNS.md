@@ -118,6 +118,7 @@ Reject these constructions:
 | P16 | Untrusted-Content and Instruction-Conflict Boundary | analyzed external or lower-trust content |
 | P17 | Sensitive-Context Minimization | private, secret, or production evidence |
 | P18 | Evaluation-Driven Prompt Evolution | reusable pattern/contract change |
+| P19 | Dense Grant by Citation | dense grant for an experienced session or whole |
 
 ## 7. Outcome And Lifecycle Patterns
 
@@ -549,6 +550,52 @@ authority and evidence rule comes from [AP.md](AP.md) and ADR-0009. The
 model-switch, silent-fallback, and quota rules are owned by
 [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md#worker-surface-and-model-routing-contract)
 and the Provider-Neutral Model and Surface Routing anchor in [AP.md](AP.md).
+
+### P19 — Dense Grant by Citation
+
+**Applies to:** experienced-session grants and compact prompt construction |
+**AP anchors:** AP §3, §17, RF-02 | **Related patterns:** P01, P03, P11
+
+#### Purpose
+
+Compose a complete, self-sufficient Worker grant from existing fields by
+citing canonical owners instead of recopying stable rules.
+
+#### Use when
+
+Use when the intended session can follow canonical links and the accepted plan
+or Cooperator-selected route already fixes the boundaries being cited.
+
+#### Do not use when
+
+Do not use it to hide authority inside a link, replace task-specific
+boundaries with references, or cite an advisory projection as a semantic
+owner.
+
+#### Adaptation questions
+
+Which rule family owns each boundary? Which links can the intended session
+resolve? What must remain spelled out inside the prompt for it to stay
+self-contained?
+
+#### Template fragment
+
+```text
+Authority sources: AP.md rule families; structural fields in PROMPT_CONTRACTS.md.
+Boundary summary: <task-specific boundaries in the prompt's own words>.
+Cited owners are context, not authority; the current prompt grants what it names.
+```
+
+#### Failure it prevents
+
+Rule recopying, prompt bloat, silent drift between copies, and authority
+attributed to an advisory or explanatory projection.
+
+#### Evidence/source
+
+[AP.md](AP.md) owns semantic authority and compact communication, and
+[PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md) owns exact field spellings.
+[INTUITION.md](INTUITION.md) is an explanatory projection and never an owner.
 
 ## 9. Execution And Context Patterns
 
