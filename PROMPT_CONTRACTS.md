@@ -550,6 +550,13 @@ two-digit and contiguous. `<phase>` is lowercase kebab-case other than
 the companion spelling (`NN_interruption.md` or `NN_interruption_XX.md`) and is
 mutually exclusive with the report companion.
 
+**Companion Integrity Invariant.** An archived report companion must be a
+valid terminal report (commencing with `### Report for ORCHESTRATOR_CHAT` and
+containing the compact core) or an authorized interruption companion, and must
+never be byte-identical to or a duplicate of the issued prompt. An archived
+companion identical to the prompt is invalid and must be rejected before
+reconciliation or closure.
+
 Atomic first archival in Git uses:
 
 ```text
@@ -654,10 +661,13 @@ Archival: wait-for-report | allow-now
 
 An issued record contains one archival value rather than literal alternatives.
 The configured fields are absent when disposition is `not-used`. Filename and
-destination are delivery evidence, not task authority. The Worker does not
-archive the current pair. This record does not encode a natural language,
-emoji, or a particular trace implementation as required AP fields; see
-[§19](AP.md#19-anti-patterns).
+destination are delivery evidence, not task authority. When default dispatch
+is used, the Orchestrator directly archives the prompt and outcome pair; in
+copy-paste workflows (such as P14 model opt-out), the Orchestrator reconciles
+and archives the pair upon report return. The Worker does not self-archive.
+Companion integrity applies: a report companion must never duplicate the
+prompt. This record does not encode a natural language, emoji, or a particular
+trace implementation as required AP fields; see [§19](AP.md#19-anti-patterns).
 
 ### Trace-Local Filename Mapping Example
 
@@ -703,6 +713,14 @@ Discovery, grants explicit prompt-level read-only planning authority.
 `not-used` means native planning mode is disabled or absent; it may still carry
 a plan-only task. Ordinary localized routing guidance remains outside the
 copyable, structurally English Worker prompt.
+
+For Agent Orchestrators, direct session dispatch is the default delivery route
+for one complete Worker prompt into one concrete session. When the Cooperator
+explicitly opts out of direct dispatch — specifically to rotate to another
+model family, another client, or to act manually as the messenger under
+[P14](PROMPT_ENGINEERING_PATTERNS.md#p14--model-rotation-and-evidence-equivalence) —
+copy-paste prompt delivery is the lawful selected route, recorded as an
+accepted Cooperator decision.
 
 Historical prompts remain interpretable under their original AP pin. The two
 fields are prospective requirements for prompts newly issued, renewed, or

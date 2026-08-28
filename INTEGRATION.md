@@ -89,7 +89,8 @@ behavior is added by optional adoption.
 A consuming project may declare, in root `AGENTS.md` outside the managed AP
 block:
 
-- a Cooperator presentation profile;
+- a Cooperator presentation profile (e.g. status marks 🟢🟡🔴, delivery capsule,
+  and localized natural-language interaction);
 - a named, versioned development envelope covering tooling, interpreter,
   working-copy topology preference, reversible class, and irreversible
   exclusions; and
@@ -101,13 +102,18 @@ preserves current behavior. The declarations are project-owned. They are not AP
 semantics, do not grant Worker authority, and do not make a natural language,
 emoji set, topology, or trace implementation universally required.
 
-A non-normative project-owned Cooperator capsule may look like the following.
-It is one project's presentation, labelled as such, and is not AP protocol.
-Plan Mode is omitted here because it is off.
+### Project-Owned Presentation Profile Example
+
+A consuming project may declare a presentation profile in root `AGENTS.md`
+outside the managed AP block to format Cooperator-facing chat updates and
+routing capsules. The following is a ready-to-use non-normative project-owned
+example illustrating status marks, delivery capsule, and natural-language
+separation (e.g., Slovak for Cooperator chat, English for prompts and code):
 
 ```text
-# Project-owned example only. Not AP semantics. Not Worker authority.
-Route: Worker
+# Project-owned presentation example only. Not AP semantics. Not Worker authority.
+Status: 🟢 healthy / proceed | 🟡 wait / open decision | 🔴 stop / BLOCKED
+Route: Agent Orchestrator default dispatch | copy-paste (P14 opt-out)
 Reasoning: Medium
 Downloadable prompt filename: 02_implementation_00.md
 Activated-trace destination: <project-local path using the activated local grammar>

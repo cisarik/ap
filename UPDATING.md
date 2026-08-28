@@ -114,6 +114,10 @@ Before committing an AP update in a consuming project:
 - run `./.ap/ap doctor --candidate` after moving `.ap`;
 - run project-specific documentation, test, and policy checks;
 - verify `AGENTS.md` still points to `.ap/`;
+- verify or refresh optional project-owned declarations in `AGENTS.md` outside
+  the managed block, such as a Cooperator presentation profile (e.g. status
+  marks 🟢🟡🔴, delivery capsule), development envelope, or upgrade ledger per
+  [INTEGRATION.md](INTEGRATION.md#optional-presentation-profile-development-envelope-and-trace-grammar);
 - confirm no copied AP files were reintroduced;
 - confirm `.ap/` has no local dirty state;
 - confirm only the intended gitlink changes unless a separate authorized change

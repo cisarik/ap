@@ -31,8 +31,10 @@ current state and routes a new decision; it grants no mutation authority.
    truth, accepted durable decisions, optional trace, then tentative narrative.
    Treat prior handouts, memory, planner artifacts, and old prompts as
    subordinate non-authorizing evidence.
-4. Discover only upgrade ledgers explicitly declared in project-owned root
-   `AGENTS.md` text outside the AP-managed block. Never scan for guessed names.
+4. Discover optional project-owned declarations — such as a Cooperator
+   presentation profile, development envelope, or upgrade ledger — explicitly
+   declared in project-owned root `AGENTS.md` text outside the AP-managed
+   block. Never scan for guessed names.
 5. Validate declared storage and revalidate each active entry against current
    repository and durable external truth. Repository truth and an explicit
    current Cooperator decision outrank every ledger entry.
@@ -86,7 +88,7 @@ for microapproval of deterministic steps inside an approved envelope. See
 | Acceptance | fix the candidate, owner map, allowlist, risk claims, and control matrix | review expands into unknown-unknown hunting |
 | Correction | authorize one smallest coherent correction for a concrete finding | the same assumption survives correction and recheck |
 | Publication/deployment/production | activate only the applicable surface annex and verify exact artifact continuity | authority or direct evidence is absent |
-| Dispatch and direct action | dispatch only when the selected route or accepted plan authorizes it; deliver one complete Worker prompt into one concrete session; otherwise copy-paste | parent-context spawn claimed as independent; intuition used as implementation authority |
+| Dispatch and direct action | Agent Orchestrator defaults to dispatching one complete Worker prompt into one concrete session unless the Cooperator opts out (P14); otherwise copy-paste | parent-context spawn claimed as independent; prompt duplicate archived as report; intuition used as implementation authority |
 | Closure | reconcile required results, Cooperator decisions, risk, ledger, and active mutation | any required condition remains open |
 
 Phase names never grant authority. Use only the phases that the selected risk
@@ -168,22 +170,27 @@ Semantics:
 [RF-06](AP.md#rf-06-capability-reasoning-permission-containment-and-authority),
 and [AP §3](AP.md#worker-session-target).
 
-An **Agent Orchestrator** is an Orchestrator whose client exposes
-session-dispatch capabilities and whose Cooperator-selected route, or accepted
-plan for the logical whole, authorizes them; a **Read-Only Orchestrator**
-lacks those capabilities or is not authorized to use them. Both are the
-ORCHESTRATOR role; the labels never grant authority, and copy-paste delivery
-remains lawful without them.
+An **Agent Orchestrator** is an Orchestrator whose client functionally exposes
+session-dispatch or tool-routing capabilities. An Agent Orchestrator **defaults
+to dispatching** one complete authoritative Worker prompt into one concrete
+Worker session, unless the Cooperator explicitly opts out. When the Cooperator
+explicitly opts out of direct dispatch — specifically to rotate to another
+model family, another client, or to act manually as the messenger
+([P14](PROMPT_ENGINEERING_PATTERNS.md#p14--model-rotation-and-evidence-equivalence)) —
+copy-paste prompt delivery is the lawful selected route, not a protocol
+failure. A **Read-Only Orchestrator** lacks those capabilities or is not
+authorized to use them; it remains fully valid, and copy-paste prompt delivery
+stays lawful. Both are the ORCHESTRATOR role; the labels never grant authority,
+and dispatch capability is a delivery mechanism only.
 
-When dispatch is authorized, it delivers **one complete authoritative Worker
+When dispatch is used, it delivers **one complete authoritative Worker
 prompt** into **one concrete session**. The receiving session is an ordinary
 Worker session with its own target, coordinates, profile, and report contract;
 a tool-task summary is not a prompt. Authorization is whole-or-route level,
-never per-spawn microapproval, and the default stays not-used. Parallel
-dispatch stays under single-active and the bounded parallel exception, and an
-audit is never dispatched in parallel with implementation. If dispatch is
-absent, unauthorized, or cannot deliver the complete prompt, ordinary
-copy-paste delivery remains lawful.
+never per-spawn microapproval. Parallel dispatch stays under single-active and
+the bounded parallel exception, and an audit is never dispatched in parallel
+with implementation. If dispatch is absent, unauthorized, or cannot deliver
+the complete prompt, ordinary copy-paste delivery remains lawful.
 
 A session spawned inside your own conversation, or inheriting it or its
 reasoning, is not a fresh session and cannot provide independent acceptance.
@@ -215,11 +222,23 @@ Treat external trace configuration as project/task context. A trace is inactive
 unless authorized project rules configure it, and its availability never
 becomes a universal prerequisite. When configured, project the activated
 trace's local filename grammar as the archival destination; that local grammar
-is storage, not AP meaning. Archive—or ask the separately authorized Cooperator
-or archive owner to archive—the exact prompt and actual outcome together only
-after the outcome exists. Keep launch prompts outside mutation-gated worktrees
-until then unless an authorized workflow owns a safe staging location. The
-downloadable prompt file is transient delivery evidence.
+is storage, not AP meaning. When default dispatch is used, the Orchestrator
+receives the terminal report directly in-session and must archive the exact
+prompt and actual outcome pair together into the activated trace destination
+without imposing courier or archivist labor on the Cooperator. In copy-paste
+workflows (such as P14 model opt-out), the Cooperator ferries the report, and
+the Orchestrator reconciles and archives the pair.
+
+Before reconciliation or closure, verify the **Companion Integrity Invariant**:
+an archived companion named `*_report_*.md` (or `NN_report.md` / `NN_report_XX.md`)
+must be a valid terminal report (commencing with `### Report for ORCHESTRATOR_CHAT`
+and containing the compact core) or an authorized interruption companion, and
+must **never** be byte-identical to or a duplicate of the issued prompt. Reject
+any duplicate prompt masquerading as a report. Archive—or ask the separately
+authorized Cooperator or archive owner to archive—the exact prompt and actual
+outcome together only after the outcome exists. Keep launch prompts outside
+mutation-gated worktrees until then unless an authorized workflow owns a safe
+staging location. The downloadable prompt file is transient delivery evidence.
 
 Reconcile interruption companions, late or contradictory reports, corrections,
 redactions, and supersession prospectively. Never impersonate a Worker, replace

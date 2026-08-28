@@ -27,8 +27,8 @@ dispatch arrangements never add a fourth role
 ([RF-06](AP.md#rf-06-capability-reasoning-permission-containment-and-authority)).
 
 - **Agent Orchestrator** — an ORCHESTRATOR whose client functionally exposes
-  session-dispatch or tool-routing capabilities and whose Cooperator-selected
-  route, or accepted plan for the logical whole, authorizes using them.
+  session-dispatch or tool-routing capabilities and which defaults to direct
+  Worker dispatch unless the Cooperator explicitly opts out (e.g. under P14).
 - **Read-Only Orchestrator** — an ORCHESTRATOR lacking those capabilities or
   not authorized to use them; fully valid; copy-paste prompt delivery stays
   lawful.
@@ -70,8 +70,12 @@ prompt. The receiving session is an ordinary Worker session under
 [RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity); the
 dispatcher remains the Orchestrator.
 
-- Authorization is whole-or-route level: the Cooperator-selected route or the
-  accepted plan. No per-spawn microapproval; the default stays not-used.
+- **Default dispatch for Agent Orchestrator**: An Agent Orchestrator defaults to
+  dispatching complete Worker prompts directly into concrete Worker sessions.
+- **P14 Model-Opt-Out exception**: When the Cooperator explicitly opts out —
+  specifically to rotate model family, switch clients, or act manually as the
+  messenger ([P14](PROMPT_ENGINEERING_PATTERNS.md#p14--model-rotation-and-evidence-equivalence)) —
+  copy-paste prompt delivery is the lawful selected route.
 - Parallel dispatch stays under single-active and the bounded parallel
   exception; an audit is never dispatched in parallel with implementation.
 - If dispatch is absent, unauthorized, or cannot deliver the complete prompt,
@@ -121,12 +125,15 @@ default.
   [RF-02](AP.md#rf-02-orchestrator-decision-reconciliation-and-closure-authority).
 - Parent-context subagent claimed as independent audit → invalid; see
   [RF-05](AP.md#rf-05-freshcurrent-routing-and-independent-acceptance).
+- Prompt duplicate archived as report companion → invalid; fails Companion
+  Integrity Invariant; see
+  [RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity).
 - Intuition used as implementation or acceptance authority → invalid; see
   [RF-02](AP.md#rf-02-orchestrator-decision-reconciliation-and-closure-authority).
 - This file, signaling, or emoji treated as semantic owner or task authority →
   invalid; see [§19 anti-patterns](AP.md#19-anti-patterns).
-- Dispatch unavailable or unable to deliver the complete prompt → copy-paste
-  the complete prompt; see
+- Dispatch unavailable, opted out (P14), or unable to deliver the complete
+  prompt → copy-paste the complete prompt; see
   [Session-And-Mode Routing](PROMPT_CONTRACTS.md#session-and-mode-routing-contract).
 
 ## Related Owners

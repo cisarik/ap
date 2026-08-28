@@ -28,9 +28,9 @@ Follow the linked AP rule family and structural contracts for exact behavior.
 | Human-Governed Collaboration | Cooperator material decisions plus bounded deterministic execution without per-step microapproval. |
 | Cooperator Routing Sovereignty | Orchestrator recommends; Cooperator selects; a Worker does not reopen the selected route. |
 | Selected Route | Cooperator-chosen session/capability/reasoning/native-mode route, distinct from recommendation and observation and granting no authority. |
-| Agent Orchestrator | Descriptive capability-profile label for an Orchestrator whose client exposes session-dispatch capabilities and whose Cooperator-selected route or accepted plan authorizes them; still the ORCHESTRATOR role; see [RF-06](AP.md#rf-06-capability-reasoning-permission-containment-and-authority). |
+| Agent Orchestrator | Descriptive capability-profile label for an Orchestrator whose client exposes session-dispatch capabilities and which defaults to direct Worker dispatch unless the Cooperator explicitly opts out (P14); still the ORCHESTRATOR role; see [RF-06](AP.md#rf-06-capability-reasoning-permission-containment-and-authority). |
 | Read-Only Orchestrator | Descriptive capability-profile label for an Orchestrator lacking dispatch capabilities or not authorized to use them; fully valid; copy-paste prompt delivery remains lawful. |
-| Subagent dispatch | Orchestrator delivery of one complete authoritative Worker prompt into one concrete session; the receiving session is an ordinary Worker; a parent-context spawn is not a fresh session and cannot provide independent acceptance; see [RF-05](AP.md#rf-05-freshcurrent-routing-and-independent-acceptance). |
+| Subagent dispatch | Orchestrator delivery of one complete authoritative Worker prompt into one concrete session; default route for Agent Orchestrators unless the Cooperator opts out (P14); the receiving session is an ordinary Worker; a parent-context spawn is not a fresh session and cannot provide independent acceptance; see [RF-05](AP.md#rf-05-freshcurrent-routing-and-independent-acceptance). |
 | Material Phase Gate | Routing reconsideration caused by a material objective, authority, independence, security, capability, external, acceptance, or recovery change—not an ordinary substep. |
 
 ## Planning, Execution, and Evidence
@@ -80,6 +80,7 @@ Follow the linked AP rule family and structural contracts for exact behavior.
 | Validation ladder | Prompt-selected evidence sequence from inspection through independent acceptance; a broad or full suite is not automatic. |
 | Development envelope | Named, versioned, project-owned tooling, interpreter, topology, and reversible-class declaration activated only by the current prompt. |
 | Cooperator presentation profile | Project-owned Cooperator-facing routing package emitted after the copyable, structurally English Worker prompt when activated; marks are not task authority. |
+| Companion Integrity Invariant | Requirement that an archived report companion must be a valid terminal report (or authorized interruption) and must never be byte-identical to or a duplicate of the issued prompt; see [RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity). |
 | Local trace filename grammar | Activated trace storage spelling projected as archival destination; never universal AP meaning. |
 | Continuation Bootstrap | Two-stage post-pause rule: restore and reconcile read-only, then obtain Cooperator selection of exactly one bounded next logical whole before any mutation grant; see [AP semantics](AP.md#continuation-bootstrap) and the [operational entry point](AP_ORCHESTRATOR.md#continuation-bootstrap). |
 | Discovery Record | Optional non-authoritative exploration artifact with consumer, promotion target, and lifecycle. |

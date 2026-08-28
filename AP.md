@@ -155,9 +155,12 @@ The Orchestrator owns routing recommendations, evidence reconciliation,
 accept/correct/escalate decisions, ledger reconciliation, and the deterministic
 closure transition after all predeclared evidence and Cooperator-owned decisions
 are satisfied. It may not substitute its judgement for a material human
-decision. When project rules activate a Cooperator presentation profile, the
-Orchestrator must emit that project-owned package after the copyable,
-structurally English Worker prompt. Presentation marks are not task authority.
+decision. An Agent Orchestrator defaults to direct dispatch of one complete
+authoritative Worker prompt into one concrete Worker session, unless the
+Cooperator explicitly opts out (such as under P14 model rotation). When
+project rules activate a Cooperator presentation profile, the Orchestrator
+must emit that project-owned package after the copyable, structurally English
+Worker prompt. Presentation marks are not task authority.
 
 **Orchestrator-direct versus Worker-required.** Orchestrator-direct action is
 lawful only when all of the following hold: it is inside an accepted logical
@@ -166,8 +169,9 @@ semantic owner or another Worker-required surface; it makes no independence
 claim; it does not substitute for a Cooperator material decision; and it stays
 inside the accepted plan. Orchestrator-direct work may include synthesizing and
 readiness-reviewing Worker grants, read-only inspection and preflight, RF-19
-trace staging and archival only after the report exists, creating or removing a
-dispatch worktree when the accepted plan or task authority names that topology,
+trace staging and archival only after the report exists (verifying companion
+integrity and rejecting prompt duplicates), creating or removing a dispatch
+worktree when the accepted plan or task authority names that topology,
 emitting an activated project-owned Cooperator presentation after the copyable
 Worker prompt, and restoring or cleaning its own routing state. Direct
 acceptance at evidence-ladder rung 1 remains available only for E0 or E1 claims
@@ -206,7 +210,8 @@ Fresh routing is required by the triggers in
 [Implementation Authority](#implementation-authority); freshness alone does not
 prove independence. A session spawned inside the parent Orchestrator's
 conversation, or inheriting its conversation history or reasoning, is not a
-fresh session and cannot provide independent acceptance.
+fresh session and cannot provide independent acceptance. Default dispatch
+applies to ordinary non-independent Worker sessions.
 
 #### RF-06 — Capability, Reasoning, Permission, Containment, and Authority
 
@@ -219,8 +224,9 @@ socket, or previous Worker session — is convenience state. It is not authority
 durable configuration, or a capability guaranteed in another process boundary.
 An Orchestrator capability-profile label, such as Agent or Read-Only, describes
 functionally available routing and delivery capabilities under the selected
-route; like every capability dimension, it never grants authority and never
-creates an additional persistent role.
+route; like every capability dimension, dispatch capability remains a delivery
+mechanism, never grants authority, and never creates an additional persistent
+role.
 
 #### RF-07 — Evidence Tiers and Risk-Sensitive Acceptance
 
@@ -396,6 +402,23 @@ are two-digit and contiguous; `<phase>` is lowercase kebab-case and is not
 one mutually exclusive `report` or `interruption` companion. That interoperable
 unsuffixed exchange-`01` grammar remains the AP default even when an activated
 trace stores a different local spelling.
+
+Trace archival is owned exclusively by the Orchestrator after the outcome
+exists. When default dispatch is used, the Orchestrator receives the terminal
+report in-session and must archive the exact prompt and actual outcome pair
+together into the activated trace destination without imposing courier or
+archivist labor on the Cooperator. In the P14 opt-out case (copy-paste), the
+Cooperator ferries the report back, and the Orchestrator reconciles and
+archives the pair. The Worker remains strictly prohibited from self-archiving
+or granting itself trace writes.
+
+**Companion Integrity Invariant.** An archived companion named
+`*_report_*.md` (or `NN_report.md` / `NN_report_XX.md`) must be a valid
+terminal report (commencing with `### Report for ORCHESTRATOR_CHAT` and
+containing the compact core) or an authorized interruption companion, and must
+**never** be byte-identical to or a duplicate of the issued prompt. An
+archived companion identical to the prompt is invalid and must be rejected
+before reconciliation or closure.
 
 A completed prompt/report pair is first archived together after the report
 exists; in Git both files have the same unique first-add commit. Until then,
@@ -714,24 +737,30 @@ Discovery remains an AP phase, not a Worker role or profile.
 
 An **Orchestrator capability profile** describes what the current Orchestrator
 client can functionally do for routing and delivery. An **Agent Orchestrator**
-is an Orchestrator instance whose client exposes session-dispatch or
-tool-routing capabilities and whose Cooperator-selected route — or an accepted
-plan for that logical whole — authorizes using them. A **Read-Only
-Orchestrator** lacks those capabilities or is not authorized to use them; it
-remains fully valid, and ordinary copy-paste prompt delivery stays lawful.
-Both are the ORCHESTRATOR role; the names are descriptive labels, not
-additional persistent roles, and a capability profile never grants authority.
+is an Orchestrator instance whose client functionally exposes session-dispatch
+or tool-routing capabilities. An Agent Orchestrator **defaults to dispatching**
+one complete authoritative Worker prompt into one concrete Worker session,
+unless the Cooperator explicitly opts out. When the Cooperator explicitly opts
+out of direct dispatch — specifically to rotate to another model family,
+another client, or to act manually as the messenger
+([P14](PROMPT_ENGINEERING_PATTERNS.md#p14--model-rotation-and-evidence-equivalence)) —
+copy-paste prompt delivery is the lawful selected route, not a protocol
+failure. A **Read-Only Orchestrator** lacks those capabilities or is not
+authorized to use them; it remains fully valid, and ordinary copy-paste prompt
+delivery stays lawful. Both are the ORCHESTRATOR role; the names are
+descriptive labels, not additional persistent roles, and a capability profile
+never grants authority.
 
-When dispatch is authorized and available, it delivers exactly one complete
-authoritative Worker prompt — coordinates, session target, profile,
-boundaries, and report contract — into one concrete Worker session. A
-tool-task summary is not a prompt. The receiving session is an ordinary AP
-Worker session and the dispatcher remains the Orchestrator. A session spawned
-inside the dispatching Orchestrator's own conversation, or inheriting that
-conversation or its reasoning, is not a fresh session and cannot provide
-independent acceptance. When dispatch is absent, unauthorized, or cannot
-deliver the complete prompt, ordinary copy-paste delivery of the same complete
-prompt remains lawful.
+When dispatch is used, it delivers exactly one complete authoritative Worker
+prompt — coordinates, session target, profile, boundaries, and report
+contract — into one concrete Worker session. A tool-task summary is not a
+prompt. The receiving session is an ordinary AP Worker session and the
+dispatcher remains the Orchestrator. A session spawned inside the dispatching
+Orchestrator's own conversation, or inheriting that conversation or its
+reasoning, is not a fresh session and cannot provide independent acceptance;
+default dispatch applies to ordinary non-independent Worker sessions. When
+dispatch is absent, unauthorized, or cannot deliver the complete prompt,
+ordinary copy-paste delivery of the same complete prompt remains lawful.
 
 ### Worker Session Target
 
@@ -2631,6 +2660,8 @@ AP rejects:
 - representing internal delegation as fresh independent audit;
 - dispatching opaque tool-task swarms as a substitute for one complete
   authoritative Worker prompt and one accountable Worker session;
+- archiving a prompt duplicate as a report companion or treating an invalid
+  companion as a terminal outcome;
 - treating a parent-context subagent, or inherited Orchestrator conversation or
   reasoning, as a fresh independent audit, or treating Orchestrator intuition,
   signaling marks, or an explanatory projection such as `INTUITION.md` as

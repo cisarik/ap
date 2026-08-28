@@ -33,6 +33,7 @@ Programming.
 | [0019](0019-subagent-delivery-of-worker-sessions-and-orchestrator-capability-profiles.md) | Subagent delivery of Worker sessions and Orchestrator capability profiles | Accepted | Historical rationale for Agent/Read-Only capability-profile labels of one ORCHESTRATOR role, dispatch as one complete Worker prompt into one concrete session, and the parent-context independent-audit disqualifier |
 | [0020](0020-intuitive-mode-orchestrator-boundary-and-intuition-projection.md) | Intuitive mode, the Orchestrator intuition boundary, and the intuition projection | Accepted | Historical rationale for the RF-02 Orchestrator-direct/Worker-required boundary, dense grants by citation, the brief optional `INTUITION.md` projection, and opt-in signaling |
 | [0021](0021-followable-spine-and-restatement-conversion.md) | Followable spine, rule detectability, and restatement-to-pointer conversion | Accepted | Historical rationale for the per-role minimum-reading spine, three detectability classes and detection-surface requirement, restatement-to-pointer conversion, and the AP-run `00_notes.md` convention; `AP.md` remains the sole semantic owner |
+| [0022](0022-default-agent-dispatch-trace-integrity-and-pin-presentation.md) | Default agent dispatch, trace companion integrity, and pin presentation hook | Accepted | Historical rationale for Agent Orchestrator default dispatch, P14 model opt-out, companion integrity invariant, direct Orchestrator trace archival, and pin-time discoverability in UPDATING.md; AP.md remains the sole live semantic owner |
 
 ADR-0009 permits only an explicit bounded parallel exception. It does not
 supersede fresh sequential independent audit or the remaining decisions in
@@ -101,6 +102,14 @@ the AP-run `00_notes.md` convention as a non-universal projection. It adds no
 rule family, field, record, schema, executable surface, managed-block change,
 or mechanical validator. Consumer adoption and logical-whole closure remain
 separate.
+
+ADR-0022 records an accepted decision. It establishes default agent dispatch for
+Agent Orchestrators with a lawful P14 model opt-out exception, defines the trace
+companion integrity invariant and direct Orchestrator archival upon dispatch
+return, and adds a pin-time presentation/envelope review hook in `UPDATING.md`
+with an example in `INTEGRATION.md`. It adds no rule family, field, record,
+executable `ap` surface, managed-block change, or mechanical validator. Consumer
+adoption and logical-whole closure remain separate.
 
 ## Lifecycle Rule
 

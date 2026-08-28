@@ -507,17 +507,21 @@ multi-agent features do not establish a universal benefit or safe topology.
 
 ### P14 — Model Rotation and Evidence Equivalence
 
-**Applies to:** model/client/session rotation and restoration | **AP anchors:** AP §§3, 14, 15 | **Related patterns:** P02, P06, P10, P15
+**Applies to:** model/client/session rotation, Cooperator dispatch opt-out, and restoration | **AP anchors:** AP §§3, 14, 15 | **Related patterns:** P02, P06, P10, P15
 
 #### Purpose
 
 Preserve authority, scope, and evidence requirements when changing model,
-client, or execution session.
+client, or execution session, or when the Cooperator explicitly opts out of
+direct Agent Orchestrator dispatch to act manually as messenger across model
+families or clients.
 
 #### Use when
 
 Use for intentional transfer due to capability fit, availability, cost,
-context integrity, tool limits, policy limits, or independent-evidence needs.
+context integrity, tool limits, policy limits, independent-evidence needs, or
+when the Cooperator explicitly opts out of Agent Orchestrator dispatch to
+deliver prompts manually to another model family or execution client.
 
 #### Do not use when
 
