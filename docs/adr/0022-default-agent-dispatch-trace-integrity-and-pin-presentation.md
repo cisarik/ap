@@ -118,6 +118,10 @@ validators, and no consumer managed-block changes.
   whether to initialize a session with session-dispatch/subagent capabilities
   enabled (Agent Orchestrator) or an interactive read-only / messenger
   session (Read-Only Orchestrator).
+- **Trace filename convention:** The trace filename convention explicitly
+  reflects this directive: `00_handout_agent.md` for Agent Orchestrator and
+  `00_handout_readonly.md` for Read-Only Orchestrator (`00_handout.md` remains
+  the generic baseline alias).
 
 ## Semantic Ownership and Projections
 

@@ -2180,6 +2180,7 @@ are not separate independent auditors.
 - **Output**: evidence-dense synthesis with PASS, PARTIAL, or BLOCKED
   restoration readiness classification; target Orchestrator capability profile
   and initialization signal (`Capability profile: Agent Orchestrator | Read-Only Orchestrator`);
+  recommended trace handout filename (`00_handout_agent.md` | `00_handout_readonly.md` | `00_handout.md`);
   operational continuity; strategic continuity; development narrative; forward horizon;
   authority boundaries including account, browser, filesystem, Git, production, and external-service
   boundaries; current phase; exact next bounded step; next Worker reasoning

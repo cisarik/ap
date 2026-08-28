@@ -527,6 +527,11 @@ Agent Orchestrator session (with session-dispatch / subagent tools enabled) or
 a Read-Only Orchestrator session (interactive / copy-paste messenger mode),
 removing any initialization ambiguity for the Cooperator.
 
+The trace filename convention reflects this distinction:
+- `00_handout_agent.md` when the target is an Agent Orchestrator;
+- `00_handout_readonly.md` when the target is a Read-Only Orchestrator;
+- `00_handout.md` remains the baseline alias.
+
 ## Stop and Escalation
 
 Stop prompt issuance or transition when identity, baseline, authority,
