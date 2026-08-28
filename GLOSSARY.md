@@ -92,6 +92,7 @@ Follow the linked AP rule family and structural contracts for exact behavior.
 | Durable Upgrade-Ledger Storage Projection | Optional consumer-owned Markdown retention of active RF-09 observations, discovered only by an explicit project-rule declaration and never a semantic or authority owner; exact structure is in [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md#upgrade-observation-ledger-contract). |
 | Active-Context Reconciliation | Closure removal of terminal ledger entries from active context while preserving unresolved entries and historical provenance. |
 | Restoration Prompt / Readiness | Self-contained context transfer without mutation authority / PASS-PARTIAL-BLOCKED completeness review. |
+| Orchestrator Initialization Signal | Explicit directive in a restoration prompt declaring whether the successor Orchestrator session requires an `Agent Orchestrator` (dispatch tools enabled) or `Read-Only Orchestrator` (interactive / copy-paste messenger) profile. |
 | Repository Handoff | Exceptional lifecycle-bound context for state not reconstructable from durable evidence and the next task. |
 | Pattern Library | First-class universal advisory [PROMPT_ENGINEERING_PATTERNS.md](PROMPT_ENGINEERING_PATTERNS.md) projection; not a second protocol or generator. |
 | Artifact Relationship | Structural, operational, advisory, explanatory, historical, executable, or consumer relationship to AP. |

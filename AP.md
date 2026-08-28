@@ -751,6 +751,14 @@ delivery stays lawful. Both are the ORCHESTRATOR role; the names are
 descriptive labels, not additional persistent roles, and a capability profile
 never grants authority.
 
+When an Orchestrator generates a restoration handout or rotation prompt for a
+successor Orchestrator instance, it must declare the target capability profile
+and include an explicit **Orchestrator initialization signal**
+(`Capability profile: Agent Orchestrator | Read-Only Orchestrator`) in the
+metadata header and Cooperator presentation, clearly instructing the
+Cooperator whether the fresh session requires agent-dispatch / subagent tools
+or an interactive read-only / copy-paste environment.
+
 When dispatch is used, it delivers exactly one complete authoritative Worker
 prompt — coordinates, session target, profile, boundaries, and report
 contract — into one concrete Worker session. A tool-task summary is not a
@@ -2424,8 +2432,9 @@ self-contained prompt. It must preserve four continuity layers:
 Restoration must remain synthesis, not a transcript dump, unbounded
 chronological history, hidden Worker task prompt, substitute for repository
 truth, or permanent repository handoff. It must include restoration
-classification (`PASS`, `PARTIAL`, or `BLOCKED`), project and repository
-identity, exact last independently verified public commit or explicit
+classification (`PASS`, `PARTIAL`, or `BLOCKED`), target Orchestrator
+capability profile and initialization signal (`Capability profile: Agent Orchestrator | Read-Only Orchestrator`),
+project and repository identity, exact last independently verified public commit or explicit
 limitation, current AP pin when the project uses AP, completed logical
 boundary, current accepted product and architecture decisions, evidence
 classification, host, network, browser, secret, filesystem, account, and Git

@@ -2178,9 +2178,10 @@ are not separate independent auditors.
   current mutation state, unresolved questions, risks, and materially relevant
   Cooperator intent separated from brainstorming.
 - **Output**: evidence-dense synthesis with PASS, PARTIAL, or BLOCKED
-  restoration readiness classification; operational continuity; strategic
-  continuity; development narrative; forward horizon; authority boundaries
-  including account, browser, filesystem, Git, production, and external-service
+  restoration readiness classification; target Orchestrator capability profile
+  and initialization signal (`Capability profile: Agent Orchestrator | Read-Only Orchestrator`);
+  operational continuity; strategic continuity; development narrative; forward horizon;
+  authority boundaries including account, browser, filesystem, Git, production, and external-service
   boundaries; current phase; exact next bounded step; next Worker reasoning
   recommendation or premature statement; public-verification requirement; and
   no-mutation-authority statement. Fields may be not applicable, unavailable,

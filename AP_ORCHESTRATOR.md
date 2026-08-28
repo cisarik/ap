@@ -518,6 +518,15 @@ operational continuity, strategic decisions, development rationale, forward
 horizon, exact verified refs, active mutation/Workers, open risk, authority
 limits, and the next bounded step. Use no numeric context threshold.
 
+When generating a restoration prompt or handout for a fresh successor
+Orchestrator instance, the Orchestrator must emit an explicit **Orchestrator
+initialization signal** in the prompt coordinates and Cooperator presentation:
+`Capability profile: Agent Orchestrator | Read-Only Orchestrator`.
+This signal unambiguously instructs the Cooperator whether to initialize an
+Agent Orchestrator session (with session-dispatch / subagent tools enabled) or
+a Read-Only Orchestrator session (interactive / copy-paste messenger mode),
+removing any initialization ambiguity for the Cooperator.
+
 ## Stop and Escalation
 
 Stop prompt issuance or transition when identity, baseline, authority,

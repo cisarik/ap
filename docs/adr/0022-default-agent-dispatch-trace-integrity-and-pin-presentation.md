@@ -107,6 +107,18 @@ validators, and no consumer managed-block changes.
   presentation declarations alongside upgrade ledgers in root `AGENTS.md`
   outside the managed block during Stage 1 of Continuation Bootstrap.
 
+### 4. Orchestrator Initialization Signal in Restoration Handouts
+
+- **Explicit profile directive:** When generating a restoration prompt or
+  handout for a successor Orchestrator instance, the Orchestrator must declare
+  the target capability profile (`Capability profile: Agent Orchestrator | Read-Only Orchestrator`)
+  and emit an explicit **Orchestrator initialization signal** in the metadata
+  and Cooperator presentation.
+- **No initialization guessing:** This signal clearly informs the Cooperator
+  whether to initialize a session with session-dispatch/subagent capabilities
+  enabled (Agent Orchestrator) or an interactive read-only / messenger
+  session (Read-Only Orchestrator).
+
 ## Semantic Ownership and Projections
 
 - `AP.md` alone owns the dispatch default (§3, RF-02), the parent-context

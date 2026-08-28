@@ -11,11 +11,12 @@ remains the sole live normative protocol.
   Cooperator model opt-out exception; added the trace companion integrity
   invariant (rejecting prompt duplicates as report companions) and direct
   Orchestrator trace archival upon dispatch return without imposing courier or
-  archivist labor on the Cooperator; and added an explicit pin-time
-  presentation and envelope review hook in `UPDATING.md` with an illustrative
-  project-owned presentation capsule in `INTEGRATION.md`. `AP.md` remains the
-  sole semantic owner. No 4th role, no emoji-as-AP-field, no mechanical doctor
-  validators, and no consumer managed-block changes. Recorded by
+  archivist labor on the Cooperator; added the Orchestrator initialization
+  signal requirement in restoration handouts and rotation prompts; and added an
+  explicit pin-time presentation and envelope review hook in `UPDATING.md` with
+  an illustrative project-owned presentation capsule in `INTEGRATION.md`. `AP.md`
+  remains the sole semantic owner. No 4th role, no emoji-as-AP-field, no mechanical
+  doctor validators, and no consumer managed-block changes. Recorded by
   [ADR-0022](docs/adr/0022-default-agent-dispatch-trace-integrity-and-pin-presentation.md).
   Existing consumer pins retain their original meaning; consumer adoption and
   logical-whole closure remain separate.

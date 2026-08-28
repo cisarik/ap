@@ -34,7 +34,8 @@ dispatch arrangements never add a fourth role
   lawful.
 
 Both names are descriptive labels of one ORCHESTRATOR role. A profile never
-grants authority.
+grants authority. Every restoration handout explicitly signals which profile to
+initialize (`Capability profile: Agent Orchestrator | Read-Only Orchestrator`).
 
 ## 3. Orchestrator Intuition Boundary
 
