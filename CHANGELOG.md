@@ -7,6 +7,21 @@ remains the sole live normative protocol.
 
 ## Unreleased
 
+- Consolidated practical AP workflow under the accepted design in
+  [ADR-0023](docs/adr/0023-practical-workflow-consolidation.md): Orchestrator /
+  ChatOrchestrator access profiles; initial manual native Planner and preserved
+  subsequent delivery; bounded additional planning; visible routing capsules;
+  exact separately authorized prompt/report persistence and completion; truthful
+  handout authorship/continuity; compact Worker reading; causal validation;
+  functional specialists; MEASURED/LEAD critique; and contextual continuation.
+  Explicit RF anchors preserve the canonical links already used by the projections.
+  Meta retains its own zero-based filename suffix and handoff/closure sequence.
+  This prospectively supersedes the affected choices in the earlier entries
+  below, preserving their history. Standard report header, statuses, coordinates,
+  executable, managed block, schema, runtime and consumer pins are unchanged.
+  Design acceptance is separate from independent candidate acceptance,
+  publication and closure.
+
 - Established default agent dispatch for Agent Orchestrators with a lawful P14
   Cooperator model opt-out exception; added the trace companion integrity
   invariant (rejecting prompt duplicates as report companions) and direct

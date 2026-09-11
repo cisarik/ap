@@ -21,6 +21,10 @@ Follow the linked AP rule family and structural contracts for exact behavior.
 | Fresh Worker Session | New session that inherits no prior grant and re-establishes evidence; freshness versus independence is owned by [RF-05](AP.md#rf-05-freshcurrent-routing-and-independent-acceptance). |
 | Current Worker Session | Exact healthy session reused under a complete renewed grant and continuity anchor; evidence remains non-independent. |
 | Worker Session Profile | Bounded authority/evidence posture such as implementation, probe, correction, audit, or re-audit; not a role or phase. |
+| Planner | Bounded WORKER planning profile under [AP planning](AP.md#orchestration-planning-and-implementation-planning). |
+| WebSearcher / DeepResearcher / ImageCreator | Specialist profiles or capabilities under [surface routing](AP.md#provider-neutral-model-and-surface-routing). |
+| Recommended context capacity | Routing recommendation, separate from observed capacity and usage under [Communication Routing](AP.md#communication-routing). |
+| MEASURED / LEAD | Verified critique versus unverified possibilities under [Compact Communication](AP.md#17-compact-communication). |
 | Continuity Anchor | Precise prior task/report/commit boundary identified by a current-session prompt. |
 | Authority Renewal | Complete new current-session grant after prior authority expired. |
 | Task Authority | Concrete permission supplied only by the current complete Orchestrator prompt. |
@@ -28,9 +32,9 @@ Follow the linked AP rule family and structural contracts for exact behavior.
 | Human-Governed Collaboration | Cooperator material decisions plus bounded deterministic execution without per-step microapproval. |
 | Cooperator Routing Sovereignty | Orchestrator recommends; Cooperator selects; a Worker does not reopen the selected route. |
 | Selected Route | Cooperator-chosen session/capability/reasoning/native-mode route, distinct from recommendation and observation and granting no authority. |
-| Agent Orchestrator | Descriptive capability-profile label for an Orchestrator whose client exposes session-dispatch capabilities and which defaults to direct Worker dispatch unless the Cooperator explicitly opts out (P14); still the ORCHESTRATOR role; see [RF-06](AP.md#rf-06-capability-reasoning-permission-containment-and-authority). |
-| Read-Only Orchestrator | Descriptive capability-profile label for an Orchestrator lacking dispatch capabilities or not authorized to use them; fully valid; copy-paste prompt delivery remains lawful. |
-| Subagent dispatch | Orchestrator delivery of one complete authoritative Worker prompt into one concrete session; default route for Agent Orchestrators unless the Cooperator opts out (P14); the receiving session is an ordinary Worker; a parent-context spawn is not a fresh session and cannot provide independent acceptance; see [RF-05](AP.md#rf-05-freshcurrent-routing-and-independent-acceptance). |
+| Orchestrator access profile | ORCHESTRATOR with direct access to the designated working checkout; dispatch is a separate capability/selection; see [AP §3](AP.md#3-instances-sessions-and-worker-session-profiles). |
+| ChatOrchestrator | Mediated ORCHESTRATOR access profile; an inspection clone does not expose the Cooperator's uncommitted state; see [AP §3](AP.md#3-instances-sessions-and-worker-session-profiles). |
+| Subagent dispatch | Selected delivery of a complete prompt to a concrete Worker session; access, freshness and independence remain separate under [AP §3](AP.md#3-instances-sessions-and-worker-session-profiles) and [RF-05](AP.md#rf-05-freshcurrent-routing-and-independent-acceptance). |
 | Material Phase Gate | Routing reconsideration caused by a material objective, authority, independence, security, capability, external, acceptance, or recovery change—not an ordinary substep. |
 
 ## Planning, Execution, and Evidence
@@ -79,10 +83,10 @@ Follow the linked AP rule family and structural contracts for exact behavior.
 | Compact Communication | Links stable owners while retaining complete task-specific authority and evidence. |
 | Validation ladder | Prompt-selected evidence sequence from inspection through independent acceptance; a broad or full suite is not automatic. |
 | Development envelope | Named, versioned, project-owned tooling, interpreter, topology, and reversible-class declaration activated only by the current prompt. |
-| Cooperator presentation profile | Project-owned Cooperator-facing routing package emitted after the copyable, structurally English Worker prompt when activated; marks are not task authority. |
-| Companion Integrity Invariant | Requirement that an archived report companion must be a valid terminal report (or authorized interruption) and must never be byte-identical to or a duplicate of the issued prompt; see [RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity). |
+| Cooperator presentation profile | Optional project extension of the mandatory [Communication Routing](AP.md#communication-routing) capsule; presentation conveys no authority. |
+| Companion Integrity Invariant | Actual matching terminal task report with standard header, coordinates and core; interruption has a separate filename; see [RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity). |
 | Local trace filename grammar | Activated trace storage spelling projected as archival destination; never universal AP meaning. |
-| Continuation Bootstrap | Two-stage post-pause rule: restore and reconcile read-only, then obtain Cooperator selection of exactly one bounded next logical whole before any mutation grant; see [AP semantics](AP.md#continuation-bootstrap) and the [operational entry point](AP_ORCHESTRATOR.md#continuation-bootstrap). |
+| Continuation Bootstrap | Two-stage post-pause rule: restore read-only, preserve an already selected/planned whole or obtain a new objective selection before a current grant; see [AP semantics](AP.md#continuation-bootstrap) and the [operational entry point](AP_ORCHESTRATOR.md#continuation-bootstrap). |
 | Discovery Record | Optional non-authoritative exploration artifact with consumer, promotion target, and lifecycle. |
 | External Analytic Development Trace | Optional explicitly activated selective historical-evidence projection subordinate to governing AP and current project/external truth; see [RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity). |
 | Trace Projection | Replaceable storage, layout, discovery, index, and validation representation of RF-19 semantics; it does not own those semantics. |
@@ -92,7 +96,7 @@ Follow the linked AP rule family and structural contracts for exact behavior.
 | Durable Upgrade-Ledger Storage Projection | Optional consumer-owned Markdown retention of active RF-09 observations, discovered only by an explicit project-rule declaration and never a semantic or authority owner; exact structure is in [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md#upgrade-observation-ledger-contract). |
 | Active-Context Reconciliation | Closure removal of terminal ledger entries from active context while preserving unresolved entries and historical provenance. |
 | Restoration Prompt / Readiness | Self-contained context transfer without mutation authority / PASS-PARTIAL-BLOCKED completeness review. |
-| Orchestrator Initialization Signal | Explicit directive in a restoration prompt declaring whether the successor Orchestrator session requires an `Agent Orchestrator` (dispatch tools enabled) or `Read-Only Orchestrator` (interactive / copy-paste messenger) profile, reflected in the filename convention `00_handout_agent.md` vs `00_handout_readonly.md`. |
+| Orchestrator Initialization Signal | Explicit successor access profile (Orchestrator or ChatOrchestrator) and actual capability/delivery requirements in the handout; filename grammar is trace-local; see [AP §3](AP.md#3-instances-sessions-and-worker-session-profiles). |
 | Repository Handoff | Exceptional lifecycle-bound context for state not reconstructable from durable evidence and the next task. |
 | Pattern Library | First-class universal advisory [PROMPT_ENGINEERING_PATTERNS.md](PROMPT_ENGINEERING_PATTERNS.md) projection; not a second protocol or generator. |
 | Artifact Relationship | Structural, operational, advisory, explanatory, historical, executable, or consumer relationship to AP. |
@@ -194,3 +198,5 @@ and residual risk; `none` is valid.
 
 `MUST`, `MUST NOT`, `SHOULD`, `SHOULD NOT`, and `MAY` have force only in the
 canonical semantic owner within its scope. Their appearance here is explanatory.
+
+Historical Agent/Read-Only labels remain interpretable at their governing pins.

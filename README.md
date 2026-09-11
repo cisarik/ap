@@ -20,7 +20,7 @@ Canonical repository: `https://github.com/cisarik/ap`
 | role decisions | [AP_ORCHESTRATOR.md](AP_ORCHESTRATOR.md), [AP_WORKER.md](AP_WORKER.md) | operational projections |
 | continuation after a pause | [Continuation Bootstrap](AP_ORCHESTRATOR.md#continuation-bootstrap) | operational entry point to the two-stage AP rule |
 | optional durable upgrade observations | [Upgrade Observation Ledger Contract](PROMPT_CONTRACTS.md#upgrade-observation-ledger-contract) | structural declaration and Markdown storage projection |
-| optional presentation, development envelope, and local-trace grammar | [INTEGRATION.md](INTEGRATION.md#optional-presentation-profile-development-envelope-and-trace-grammar) | consumer declaration; absence preserves current behavior |
+| presentation extensions, development envelope, and local-trace grammar | [INTEGRATION.md](INTEGRATION.md#optional-presentation-profile-development-envelope-and-trace-grammar) | optional consumer declaration; AP delivery minimum still applies |
 | optional prompt craft | [PROMPT_ENGINEERING_PATTERNS.md](PROMPT_ENGINEERING_PATTERNS.md) | first-class universal advisory projection |
 | activated defensive security | [INFOSEC.md](INFOSEC.md) | advisory profile; all procedures apply when activated |
 | artifact and activated external-trace handling | [ARTIFACT_LIFECYCLE.md](ARTIFACT_LIFECYCLE.md) | operational lifecycle projection |
@@ -33,14 +33,17 @@ Canonical repository: `https://github.com/cisarik/ap`
 
 No subordinate artifact independently defines AP meaning. A task prompt remains
 self-contained for its repository, baseline, authority, boundaries, validation,
-and activated surfaces.
+and activated surfaces. Document entrypoints use the role-reading spine; they
+are not blanket cover-to-cover reading instructions. Initial Planner routing is
+owned by [AP planning](AP.md#orchestration-planning-and-implementation-planning).
 
 [RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity)
 owns universal logical-whole, Worker-session, exchange, and external-trace
 meaning. An external analytic-development trace is subordinate historical
 evidence and remains optional unless authorized project rules activate it.
-Continuation begins read-only and requires Cooperator selection of one bounded
-next logical whole before a current mutation grant. Optional declared upgrade
+Continuation begins read-only and preserves an already selected/planned whole;
+a new bounded objective needs Cooperator selection before a current mutation
+grant. Optional declared upgrade
 ledger storage remains non-authorizing RF-09 evidence.
 
 ## Stable Pinned Distribution

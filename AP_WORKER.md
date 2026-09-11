@@ -35,13 +35,14 @@ The prompt must contain exactly one `Worker session target` value and one
 |---|---|
 | `fresh-worker-session` | establish repository/environment evidence independently; inherit no prior authority |
 | `current-worker-session` | verify the actual continuity anchor, prior-authority expiry, complete renewed grant, unchanged assumptions, healthy same logical whole, and non-independent posture |
-| planning with `required` or prompt-level plan authority | perform only bounded read-only implementation planning; stop at the terminal planning report |
+| planning with `required` or prompt-level plan authority | apply the [Plan-to-Execution boundary](AP.md#plan-to-execution-gate), including separately authorized artifact persistence; stop at the terminal planning report |
 | implementation with `not-used` | require explicit implementation authority, exact baseline, allowlist, and positive/negative boundaries |
 
 Missing, duplicated, mismatched, or contradictory routing stops work. A terminal
 planning report expires planning authority. Plan UI approval, `Yes`, `Build`,
 `Continue`, automatic mode transition, or an accepted plan never authorizes
 execution. Apply [Planning Budget and Expiry](AP.md#planning-budget-and-expiry)
+and [initial Planner routing](AP.md#orchestration-planning-and-implementation-planning)
 for the one-cycle default; the single targeted revision (new evidence, newly
 identified material risk, or one specifically rejected assumption); and
 changed-objective supersession.
@@ -69,10 +70,12 @@ never proves independence
 Echo the exact three prompt coordinates once in the terminal report. Treat a
 trace, archived prompt, prior report, filename, ordinal, continuity memory, or
 retained context as evidence only, never current authority. The Worker does not
-self-archive the current prompt/outcome pair or grant itself trace writes; trace
-archival belongs to the Orchestrator after the outcome exists. When able, return
-the Worker terminal report; an interruption companion belongs only to a separately
-authorized non-Worker owner when no report exists.
+grant itself trace writes. Apply the exact persistence grant and
+[RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity) for
+prepared prompt reuse, report identity, physical-path/collision checks, bounded
+writes, and readback before terminal notification; Git authority remains separate.
+Use [completion recovery](AP.md#planning-budget-and-expiry) when client controls
+prevent delivery. An interruption is a separate authorized non-Worker artifact.
 
 Stop after the terminal report because authority expires regardless of context
 or trace availability. See
@@ -117,11 +120,9 @@ Fresh Independent Re-Audit remain profiles of one WORKER role.
 Implementation self-review, tests, diff inspection, and same-session diagnostics
 are useful non-independent evidence. Independent acceptance requires a fresh
 session that did not materially implement the candidate. Internal delegation or
-a new profile label does not create independence. A session spawned inside the
-dispatching Orchestrator's conversation, or inheriting its conversation or
-reasoning, is not a fresh session and cannot provide independent acceptance; a
-dispatched session that discovers parent-context inheritance stops and reports
-it.
+a new profile label does not create independence. Apply
+[RF-05](AP.md#rf-05-freshcurrent-routing-and-independent-acceptance) to actual
+session separation and inherited context; report a routing/independence mismatch.
 
 A Fresh Evidence Probe may mutate only explicitly authorized bounded temporary
 probe state. It remains read-only for repository, durable project, external,
@@ -275,7 +276,10 @@ status; phase-qualified result; start/end commit or artifact; changed paths and
 purpose; validation; authorized Git or side-effect result; deviations, risks,
 and missing evidence; one smallest next step; one allowed report justification;
 and authority expiry. Include only activated surface annexes, without weakening
-their required evidence.
+their required evidence. Include the required MEASURED/LEAD critique using the
+standard header contract; when delegation is used, include only its activated
+consolidated-report details. A separately authorized handout supplements the
+standard report under [Session Rotation](AP.md#14-session-rotation-and-dynamic-prompts).
 
 Implementation PASS means a bounded candidate was produced and validated; it
 is non-independent. Acceptance, publication, deployment, production acceptance,

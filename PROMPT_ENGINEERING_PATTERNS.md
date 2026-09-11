@@ -337,7 +337,9 @@ evidence classes for this handshake are owned by
 #### Purpose
 
 Separate Orchestrator planning from Worker implementation planning, route
-fresh/current sessions and native Plan mode by uncertainty, and prevent plan
+fresh/current sessions through the
+[initial Planner owner](AP.md#orchestration-planning-and-implementation-planning)
+and bounded additional uncertainty, and prevent plan
 approval from becoming implementation authority or a plan-only loop. Complete
 a missing terminal report for a frozen planner artifact without reopening the
 plan.
@@ -345,23 +347,23 @@ plan.
 #### Use when
 
 Use for every Orchestrator-to-Worker prompt; include the full planning contract
-only when repository-grounded implementation planning is actually needed. Use
-the report-completion branch only when an otherwise healthy exchange has a
-frozen decision-complete planner artifact and omitted only AP's separate
-terminal report.
+for a Planner task under the AP owner. For native-client delivery restrictions,
+use [completion recovery](AP.md#planning-budget-and-expiry) to distinguish missing
+report rendering from missing exact persistence.
 
 #### Do not use when
 
 Do not use task complexity, a UI button, profile name, retained chat, requested
 mode, or proposed plan as authority. Do not duplicate a decision-complete
 Orchestrator prompt in Plan mode. Do not treat a planner artifact as its
-terminal report or use report repair to revise the plan, implement it, mutate
-state, or consume another planning cycle.
+terminal report or use report repair to revise the plan, implement it, perform
+ungranted mutation, or consume another planning cycle.
 
 #### Adaptation questions
 
 Which planning layer owns the unresolved decision? Which exact session receives
-the task? Is Plan mode materially useful? May the healthy current Worker
+the task? Does the initial Planner rule or an additional technical question apply?
+May the healthy current Worker
 implement after approval? What ends planning and authorizes execution? Does a
 frozen planner artifact lack only its standard report, and can the same healthy
 session render it without re-planning?
@@ -382,11 +384,9 @@ The no-second-automatic-revision rule is owned by
 [Planning Budget and Expiry](AP.md#planning-budget-and-expiry).
 A UI approval or accepted plan grants no implementation authority.
 Execution requires a separate complete Orchestrator prompt with not-used.
-If a frozen planner artifact lacks only the terminal report, apply the exact
-Planner-Artifact Report Completion Repair in PROMPT_CONTRACTS.md unchanged.
-That branch renders the missing report only; it never changes the artifact,
-reopens planning, implements, mutates, accepts, publishes, closes, or consumes
-another planning cycle.
+For missing report rendering or exact file persistence, apply the
+Planner-Artifact Report Completion Repair in PROMPT_CONTRACTS.md.
+Keep frozen content, actual authorship, and bounded persistence authority distinct.
 ```
 
 #### Failure it prevents
@@ -507,21 +507,22 @@ multi-agent features do not establish a universal benefit or safe topology.
 
 ### P14 — Model Rotation and Evidence Equivalence
 
-**Applies to:** model/client/session rotation, Cooperator dispatch opt-out, and restoration | **AP anchors:** AP §§3, 14, 15 | **Related patterns:** P02, P06, P10, P15
+**Applies to:** model/client/session rotation, Cooperator-selected delivery, and restoration | **AP anchors:** AP §§3, 14, 15 | **Related patterns:** P02, P06, P10, P15
 
 #### Purpose
 
 Preserve authority, scope, and evidence requirements when changing model,
-client, or execution session, or when the Cooperator explicitly opts out of
-direct Agent Orchestrator dispatch to act manually as messenger across model
-families or clients.
+client, execution session, or selected delivery route. Access profiles do not
+select dispatch; [AP §3](AP.md#3-instances-sessions-and-worker-session-profiles)
+owns preserved manual/subagent choice and dispatch evidence.
 
 #### Use when
 
 Use for intentional transfer due to capability fit, availability, cost,
 context integrity, tool limits, policy limits, independent-evidence needs, or
-when the Cooperator explicitly opts out of Agent Orchestrator dispatch to
-deliver prompts manually to another model family or execution client.
+a material changed axis makes revisiting the selected route useful. The
+[initial Planner owner](AP.md#orchestration-planning-and-implementation-planning)
+applies independently of the subsequent delivery choice.
 
 #### Do not use when
 
@@ -559,7 +560,7 @@ and the Provider-Neutral Model and Surface Routing anchor in [AP.md](AP.md).
 
 ### P19 — Dense Grant by Citation
 
-**Applies to:** experienced-session grants and compact prompt construction |
+**Applies to:** fresh or healthy current sessions and compact prompt construction |
 **AP anchors:** AP §3, §17, RF-02 | **Related patterns:** P01, P03, P11
 
 #### Purpose
@@ -570,7 +571,9 @@ citing canonical owners instead of recopying stable rules.
 #### Use when
 
 Use when the intended session can follow canonical links and the accepted plan
-or Cooperator-selected route already fixes the boundaries being cited.
+or Cooperator-selected route already fixes the boundaries being cited. Use the
+[Worker common foundation](AP.md#per-role-minimum-reading-spine) and verified
+owner/heading citations; a fresh session does not require full-archive onboarding.
 
 #### Do not use when
 
@@ -1193,20 +1196,23 @@ semantics, and no textual prompt guarantees injection or disclosure prevention.
 ## 15. Cost-Proportional Prompt Fixtures
 
 These fixtures illustrate compact grants. They are advisory examples, not task
-authority. Current prompt fields and `AP.md` take precedence.
+authority. These are field excerpts; issuance adds the complete bounded grant
+and visible capsule. Current prompt fields and `AP.md` take precedence. The
+implementation examples follow an accepted Planner in session 01.
 
 ### Positive: simple Worker prompt
 
 ```text
 Persistent role identity: WORKER
 Logical whole identity: catalog-copy-fix
-Worker session ordinal: 01
+Worker session ordinal: 02
 Worker exchange ordinal: 01
 Worker session target: fresh-worker-session
 Native planning mode: not-used
 Worker session profile: Fresh Implementation Worker
 Phase: implementation
 Recommended reasoning: Medium
+Recommended context capacity: approximately 250k tokens
 Recommendation basis: bounded documentation edit against a known path
 Development envelope activation: not-used
 Validation ladder: selected
@@ -1234,11 +1240,13 @@ Worker session ordinal: 01
 Worker exchange ordinal: 01
 Worker session target: fresh-worker-session
 Native planning mode: required
-Worker session profile: Fresh Implementation Worker
+Worker session profile: Planner
+Delivery route: manual Cooperator delivery
 Phase: plan
 Planning layer: implementation-planning
 Implementation in same Worker session: prohibited
 Recommended reasoning: High
+Recommended context capacity: approximately 250k tokens
 Recommendation basis: named architectural ambiguity in working-copy topology
 Escalation or downgrade gate: Extra High only for a genuine unresolved semantic-owner contradiction
 Development envelope activation: not-used
@@ -1262,6 +1270,7 @@ Native planning mode: not-used
 Worker session profile: Fresh Implementation Worker
 Phase: implementation
 Recommended reasoning: Medium
+Recommended context capacity: approximately 250k tokens
 Recommendation basis: bounded runtime check against a declared envelope
 Development envelope activation: activated
 Development envelope identity: project-testbed/v1
@@ -1281,6 +1290,10 @@ Repeated-gate or reasoning-loop stop: configured
 Cooperator delivery / trace destination: configured
 Downloadable prompt filename: 02_implementation_00.md
 Destination path: <activated local destination>
+Report filename: 02_report_00.md
+Prompt persistence owner: <named actor under exact grant>
+Report persistence owner: <named actor under exact grant>
+Git publication owner: <named actor under separate Git grant>
 Archival: wait-for-report
 ```
 

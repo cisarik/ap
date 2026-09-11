@@ -89,8 +89,8 @@ behavior is added by optional adoption.
 A consuming project may declare, in root `AGENTS.md` outside the managed AP
 block:
 
-- a Cooperator presentation profile (e.g. status marks 🟢🟡🔴, delivery capsule,
-  and localized natural-language interaction);
+- a Cooperator presentation extension (localized status marks, capsule layout,
+  and natural-language interaction);
 - a named, versioned development envelope covering tooling, interpreter,
   working-copy topology preference, reversible class, and irreversible
   exclusions; and
@@ -98,9 +98,12 @@ block:
 
 Do not edit, refresh, or migrate the managed block for these declarations, and
 do not rerun `init` merely to advertise them. Absence of a declaration
-preserves current behavior. The declarations are project-owned. They are not AP
-semantics, do not grant Worker authority, and do not make a natural language,
-emoji set, topology, or trace implementation universally required.
+preserves the AP minimum [delivery capsule](AP.md#communication-routing).
+These optional declarations do not grant authority or choose a universal natural
+language, emoji palette, topology, or trace implementation. The
+[role-reading spine](AP.md#per-role-minimum-reading-spine) interprets managed-block
+document entrypoints as common foundation plus applicable anchors; no generated
+block change is required.
 
 ### Project-Owned Presentation Profile Example
 
@@ -111,16 +114,19 @@ example illustrating status marks, delivery capsule, and natural-language
 separation (e.g., Slovak for Cooperator chat, English for prompts and code):
 
 ```text
-# Project-owned presentation example only. Not AP semantics. Not Worker authority.
-Status: 🟢 healthy / proceed | 🟡 wait / open decision | 🔴 stop / BLOCKED
-Route: Agent Orchestrator default dispatch | copy-paste (P14 opt-out)
-Reasoning: Medium
-Downloadable prompt filename: 02_implementation_00.md
-Activated-trace destination: <project-local path using the activated local grammar>
+# Project-local layout extending the AP capsule; not Worker authority.
+🟡 Ready for delivery
+Recipient: Fresh Implementation Worker · fresh-worker-session · manual
+Recommendation: Medium · approximately 250k tokens
+Client: Native Plan Mode OFF
+Prompt: <activated directory>/02_implementation_00.md
+Report: <activated directory>/02_report_00.md
 Archival: wait-for-report
 ```
 
-A project may localize language or marks in that capsule. Those marks remain
+This example follows a completed initial Planner in session 01 and a preserved
+manual delivery choice. A project may localize language or marks while retaining
+the AP information minimum. Those marks remain
 presentation. The copyable, structurally English Worker prompt and the compact
 AP records stay the authority grant.
 

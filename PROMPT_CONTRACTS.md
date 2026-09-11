@@ -33,7 +33,18 @@ Every report has this compact core:
 10. exactly one report justification: `new-mutation`, `new-evidence`,
    `new-material-risk`, `changed-external-state`, `final-acceptance`, or
    `explicit-closure`; and
-11. authority-expiry statement.
+11. authority-expiry statement; and
+12. compact critique, per [Compact Communication](AP.md#17-compact-communication):
+
+```text
+Orchestration critique:
+MEASURED: none | <verified finding; evidence; effect; smallest correction>
+LEAD: none | <unverified possibility; cheapest useful check>
+```
+
+When internal delegation is used, the existing report also summarizes subtasks,
+split rationale, outcomes, conflicts, incomplete work, and unverified delegate
+claims, per [§3](AP.md#3-instances-sessions-and-worker-session-profiles).
 
 Every standard terminal report begins its metadata with exactly one occurrence
 of the coordinate fields owned by the
@@ -100,6 +111,22 @@ Preserved unaffected decisions: none
 Automatic targeted revisions used: 0
 ```
 
+For the initial cycle of an additional bounded technical question inside an
+accepted objective, use the same fields with truthful prior context:
+
+```text
+Planning cycle: initial
+Prior planning report: <stable accepted report identity>
+Targeted revision basis: none
+Changed decision boundary: <newly relevant technical question>
+Preserved unaffected decisions: <accepted decisions retained>
+Automatic targeted revisions used: 0
+```
+
+This shape does not reset the budget for the same unresolved question; see
+[Planning Budget and Expiry](AP.md#planning-budget-and-expiry).
+The first shape above is for the first plan of a new logical whole.
+
 The sole authorized targeted revision uses:
 
 ```text
@@ -122,10 +149,13 @@ Escalation disposition: NEEDS_ORCHESTRATOR_DECISION
 
 #### Planner-Artifact Report Completion Repair
 
-A frozen decision-complete planner artifact without AP's separate terminal
-Worker report leaves the planning exchange structurally incomplete. It is not a
-planning PASS. The same healthy Worker session may receive a complete next
-exchange only in this shape, using the next contiguous exchange ordinal:
+The completion choices and client-restriction recovery are owned by
+[Planning Budget and Expiry](AP.md#planning-budget-and-expiry). Rendering a
+missing standard report and persisting an existing exact report are distinct.
+An already authorized capable persister needs no new planning exchange.
+
+A Worker needing renewed authority receives a complete bounded completion prompt.
+The healthy same-session rendering shape is:
 
 ```text
 Worker session target: current-worker-session
@@ -144,14 +174,18 @@ Logical-whole closure: not-closed
 Planning cycle effect: none
 ```
 
-The complete prompt also carries the unchanged logical-whole and Worker-session
-coordinates, the next Worker-exchange ordinal, the required current-session
-re-gates, and the standard report contract. The repair creates the missing
-report prospectively and never overwrites the earlier exchange or changes the
-artifact. It uses an existing terminal status, phase-result spelling, report
-justification, and exchange filename rule as applicable; it creates none. The
-`not-used` value is client-mode routing and supplies no implementation
-authority.
+For exact persistence, the same existing authority, continuity, and output fields
+identify the complete supplied artifacts and their actual authors. The mutation
+line may allow only exact named artifact persistence under a positive path grant
+and the configured delivery record below; all other mutations remain prohibited.
+A different capable Worker uses its actual fresh target and next session ordinal,
+not a fictional continuity claim. The reporting Worker supplies its own terminal
+report in addition to any exact predecessor artifact it persists.
+
+The complete grant carries actual next exchange coordinates, repository re-gates,
+and the standard report contract. Preserve the frozen plan and earlier exchange
+and status. No planning cycle, implementation, acceptance, publication, or closure
+is authorized by this completion shape or by native mode not-used.
 
 ### Implementation Authority Record
 
@@ -260,11 +294,12 @@ a dump.
 | Worker exchange ordinal | Mandatory two-digit identity of the separately authorized prompt/outcome lifecycle inside the session |
 | Worker session target | Mandatory `fresh-worker-session` or `current-worker-session` routing declaration |
 | Native planning mode | Mandatory `required` or `not-used` routing declaration |
-| Worker session profile | Fresh Implementation Worker, Worker-Executed Preflight, Fresh Evidence Probe, Diagnostic Worker, Bounded Correction Worker, Fresh Independent Audit, Fresh Independent Re-Audit, or another explicitly defined bounded profile |
+| Worker session profile | Planner, WebSearcher, DeepResearcher, ImageCreator, Fresh Implementation Worker, Worker-Executed Preflight, Fresh Evidence Probe, Diagnostic Worker, Bounded Correction Worker, Fresh Independent Audit, Fresh Independent Re-Audit, or another explicitly bounded profile; see AP §3 and surface routing |
 | Implementation-planning contract | Required for plan-only work: planning layer, Orchestrator owner, Worker scope, disposition, same-session rule, stop and execution events, post-plan route, and one-cycle maximum |
 | Task identity | Stable task ID, type, and coherent outcome reference |
 | Continuity anchor | Required for `current-worker-session`; identifies the previous task, terminal report, accepted commit, or other precise prior authority boundary |
 | Reasoning recommendation | Lowest sufficient available reasoning profile and brief rationale for every Worker prompt |
+| Recommended context capacity | approximately 250k tokens or approximately 1M tokens; recommendation, not observed capacity or a token cap |
 | Communication routing | Project-configured operator, Orchestrator, Worker prompt/report/direct-user, report-header, documentation, and shell/platform presentation values when relevant |
 | Human-governance routing | Cooperator visibility, material human decision points, deterministic steps inside authority, brainstorming classification, and internal-delegation posture when relevant |
 | Repository checkout topology | Declared repository context such as standalone checkout or pinned submodule checkout |
@@ -272,7 +307,7 @@ a dump.
 | Repository identity | URL, applicable branch, accepted URL spellings, expected refs, containing repository, submodule path, and gitlink where relevant |
 | Working directory | Exact path or discovery rule |
 | Baseline | Expected commit, parent, subject, changed paths, or empty-state rule |
-| Mandatory reading | Project `AGENTS.md`, `.ap/AP.md`, `.ap/AP_WORKER.md`, and task-relevant files |
+| Mandatory reading | AP Worker common foundation plus verified task-relevant owner/heading citations and applicable project/directory rules; pin when revision matters, line numbers only as locators |
 | Repository gate | Topology-specific root, identity, synchronization, applicable branch, status, public-ref, and untracked-state checks |
 | Goal | One coherent outcome |
 | Accepted decisions | Decisions already made by the Cooperator or durable project records |
@@ -378,11 +413,12 @@ name alone never supplies the target.
 
 ### Concise Valid Examples
 
-Fresh implementation:
+Fresh implementation after an accepted Planner in session 01 (routing excerpts
+only; issuance still requires the complete task grant):
 
 ```text
 Logical whole identity: catalog-endpoint
-Worker session ordinal: 01
+Worker session ordinal: 02
 Worker exchange ordinal: 01
 Worker session target: fresh-worker-session
 Native planning mode: not-used
@@ -394,7 +430,7 @@ Current-session continuation:
 
 ```text
 Logical whole identity: catalog-endpoint
-Worker session ordinal: 01
+Worker session ordinal: 02
 Worker exchange ordinal: 02
 Worker session target: current-worker-session
 Native planning mode: not-used
@@ -408,7 +444,7 @@ Fresh independent audit:
 
 ```text
 Logical whole identity: catalog-endpoint
-Worker session ordinal: 02
+Worker session ordinal: 03
 Worker exchange ordinal: 01
 Worker session target: fresh-worker-session
 Native planning mode: not-used
@@ -463,15 +499,26 @@ Logical whole identity: catalog-delivery
 Worker session ordinal: 01
 Worker exchange ordinal: 01
 Worker session target: fresh-worker-session
-Phase: plan
-Trace files: 01_plan.md + 01_report.md
+Worker session profile: Planner
+Native planning mode: required
+Delivery route: manual Cooperator delivery
+Phase: planning
+Trace files: 01_planning.md + 01_report.md
 
 Logical whole identity: catalog-delivery
 Worker session ordinal: 01
 Worker exchange ordinal: 02
 Worker session target: current-worker-session
-Phase: plan
-Trace files: 01_plan_02.md + 01_report_02.md
+Worker session profile: Planner
+Native planning mode: required
+Planning cycle: targeted-revision
+Targeted revision basis: new-repository-or-external-evidence
+Prior planning report: 01_report.md
+Changed decision boundary: one named interface assumption
+Preserved unaffected decisions: all other accepted interface choices
+Automatic targeted revisions used: 1
+Phase: planning
+Trace files: 01_planning_02.md + 01_report_02.md
 
 Logical whole identity: catalog-delivery
 Worker session ordinal: 01
@@ -523,7 +570,7 @@ Trace discovery: <canonical trace location or discovery declaration>
 Trace project key: <project-local key>
 Trace logical-whole projection identity: <project-local projection identity>
 Trace authority: historical-evidence-only
-Trace archival owner: <owner distinct from Worker implementation authority>
+Trace archival owner: <named archival coordinator; separate from authorship and reconciliation>
 Trace visibility: public | private
 Trace companion outcome: report | interruption
 Trace self-granted status: none
@@ -531,8 +578,8 @@ Trace self-granted status: none
 
 An issued record contains one value rather than literal alternatives. The
 configured fields are absent when disposition is `not-used`. Configuration
-grants no status or authority, and the archival owner is separately authorized
-after an outcome exists.
+grants no status or authority. RF-19 and the delivery record distinguish exact
+artifact preparation from separately authorized Git archival after the outcome.
 
 ### Standard Markdown/Git Exchange Projection
 
@@ -550,12 +597,12 @@ two-digit and contiguous. `<phase>` is lowercase kebab-case other than
 the companion spelling (`NN_interruption.md` or `NN_interruption_XX.md`) and is
 mutually exclusive with the report companion.
 
-**Companion Integrity Invariant.** An archived report companion must be a
-valid terminal report (commencing with `### Report for ORCHESTRATOR_CHAT` and
-containing the compact core) or an authorized interruption companion, and must
-never be byte-identical to or a duplicate of the issued prompt. An archived
-companion identical to the prompt is invalid and must be rejected before
-reconciliation or closure.
+**Companion Integrity Invariant.** The report companion starts exactly with
+`### Report for ORCHESTRATOR_CHAT`, carries exactly one set of matching prompt
+coordinates and the compact core, and contains the actual task's terminal outcome.
+An interruption uses only its distinct interruption filename. Prompt duplicates,
+foreign handouts, incomplete native plans, and interruptions fail report identity
+under [RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity).
 
 Atomic first archival in Git uses:
 
@@ -585,7 +632,7 @@ Validation ladder: selected
 Inspection and provenance: required
 Existing focused tests: <identity or none>
 Affected tests: <selected identities or none>
-New causal regression: <named uncovered invariant or none>
+New causal regression: none — <reason> | <important behavior/regression; existing evidence gap; why this test closes it>
 Broad or full suite: not-used | required-because <project rule or named decision risk>
 Runtime or testbed: not-used | <declared envelope reference>
 Independent acceptance: not-required | required-separate-fresh-worker
@@ -593,7 +640,8 @@ Independent acceptance: not-required | required-separate-fresh-worker
 
 An issued record contains one value rather than literal alternatives. The
 selected fields are absent when the ladder is `not-used`. A full suite is not
-an automatic Worker tax.
+an automatic Worker tax. Apply [Validation](AP.md#12-validation-and-public-verification)
+to project-gate applicability and read-only acceptance as well as mutation.
 
 ### Repeated-Gate and Reasoning-Loop Stop Record
 
@@ -650,24 +698,45 @@ Inactive delivery configuration is exactly:
 Cooperator delivery / trace destination: not-used
 ```
 
-When project or task rules activate Cooperator delivery, the compact record is:
+When project or task rules activate artifact delivery, the existing record is:
 
 ```text
 Cooperator delivery / trace destination: configured
-Downloadable prompt filename: <exact filename>
-Destination path: <activated local destination or not-applicable>
+Downloadable prompt filename: <exact prompt filename>
+Destination path: <exact directory or not-applicable>
+Report filename: <exact report filename>
+Prompt persistence owner: <named actor>
+Report persistence owner: <named actor>
+Git publication owner: <named actor>
 Archival: wait-for-report | allow-now
 ```
 
-An issued record contains one archival value rather than literal alternatives.
-The configured fields are absent when disposition is `not-used`. Filename and
-destination are delivery evidence, not task authority. When default dispatch
-is used, the Orchestrator directly archives the prompt and outcome pair; in
-copy-paste workflows (such as P14 model opt-out), the Orchestrator reconciles
-and archives the pair upon report return. The Worker does not self-archive.
-Companion integrity applies: a report companion must never duplicate the
-prompt. This record does not encode a natural language, emoji, or a particular
-trace implementation as required AP fields; see [§19](AP.md#19-anti-patterns).
+An issued record selects one archival value. Configured fields are absent when
+not-used. Paths and owner names do not replace the positive write/Git grant.
+Apply [RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity)
+for authorship, integrity, collision checks, readback, and after-outcome Git pairing.
+
+The visible capsule required by [Communication Routing](AP.md#communication-routing)
+is presentation alongside the prompt or handout, not a second authority record.
+Its minimum includes emoji plus textual state, recipient/profile, actual fresh or
+current session, selected delivery, reasoning and approximate context recommendation,
+explicit Native Plan Mode ON/OFF, and activated exact destinations and archival
+state. Specialist capability/mode is added when relevant. Example using Meta-local
+storage (the governing initial Planner behavior is linked in the mode contract):
+
+```text
+🟡 Ready for delivery
+Recipient: Planner · fresh-worker-session · manual
+Recommendation: High · approximately 250k tokens
+Client: Native Plan Mode ON
+Prompt: <exact directory>/01_planning_00.md
+Report: <exact directory>/01_report_00.md
+Archival: wait-for-report
+```
+
+For a handout, identify the successor's `Capability profile: Orchestrator` or
+`Capability profile: ChatOrchestrator`, actual session/capability requirements,
+and exact activated handout destination; it is not a Worker prompt/report pair.
 
 ### Trace-Local Filename Mapping Example
 
@@ -701,26 +770,21 @@ delivery or action.
 
 | Session target | Native planning mode | Required Cooperator action |
 |---|---|---|
-| `fresh-worker-session` | `required` | Open a new Worker session, enable native planning mode, then paste. If unavailable, do not paste; return for a `not-used` prompt. |
+| `fresh-worker-session` | `required` | Route under AP implementation-planning owner; the initial Planner has no `not-used` substitute. |
 | `fresh-worker-session` | `not-used` | Open a new Worker session, ensure native planning mode is disabled or absent, then paste. |
 | `current-worker-session` | `required` | Stay in the exact same Worker session, enable native planning mode, then paste. If this cannot be done without changing sessions, return for correction. |
 | `current-worker-session` | `not-used` | Stay in the exact same Worker session, ensure native planning mode is disabled or absent, then paste. |
 
-`required` means native planning mode must be enabled before prompt delivery.
-If the client lacks that mode, the prompt must not be pasted. The Orchestrator
-reissues a complete `not-used` prompt and, when the task is planning or
-Discovery, grants explicit prompt-level read-only planning authority.
-`not-used` means native planning mode is disabled or absent; it may still carry
-a plan-only task. Ordinary localized routing guidance remains outside the
-copyable, structurally English Worker prompt.
+The actual initial manual Planner and native-mode behavior is owned solely by
+[Orchestration Planning and Implementation Planning](AP.md#orchestration-planning-and-implementation-planning).
+Its prompt declares Planner, session/exchange 01, manual delivery, and required
+native mode. Only additional bounded planning or Discovery may use an explicitly
+read-only not-used fallback. Implementation declares not-used. Routing metadata
+must agree with the actual client and intended session.
 
-For Agent Orchestrators, direct session dispatch is the default delivery route
-for one complete Worker prompt into one concrete session. When the Cooperator
-explicitly opts out of direct dispatch — specifically to rotate to another
-model family, another client, or to act manually as the messenger under
-[P14](PROMPT_ENGINEERING_PATTERNS.md#p14--model-rotation-and-evidence-equivalence) —
-copy-paste prompt delivery is the lawful selected route, recorded as an
-accepted Cooperator decision.
+Preserved subsequent delivery selection and dispatch/independence evidence are
+owned by [AP §3](AP.md#3-instances-sessions-and-worker-session-profiles);
+use the existing Cooperator-selected route and Worker-session fields.
 
 Historical prompts remain interpretable under their original AP pin. The two
 fields are prospective requirements for prompts newly issued, renewed, or
@@ -728,12 +792,10 @@ reissued under this protocol revision.
 
 ## Plan-to-Execution Gate
 
-The Orchestrator owns orchestration planning: objective, logical whole, risk,
-authority, routing, sequencing, approval, evidence, acceptance, and closure.
-Route a Worker to implementation planning only when repository reconnaissance
-or unresolved technical alternatives, architecture, migration, security,
-rollback, or cross-layer impact materially affect safe implementation. A task
-being called complex is not enough, and product uncertainty remains Discovery.
+The two planning layers, initial Planner behavior, and bounded additional
+planning triggers are owned by
+[Orchestration Planning and Implementation Planning](AP.md#orchestration-planning-and-implementation-planning).
+The records below express the selected scope and finite transition.
 
 Every plan-only prompt includes exactly one value for each field:
 
@@ -758,11 +820,12 @@ new prompt.
 
 The required transition is:
 
-1. the Orchestrator issues a complete prompt routed with native planning mode
-   `required`;
-2. the Cooperator configures the client and delivers it;
-3. the Worker performs bounded read-only planning and returns a terminal report;
-4. planning authority expires and the Cooperator returns the report;
+1. the Orchestrator issues the complete planning grant using the selected scope
+   and mode under the AP planning owner;
+2. delivery follows AP §3 and the initial Planner owner, as applicable;
+3. the Worker uses the Plan-to-Execution boundary, including separately granted
+   RF-19 persistence, and returns a terminal report;
+4. planning authority expires; RF-19 governs delivery for reconciliation;
 5. the Orchestrator accepts, revises, or rejects the plan; and
 6. implementation, if accepted, receives a new complete prompt with native
    planning mode `not-used` and explicit implementation authority.
@@ -859,6 +922,7 @@ A routing decision records the material rows only:
 | Model | requested value; observed value or unknown; independent identity attestation with source/scope or none; never verified from selection alone |
 | Reasoning effort | requested value; observed value or unknown; independent enforcement attestation with source/scope or none |
 | Permission mode | requested value; observed value or unknown |
+| Recommended context capacity | approximately 250k tokens or approximately 1M tokens; advisory recommendation, not telemetry |
 | Context capacity and usage | exposed values or unknown; qualitative pressure |
 | Quota and cost constraints | announced constraints and their routing effect |
 | Native planning mode | requested state; observed state or unknown |
@@ -869,7 +933,7 @@ A routing decision records the material rows only:
 | Sub-agents or internal delegation | not-used or explicitly authorized bounded posture |
 | Explore-style task | not-used or explicitly authorized read-only scope |
 | Worker topology | single-active or complete bounded parallel exception |
-| Required tools | material tool requirements and availability |
+| Required tools | material tool requirements and availability; specialist brief, capability/mode, output requirements and delivery/persister when applicable |
 | Unavailable capabilities | what cannot be produced and the consequence |
 | Fallback or escalation decision | route change, escalation, or none, with reason |
 
@@ -893,6 +957,7 @@ The Orchestrator recommendation names the recommended surface and its basis:
 Recommended client/surface: <surface>
 Recommended model: <model>
 Recommended reasoning: <lowest sufficient profile and rationale>
+Recommended context capacity: <approximately 250k tokens or approximately 1M tokens>
 Enhanced/maximum mode: <requested | directly observed | inferred | unknown/not observably exposed>
 Automatic model selection: <allowed | off and reason>
 Independence requirement: <none | fresh independent evidence and basis>
@@ -2178,9 +2243,10 @@ are not separate independent auditors.
   current mutation state, unresolved questions, risks, and materially relevant
   Cooperator intent separated from brainstorming.
 - **Output**: evidence-dense synthesis with PASS, PARTIAL, or BLOCKED
-  restoration readiness classification; target Orchestrator capability profile
-  and initialization signal (`Capability profile: Agent Orchestrator | Read-Only Orchestrator`);
-  recommended trace handout filename (`00_handout_agent.md` | `00_handout_readonly.md` | `00_handout.md`);
+  restoration readiness classification; target Orchestrator access profile
+  and initialization signal (`Capability profile: Orchestrator | ChatOrchestrator`);
+  exact handout destination under activated local grammar; actual author and persister;
+  predecessors, retained decisions, explicit supersession/reasons, selected delivery;
   operational continuity; strategic continuity; development narrative; forward horizon;
   authority boundaries including account, browser, filesystem, Git, production, and external-service
   boundaries; current phase; exact next bounded step; next Worker reasoning

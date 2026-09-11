@@ -26,16 +26,10 @@ AP has exactly three persistent roles — COOPERATOR, ORCHESTRATOR, WORKER
 dispatch arrangements never add a fourth role
 ([RF-06](AP.md#rf-06-capability-reasoning-permission-containment-and-authority)).
 
-- **Agent Orchestrator** — an ORCHESTRATOR whose client functionally exposes
-  session-dispatch or tool-routing capabilities and which defaults to direct
-  Worker dispatch unless the Cooperator explicitly opts out (e.g. under P14).
-- **Read-Only Orchestrator** — an ORCHESTRATOR lacking those capabilities or
-  not authorized to use them; fully valid; copy-paste prompt delivery stays
-  lawful.
-
-Both names are descriptive labels of one ORCHESTRATOR role. A profile never
-grants authority. Every restoration handout explicitly signals which profile to
-initialize (`Capability profile: Agent Orchestrator | Read-Only Orchestrator`).
+[AP §3](AP.md#3-instances-sessions-and-worker-session-profiles) distinguishes
+Orchestrator (designated working checkout) from ChatOrchestrator (mediated
+access, with bounded inspection-clone evidence). Access, dispatch, and authority
+are separate. Planner and specialists remain WORKER profiles/capabilities.
 
 ## 3. Orchestrator Intuition Boundary
 
@@ -49,9 +43,9 @@ inside the accepted plan. Owner:
 |---|---|
 | synthesize and readiness-review Worker grants | author AP or protocol content |
 | read-only inspection and preflight | implementation PASS on a material candidate |
-| RF-19 staging and archival after the report exists | any acceptance requiring independence |
+| RF-19 exact preparation and separately authorized archival | any acceptance requiring independence |
 | dispatch-worktree create/remove when the plan names it | publication, deployment, production |
-| project-owned Cooperator presentation after the copyable prompt | consumer pin updates |
+| required delivery capsule with project extensions | consumer pin updates |
 | restore and clean own routing state | host, credential, or account changes |
 | direct acceptance at ladder rung 1 for E0/E1 claims not needing independence | material protocol design not already locked |
 
@@ -71,16 +65,10 @@ prompt. The receiving session is an ordinary Worker session under
 [RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity); the
 dispatcher remains the Orchestrator.
 
-- **Default dispatch for Agent Orchestrator**: An Agent Orchestrator defaults to
-  dispatching complete Worker prompts directly into concrete Worker sessions.
-- **P14 Model-Opt-Out exception**: When the Cooperator explicitly opts out —
-  specifically to rotate model family, switch clients, or act manually as the
-  messenger ([P14](PROMPT_ENGINEERING_PATTERNS.md#p14--model-rotation-and-evidence-equivalence)) —
-  copy-paste prompt delivery is the lawful selected route.
-- Parallel dispatch stays under single-active and the bounded parallel
-  exception; an audit is never dispatched in parallel with implementation.
-- If dispatch is absent, unauthorized, or cannot deliver the complete prompt,
-  ordinary copy-paste delivery remains lawful.
+Use [AP delivery selection](AP.md#3-instances-sessions-and-worker-session-profiles)
+for the preserved subsequent manual/subagent route and
+[initial Planner routing](AP.md#orchestration-planning-and-implementation-planning)
+for the first exchange. Parallel mutation still needs its own bounded exception.
 
 ## 5. Fresh Independent Audit Checklist
 
@@ -95,9 +83,9 @@ Every check is observable; owner:
 - Receives only the issued prompt text as initial context.
 - Worktree isolation is never treated as proof of independence.
 
-A session spawned inside the parent Orchestrator's conversation, or inheriting
-its history or reasoning, is not fresh and cannot provide independent
-acceptance. A dispatched session that discovers parent-context inheritance
+Execution inside the parent conversation is not fresh; inherited parent history
+or reasoning disqualifies independent acceptance even in a separate session.
+A dispatched session that discovers parent-context inheritance
 stops and reports it.
 
 ## 6. Dense Grants by Citation
@@ -110,14 +98,11 @@ inside the prompt itself; activate only triggered annexes; keep the compact
 communication completeness floor; no token caps; no generator-owner. Citations
 are context, never authority.
 
-## 7. Optional Signaling
+## 7. Visible Delivery
 
-Signaling — emoji, capsules, localized presentation — is project-owned
-optional presentation, emitted after the copyable structurally English prompt
-([Cooperator Delivery record](PROMPT_CONTRACTS.md#cooperator-delivery-and-trace-destination-record),
-[optional presentation profile](INTEGRATION.md#optional-presentation-profile-development-envelope-and-trace-grammar)).
-It is never an AP field, never a Worker-authority gate, and inactive by
-default.
+[Communication Routing](AP.md#communication-routing) owns the required short
+capsule; project presentation may extend it. Marks remain presentation and grant
+no task authority.
 
 ## 8. Failure Quick List
 

@@ -116,8 +116,11 @@ Before committing an AP update in a consuming project:
 - verify `AGENTS.md` still points to `.ap/`;
 - verify or refresh optional project-owned declarations in `AGENTS.md` outside
   the managed block, such as a Cooperator presentation profile (e.g. status
-  marks 🟢🟡🔴, delivery capsule), development envelope, or upgrade ledger per
+  marks and localized capsule layout), development envelope, or upgrade ledger per
   [INTEGRATION.md](INTEGRATION.md#optional-presentation-profile-development-envelope-and-trace-grammar);
+- check the mandatory [delivery minimum](AP.md#communication-routing), renamed
+  access profiles, selected-route continuity, and activated trace mapping against
+  the new pin; optional project extensions do not replace the minimum;
 - confirm no copied AP files were reintroduced;
 - confirm `.ap/` has no local dirty state;
 - confirm only the intended gitlink changes unless a separate authorized change

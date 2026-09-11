@@ -44,9 +44,10 @@ current state and routes a new decision; it grants no mutation authority.
 
 **Stage 2 — select exactly one bounded logical whole.** Present the restored
 state, active observations, material uncertainty, and one evidence-backed
-recommendation. Obtain the Cooperator's explicit selection of one bounded next
-logical whole or a decision to gather more evidence. Only then issue a complete
-current Worker prompt with its own exact authority record. A seed, handout,
+recommendation. Preserve an already selected/planned whole; obtain selection
+for a new objective or a decision to gather more evidence under AP Continuation
+Bootstrap. Then issue a complete current Worker prompt with its own exact
+authority record. A seed, handout,
 planner artifact, stale grant, ledger, trace, or prior prompt never supplies
 current authority.
 
@@ -57,7 +58,8 @@ not durable authority, and its wording is not required:
 Resume this AP-integrated project.
 Read the root AGENTS.md and the pinned AP documents it names.
 Begin read-only. Restore canonical state and any declared AP upgrade ledger.
-With the COOPERATOR, select exactly one bounded next logical whole before any
+Preserve an already selected/planned whole; with the COOPERATOR select a new
+objective only when needed before any
 mutation authority is issued.
 ```
 
@@ -83,12 +85,12 @@ for microapproval of deterministic steps inside an approved envelope. See
 | Decision | Orchestrator action | Stop or escalate when |
 |---|---|---|
 | Objective or product boundary | synthesize evidence and recommend one route; obtain the Cooperator decision | intent is materially ambiguous or changed |
-| Planning | apply [Planning Budget and Expiry](AP.md#planning-budget-and-expiry) when repository-grounded uncertainty remains | a second automatic revision is requested |
+| Planning | apply [initial Planner and additional planning](AP.md#orchestration-planning-and-implementation-planning) and the finite budget | missing required mode or repeated planning of the same question |
 | Implementation | issue one complete prompt with exact baseline, allowlist, boundaries, and `Native planning mode: not-used` | any material gate is unknown or contradictory |
 | Acceptance | fix the candidate, owner map, allowlist, risk claims, and control matrix | review expands into unknown-unknown hunting |
 | Correction | authorize one smallest coherent correction for a concrete finding | the same assumption survives correction and recheck |
 | Publication/deployment/production | activate only the applicable surface annex and verify exact artifact continuity | authority or direct evidence is absent |
-| Dispatch and direct action | Agent Orchestrator defaults to dispatching one complete Worker prompt into one concrete session unless the Cooperator opts out (P14); otherwise copy-paste | parent-context spawn claimed as independent; prompt duplicate archived as report; intuition used as implementation authority |
+| Dispatch and direct action | apply [delivery selection](AP.md#3-instances-sessions-and-worker-session-profiles) and the RF-02 direct-action boundary | missing selected-route capability or independence evidence; invalid report identity |
 | Closure | reconcile required results, Cooperator decisions, risk, ledger, and active mutation | any required condition remains open |
 
 Phase names never grant authority. Use only the phases that the selected risk
@@ -170,34 +172,15 @@ Semantics:
 [RF-06](AP.md#rf-06-capability-reasoning-permission-containment-and-authority),
 and [AP §3](AP.md#worker-session-target).
 
-An **Agent Orchestrator** is an Orchestrator whose client functionally exposes
-session-dispatch or tool-routing capabilities. An Agent Orchestrator **defaults
-to dispatching** one complete authoritative Worker prompt into one concrete
-Worker session, unless the Cooperator explicitly opts out. When the Cooperator
-explicitly opts out of direct dispatch — specifically to rotate to another
-model family, another client, or to act manually as the messenger
-([P14](PROMPT_ENGINEERING_PATTERNS.md#p14--model-rotation-and-evidence-equivalence)) —
-copy-paste prompt delivery is the lawful selected route, not a protocol
-failure. A **Read-Only Orchestrator** lacks those capabilities or is not
-authorized to use them; it remains fully valid, and copy-paste prompt delivery
-stays lawful. Both are the ORCHESTRATOR role; the labels never grant authority,
-and dispatch capability is a delivery mechanism only.
+[AP §3](AP.md#3-instances-sessions-and-worker-session-profiles) owns Orchestrator /
+ChatOrchestrator access profiles, observation limits, preserved delivery choice,
+complete-prompt dispatch, and the successor initialization signal.
+Record access, dispatch capability, and the selected route separately; use the
+[initial Planner owner](AP.md#orchestration-planning-and-implementation-planning)
+for the first delivery boundary.
 
-When dispatch is used, it delivers **one complete authoritative Worker
-prompt** into **one concrete session**. The receiving session is an ordinary
-Worker session with its own target, coordinates, profile, and report contract;
-a tool-task summary is not a prompt. Authorization is whole-or-route level,
-never per-spawn microapproval. Parallel dispatch stays under single-active and
-the bounded parallel exception, and an audit is never dispatched in parallel
-with implementation. If dispatch is absent, unauthorized, or cannot deliver
-the complete prompt, ordinary copy-paste delivery remains lawful.
-
-A session spawned inside your own conversation, or inheriting it or its
-reasoning, is not a fresh session and cannot provide independent acceptance.
-Direct action obeys the RF-02 intuition boundary: deterministic or reversible,
-inside the accepted plan, no semantic-owner mutation, no independence claim,
-and no substituted Cooperator decision. Mutation, protocol authoring, and
-independence-required acceptance remain Worker-required.
+Apply RF-05 to actual session separation and acceptance inputs, and RF-02 to
+direct action; neither a profile name nor dispatch tooling widens either boundary.
 
 ## Worker Exchange Coordinates and Optional Trace
 
@@ -218,39 +201,17 @@ independent evidence, or another AP trigger. Every exchange follows prior
 authority expiry and receives a complete new prompt; retained context is never
 the renewal.
 
-Treat external trace configuration as project/task context. A trace is inactive
-unless authorized project rules configure it, and its availability never
-becomes a universal prerequisite. When configured, project the activated
-trace's local filename grammar as the archival destination; that local grammar
-is storage, not AP meaning. When default dispatch is used, the Orchestrator
-receives the terminal report directly in-session and must archive the exact
-prompt and actual outcome pair together into the activated trace destination
-without imposing courier or archivist labor on the Cooperator. In copy-paste
-workflows (such as P14 model opt-out), the Cooperator ferries the report, and
-the Orchestrator reconciles and archives the pair.
+Use [RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity)
+and the [delivery record](PROMPT_CONTRACTS.md#cooperator-delivery-and-trace-destination-record)
+for optional trace activation, exact author/persister/Git assignments, report
+identity, and after-outcome archival. Project activated local grammar into exact
+destinations, inspect the actual companion against the issued task, and reconcile
+without confusing physical persistence with acceptance.
 
-Before reconciliation or closure, verify the **Companion Integrity Invariant**:
-an archived companion named `*_report_*.md` (or `NN_report.md` / `NN_report_XX.md`)
-must be a valid terminal report (commencing with `### Report for ORCHESTRATOR_CHAT`
-and containing the compact core) or an authorized interruption companion, and
-must **never** be byte-identical to or a duplicate of the issued prompt. Reject
-any duplicate prompt masquerading as a report. Archive—or ask the separately
-authorized Cooperator or archive owner to archive—the exact prompt and actual
-outcome together only after the outcome exists. Keep launch prompts outside
-mutation-gated worktrees until then unless an authorized workflow owns a safe
-staging location. The downloadable prompt file is transient delivery evidence.
-
-Reconcile interruption companions, late or contradictory reports, corrections,
-redactions, and supersession prospectively. Never impersonate a Worker, replace
-a report silently, rewrite history as though a later artifact were original,
-or infer delivery from archive time. Preserve historical pins and explicit
-bootstrap exceptions.
-
-If a healthy planning exchange froze a decision-complete client-native planner
-artifact but omitted AP's separate terminal report, do not call the exchange
-planning PASS. Follow the owner repair in
-[Planning Budget and Expiry](AP.md#planning-budget-and-expiry) and the
-[structural repair shape](PROMPT_CONTRACTS.md#planner-artifact-report-completion-repair).
+For a relayed report or a committed-report-ready notice, follow RF-19's expected
+path and canonical public-commit readback route. Native controls or missing report
+files use [completion recovery](AP.md#planning-budget-and-expiry); distinguish
+rendering from persistence and use already authorized capability where sufficient.
 
 Restore a fresh Orchestrator from governing immutable AP, current repository
 and external evidence, and accepted durable decisions before optional trace
@@ -262,11 +223,10 @@ the [lifecycle projection](ARTIFACT_LIFECYCLE.md#external-analytic-development-t
 
 ## Planning Ownership and Plan-to-Execution
 
-The Orchestrator owns objective, logical whole, risk, routing, sequencing,
-approval, evidence, acceptance, and closure. Route a Worker to implementation
-planning only when repository reconnaissance or unresolved architecture,
-migration, security, rollback, or cross-layer impact affects safe authority.
-Task size alone is not a trigger.
+The initial Planner and triggers for further technical planning are owned by
+[Orchestration Planning and Implementation Planning](AP.md#orchestration-planning-and-implementation-planning).
+Use the [Planning Record](PROMPT_CONTRACTS.md#planning-record) to preserve prior
+accepted decisions and the budget for the actual question.
 
 Apply [Planning Budget and Expiry](AP.md#planning-budget-and-expiry) for the
 one-cycle default; the single targeted revision (new evidence, newly identified
@@ -412,12 +372,8 @@ When no applicable declared route exists, exact project-owned prompt guidance
 remains lawful; do not invent an AP toolchain. Semantics:
 [RF-16](AP.md#rf-16-baseline-bound-project-execution).
 
-After the copyable, structurally English Worker prompt, when project rules
-activate a Cooperator presentation profile, emit that project-owned delivery
-package: selected route, Plan Mode on or off without showing a plan-mode mark
-when off, lowest-sufficient reasoning, exact downloadable filename,
-activated-trace destination, and archival wait or allow. Presentation marks are
-not task authority.
+Emit the capsule defined in [Communication Routing](AP.md#communication-routing)
+using the selected delivery record and any project presentation extension.
 
 Omitted permission is not implied permission; see
 [§5 Task Authority](AP.md#5-task-authority). Use the advisory
@@ -475,25 +431,12 @@ preserves existing behavior.
 
 ## Per-Whole Orchestrator Notes (`00_notes.md`)
 
-When an AP-run logical whole has a trace directory beside its handout, the
-Orchestrator may keep a notes file named exactly `00_notes.md` in that
-directory. The `00_notes.md` filename is a local AP-run convention, not a
-universal AP field, never a task-authority gate, and never a required
-universal artifact; its absence weakens no AP rule. Local grammar is never
-universal AP meaning
-([RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity));
-this convention declares its own relationship and lifecycle
-([RF-14](AP.md#rf-14-artifact-ownership-and-lifecycle)).
-
-Create the file beside the whole's handout at open. Only the Orchestrator
-writes it; Workers never write it. Entries are append-only and dated.
-Superseded facts move to Git history rather than being silently rewritten.
-The final entry is at closure; the file then freezes as evidence. Notes are
-evidence, never authority.
-
-Typical content: restoration verification, per-exchange Worker-claim review
-results, Cooperator decisions verbatim, freezes and deviations, failure
-classifications, and artifact pointers (paths and SHAs). Public-safe default.
+The semantic owner is [Artifact Lifecycle](AP.md#13-artifact-lifecycle-and-repository-hygiene);
+activated Meta storage requirements belong to Meta README, including creation
+of `00_notes.md` at opening even without an opening handout. Apply that local
+contract and the current grant; notes remain Orchestrator-authored and a named
+persister may store exact supplied entries. Reconcile report critique with the
+outcome under [Compact Communication](AP.md#17-compact-communication).
 
 ## Validation, Results, and Closure
 
@@ -518,19 +461,13 @@ operational continuity, strategic decisions, development rationale, forward
 horizon, exact verified refs, active mutation/Workers, open risk, authority
 limits, and the next bounded step. Use no numeric context threshold.
 
-When generating a restoration prompt or handout for a fresh successor
-Orchestrator instance, the Orchestrator must emit an explicit **Orchestrator
-initialization signal** in the prompt coordinates and Cooperator presentation:
-`Capability profile: Agent Orchestrator | Read-Only Orchestrator`.
-This signal unambiguously instructs the Cooperator whether to initialize an
-Agent Orchestrator session (with session-dispatch / subagent tools enabled) or
-a Read-Only Orchestrator session (interactive / copy-paste messenger mode),
-removing any initialization ambiguity for the Cooperator.
-
-The trace filename convention reflects this distinction:
-- `00_handout_agent.md` when the target is an Agent Orchestrator;
-- `00_handout_readonly.md` when the target is a Read-Only Orchestrator;
-- `00_handout.md` remains the baseline alias.
+Use [Session Rotation](AP.md#14-session-rotation-and-dynamic-prompts) for truthful
+handout authorship, predecessors, preserved decisions/delivery, explicit
+supersession, evidence limits, and readiness review. Use the successor access
+profile from [AP §3](AP.md#3-instances-sessions-and-worker-session-profiles),
+the visible capsule, and activated local filenames; no filename grants authority.
+Restore an ongoing planned whole through [Continuation Bootstrap](AP.md#continuation-bootstrap)
+without resetting its identity or planning.
 
 ## Stop and Escalation
 

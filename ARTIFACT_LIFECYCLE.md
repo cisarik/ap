@@ -72,8 +72,8 @@ after the report exists. For Git, both files have the same unique first-add
 commit and the archived bytes are the exact issued prompt and the exact actual
 report. Keep the externally delivered prompt outside mutation-gated worktrees
 until then unless a separately authorized workflow owns a safe staging
-location. The implementation Worker does not archive its current exchange
-without a later exact archival grant.
+location. Apply RF-19's named persistence and Git ownership: exact file
+preparation may be authorized in the current Worker grant, including for a Planner.
 
 A downloadable prompt file shown to the Cooperator is transient delivery
 evidence. It does not prove issuance, success, independence, or archival. Local
@@ -156,15 +156,13 @@ observations outside durable storage.
 
 ## Per-Whole Orchestrator Notes (`00_notes.md`)
 
-An AP-run logical whole may keep an Orchestrator-only notes file named exactly
-`00_notes.md` beside the whole's handout. It is an operational lifecycle
-artifact: consumer = Orchestrator, auditable by the Cooperator; retention =
-life of the whole's trace, then frozen historical evidence; cleanup owner =
-Orchestrator under Cooperator authority. The `00_notes.md` filename is a local
-AP-run convention, not a universal AP field, never a task-authority gate, and
-never a required universal artifact; its absence weakens no AP rule. Operational
-how belongs to
-[AP_ORCHESTRATOR.md](AP_ORCHESTRATOR.md#per-whole-orchestrator-notes-00_notesmd).
+[AP artifact lifecycle](AP.md#13-artifact-lifecycle-and-repository-hygiene) owns
+notes authorship, exact mechanical persistence, append-once handling and freeze.
+Meta README owns the activated local opening/storage convention. The consumer is
+the Orchestrator, auditable by the Cooperator; retention is the whole's trace
+lifetime, then frozen historical evidence; cleanup requires exact Cooperator
+authority. Notes are evidence, never a task-authority source. Handout authorship
+and continuity are owned by [Session Rotation](AP.md#14-session-rotation-and-dynamic-prompts).
 
 ## AP Distribution Relationships
 
@@ -181,7 +179,7 @@ how belongs to
 | `ap` and tests | executable enforcement |
 | managed `AGENTS.md` block and project rules | consumer projection |
 | optional declared consumer upgrade-ledger file | consumer-owned retained evidence; non-authorizing RF-09 storage projection |
-| `00_notes.md` (AP-run convention) | operational lifecycle artifact; Orchestrator-only author; Cooperator-auditable; retained for the life of the whole's trace, then frozen historical evidence; cleanup owner = Orchestrator under Cooperator authority. The `00_notes.md` filename is a local AP-run convention, not a universal AP field, never a task-authority gate, and never a required universal artifact; its absence weakens no AP rule |
+| `00_notes.md` (activated Meta convention) | operational lifecycle artifact; Orchestrator-authored, named exact persister; retained through the whole then frozen evidence; Meta README owns local storage; AP §13 owns lifecycle |
 
 Earlier protocol generations remain in Git history. Static BOOT, NEXT,
 WORKERS, prompt archive, generated protocol variant, or restoration archive is

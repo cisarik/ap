@@ -40,8 +40,9 @@ Use the named
 restore and reconcile read-only from root `AGENTS.md`, the pinned AP documents,
 current repository/external truth, durable decisions, and any explicitly
 declared upgrade ledger. Then present current state and one evidence-backed
-recommendation so the Cooperator can select exactly one bounded next logical
-whole or request more evidence. No resume seed, memory, handout, old prompt,
+recommendation, preserving an already selected/planned whole or obtaining
+selection for a new objective or further evidence. No resume seed, memory,
+handout, old prompt,
 planner artifact, or ledger grants mutation authority.
 
 ## Why may `.ap` use detached HEAD?
@@ -59,7 +60,7 @@ Outside the AP-managed block in the consuming project's root `AGENTS.md`. The
 block points to pinned AP; it does not copy the protocol. Do not edit `.ap/`
 during ordinary project work. Optional Cooperator presentation profile,
 development envelope, and local-trace grammar pointer are also declared there;
-absence preserves current behavior.
+absence preserves AP's [mandatory delivery minimum](AP.md#communication-routing).
 
 ## Is a full test suite an automatic Worker tax?
 
@@ -95,8 +96,8 @@ and [RF-02](AP.md#rf-02-orchestrator-decision-reconciliation-and-closure-authori
 
 ## When is planning used, and how does execution start?
 
-Use implementation planning for unresolved repository-grounded architecture,
-migration, security, rollback, or cross-layer choices—not merely task size.
+[Orchestration Planning and Implementation Planning](AP.md#orchestration-planning-and-implementation-planning)
+owns the first Planner and additional technical-planning triggers.
 [Planning Budget and Expiry](AP.md#planning-budget-and-expiry) owns the
 one-cycle default; the single targeted revision (new evidence, a new material
 risk, or one rejected assumption); and changed-objective supersession.
@@ -249,6 +250,26 @@ entry fields, and malformed/stale behavior are in the
 No declaration preserves current behavior and does not assert that all
 observations everywhere are resolved. Never discover a ledger by guessing or
 scanning for a filename.
+
+## Can a Planner or Worker save its own report?
+
+Use the explicit named persistence grant under
+[RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity);
+file preparation, authorship, reconciliation, and Git operations are distinct.
+[Completion recovery](AP.md#planning-budget-and-expiry) handles client-restricted
+writes or missing report rendering without reopening a frozen plan.
+
+## Must every task add a test?
+
+[Validation](AP.md#12-validation-and-public-verification) selects evidence for
+the claim and requires an existing-evidence gap for a new causal test;
+documentation may use focused semantic/link checks and no new automated test.
+
+## Who can author a handout, and what survives rotation?
+
+[Session Rotation](AP.md#14-session-rotation-and-dynamic-prompts) owns handout
+authorship and predecessor continuity; an assigned Worker handout is separate
+from its standard report, and notes authorship remains governed by AP §13.
 
 ## Related Reading
 

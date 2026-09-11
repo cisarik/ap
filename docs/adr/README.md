@@ -7,7 +7,7 @@ Programming.
 
 | Status | Meaning |
 |---|---|
-| Accepted | Current durable decision |
+| Accepted | Accepted architectural decision; candidate acceptance, publication and closure require their separate evidence |
 | Implementation candidate | Accepted rationale in a local candidate; no public acceptance, publication, or closure claim |
 | Superseded | Replaced by a later ADR; preserved only when still useful in the live tree |
 
@@ -22,18 +22,19 @@ Programming.
 | [0008](0008-worker-session-target-and-authority-renewal.md) | Worker session target and authority renewal | Accepted | Extended by ADR-0009; universal fresh-default wording prospectively refined by ADR-0011 |
 | [0009](0009-capability-aware-worker-routing-and-execution-gates.md) | Capability-aware Worker routing and execution gates | Accepted | Routing and execution gates retained; planning, freshness, and closure refined by ADR-0011 |
 | [0010](0010-defensive-security-profile.md) | Defensive-security profile and finding contract | Accepted | Advisory INFOSEC.md profile with a small normative AP.md anchor; suite-enforcement detail superseded by ADR-0015; substantive defensive-security decision retained |
-| [0011](0011-risk-routed-planning-and-bounded-closure.md) | Risk-routed planning and bounded closure | Accepted | Current planning, freshness, evidence-tier, anti-stall, authority-envelope, operational-evidence, and human-governance decision |
+| [0011](0011-risk-routed-planning-and-bounded-closure.md) | Risk-routed planning and bounded closure | Accepted | Current planning, freshness, evidence-tier, anti-stall, authority-envelope, operational-evidence, and human-governance decision; partially superseded by ADR-0023 as scoped below |
 | [0012](0012-baseline-bound-project-execution.md) | Baseline-bound project execution envelope | Accepted | Adds the project contract, sanitized direct execution, and CPython provenance boundary without changing protocol authority |
 | [0013](0013-semantic-ownership-and-convergence.md) | Semantic ownership and finite convergence | Accepted | Establishes the semantic-owner registry, projection taxonomy, structural-field ownership, and bounded convergence contract |
-| [0014](0014-external-analytic-trace-and-worker-exchange-identity.md) | External analytic trace and Worker exchange identity | Accepted | Originated as an implementation candidate at `f117457a1e346278ad3fe6c22c3ab57db2217374`; the unchanged RF-19 decision was later independently accepted and published at corrected tip `81dee2c182322ac95999e5d4ee42072b6040e44a`; ORCHESTRATOR logical-whole closure recorded separately by the successor-handout closure record; suite-enforcement detail superseded by ADR-0015 only; AP.md remains the sole live semantic owner |
+| [0014](0014-external-analytic-trace-and-worker-exchange-identity.md) | External analytic trace and Worker exchange identity | Accepted | Originated as an implementation candidate at `f117457a1e346278ad3fe6c22c3ab57db2217374`; the unchanged RF-19 decision was later independently accepted and published at corrected tip `81dee2c182322ac95999e5d4ee42072b6040e44a`; ORCHESTRATOR logical-whole closure recorded separately by the successor-handout closure record; suite-enforcement detail superseded by ADR-0015 only; AP.md remains the sole live semantic owner; partially superseded by ADR-0023 as scoped below |
 | [0015](0015-monolithic-ap-test-suite-retirement.md) | Monolithic AP test-suite retirement | Accepted | Deletes the live monolithic suite; documentation-first proportional validation; supersedes suite-enforcement details in ADR-0010 and ADR-0014 only |
-| [0016](0016-universal-continuation-and-upgrade-ledger-storage.md) | Universal continuation and upgrade-ledger storage | Accepted | Adds the two-stage continuation bootstrap, optional consumer-owned RF-09 storage projection, and bounded planner-report completion repair; AP.md remains the sole live semantic owner |
-| [0017](0017-cooperator-ergonomics-cost-proportional-execution.md) | Cooperator ergonomics and cost-proportional execution | Accepted | Extends existing RF families with compact Worker grants, activatable ladder/loop/envelope/delivery records, and project-owned Cooperator presentation; AP.md remains the sole live semantic owner |
+| [0016](0016-universal-continuation-and-upgrade-ledger-storage.md) | Universal continuation and upgrade-ledger storage | Accepted | Adds the two-stage continuation bootstrap, optional consumer-owned RF-09 storage projection, and bounded planner-report completion repair; AP.md remains the sole live semantic owner; partially superseded by ADR-0023 as scoped below |
+| [0017](0017-cooperator-ergonomics-cost-proportional-execution.md) | Cooperator ergonomics and cost-proportional execution | Accepted | Extends existing RF families with compact Worker grants, activatable ladder/loop/envelope/delivery records, and project-owned Cooperator presentation; AP.md remains the sole live semantic owner; partially superseded by ADR-0023 as scoped below |
 | [0018](0018-consumer-declared-execution-route-binding.md) | Consumer-declared execution route and capability-gate binding | Accepted | Extends RF-06/RF-16 so an applicable consumer-declared route is resolved before prompt issuance, made canonical, protected from silent ambient parallel routes, and deviated from only through explicit bounded authority |
-| [0019](0019-subagent-delivery-of-worker-sessions-and-orchestrator-capability-profiles.md) | Subagent delivery of Worker sessions and Orchestrator capability profiles | Accepted | Historical rationale for Agent/Read-Only capability-profile labels of one ORCHESTRATOR role, dispatch as one complete Worker prompt into one concrete session, and the parent-context independent-audit disqualifier |
-| [0020](0020-intuitive-mode-orchestrator-boundary-and-intuition-projection.md) | Intuitive mode, the Orchestrator intuition boundary, and the intuition projection | Accepted | Historical rationale for the RF-02 Orchestrator-direct/Worker-required boundary, dense grants by citation, the brief optional `INTUITION.md` projection, and opt-in signaling |
-| [0021](0021-followable-spine-and-restatement-conversion.md) | Followable spine, rule detectability, and restatement-to-pointer conversion | Accepted | Historical rationale for the per-role minimum-reading spine, three detectability classes and detection-surface requirement, restatement-to-pointer conversion, and the AP-run `00_notes.md` convention; `AP.md` remains the sole semantic owner |
-| [0022](0022-default-agent-dispatch-trace-integrity-and-pin-presentation.md) | Default agent dispatch, trace companion integrity, and pin presentation hook | Accepted | Historical rationale for Agent Orchestrator default dispatch, P14 model opt-out, companion integrity invariant, direct Orchestrator trace archival, and pin-time discoverability in UPDATING.md; AP.md remains the sole live semantic owner |
+| [0019](0019-subagent-delivery-of-worker-sessions-and-orchestrator-capability-profiles.md) | Subagent delivery of Worker sessions and Orchestrator capability profiles | Accepted | Historical rationale for Agent/Read-Only capability-profile labels of one ORCHESTRATOR role, dispatch as one complete Worker prompt into one concrete session, and the parent-context independent-audit disqualifier; partially superseded by ADR-0023 as scoped below |
+| [0020](0020-intuitive-mode-orchestrator-boundary-and-intuition-projection.md) | Intuitive mode, the Orchestrator intuition boundary, and the intuition projection | Accepted | Historical rationale for the RF-02 Orchestrator-direct/Worker-required boundary, dense grants by citation, the brief optional `INTUITION.md` projection, and opt-in signaling; partially superseded by ADR-0023 as scoped below |
+| [0021](0021-followable-spine-and-restatement-conversion.md) | Followable spine, rule detectability, and restatement-to-pointer conversion | Accepted | Historical rationale for the per-role minimum-reading spine, three detectability classes and detection-surface requirement, restatement-to-pointer conversion, and the AP-run `00_notes.md` convention; `AP.md` remains the sole semantic owner; partially superseded by ADR-0023 as scoped below |
+| [0022](0022-default-agent-dispatch-trace-integrity-and-pin-presentation.md) | Default agent dispatch, trace companion integrity, and pin presentation hook | Accepted | Historical rationale for Agent Orchestrator default dispatch, P14 model opt-out, companion integrity invariant, direct Orchestrator trace archival, and pin-time discoverability in UPDATING.md; AP.md remains the sole live semantic owner; partially superseded by ADR-0023 as scoped below |
+| [0023](0023-practical-workflow-consolidation.md) | Practical workflow consolidation | Accepted | Accepted design: access profiles, initial Planner and preserved delivery, exact persistence, compact reading, causal validation, specialist outputs, critique, and handout continuity; independent candidate acceptance/publication/closure remain separate |
 
 ADR-0009 permits only an explicit bounded parallel exception. It does not
 supersede fresh sequential independent audit or the remaining decisions in
@@ -110,6 +111,16 @@ return, and adds a pin-time presentation/envelope review hook in `UPDATING.md`
 with an example in `INTEGRATION.md`. It adds no rule family, field, record,
 executable `ap` surface, managed-block change, or mechanical validator. Consumer
 adoption and logical-whole closure remain separate.
+
+ADR-0023 partially supersedes earlier live design choices: ADR-0011's optional
+first planning; ADR-0014's exclusive persistence and companion ambiguity;
+ADR-0016's rendering-only completion limit and new-whole restoration assumption;
+ADR-0017/0020's optional-only signaling; ADR-0019's access/dispatch labels and
+freshness conflation; ADR-0021's large Worker spine and placement of notes meaning;
+and ADR-0022's default dispatch, exclusive archival, and profile-qualified handout
+recommendation. The new ADR preserves the remaining authority, finite-budget,
+independence, historical-identity, and single-owner decisions. Older ADR bodies
+are unchanged. Accepted design status does not certify this local candidate.
 
 ## Lifecycle Rule
 
