@@ -122,6 +122,20 @@ public-ref gate without authorized proof is `BLOCKED`. Never use public evidence
 to claim local index, worktree, untracked, or remote-tracking state, and never
 relabel Worker observation as direct Orchestrator observation.
 
+For example, a Cooperator says that a report is committed, but the expected
+`<immutable-trace-commit>:<report-path>` cannot be retrieved. Reconcile as:
+"The Cooperator reports delivery; I have not read the exact report, so its
+verdict and supporting observations remain unverified. The verified candidate
+is still <commit>; the unresolved claim is <claim>." A narrative or memory
+retrieval may locate the source but cannot replace it. Continue only useful work
+supported by verified anchors and current authority; if the missing claim is
+required, route its exact retrieval without bypassing a refusal. The retrieval
+entrypoint is [Worker Exchange Coordinates and Optional Trace](#worker-exchange-coordinates-and-optional-trace).
+
+An `ap doctor` PASS is integration evidence, not evidence that a task grant is
+consistent or that its technical expectations are correct. Use the
+[prompt readiness owner](AP.md#7-orchestrator-responsibilities) for those decisions.
+
 ## Finite Convergence Decisions
 
 The canonical behavior is [RF-08](AP.md#rf-08-planning-reporting-audit-and-blocker-budgets)
@@ -201,17 +215,21 @@ independent evidence, or another AP trigger. Every exchange follows prior
 authority expiry and receives a complete new prompt; retained context is never
 the renewal.
 
-Use [RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity)
-and the [delivery record](PROMPT_CONTRACTS.md#cooperator-delivery-and-trace-destination-record)
-for optional trace activation, exact author/persister/Git assignments, report
-identity, and after-outcome archival. Project activated local grammar into exact
-destinations, inspect the actual companion against the issued task, and reconcile
-without confusing physical persistence with acceptance.
+This is the Orchestrator entrypoint for report retrieval and delivery failure
+under [RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity):
 
-For a relayed report or a committed-report-ready notice, follow RF-19's expected
-path and canonical public-commit readback route. Native controls or missing report
-files use [completion recovery](AP.md#planning-budget-and-expiry); distinguish
-rendering from persistence and use already authorized capability where sufficient.
+1. Project the issued coordinates through the activated trace's local grammar;
+   use the [delivery record and example](PROMPT_CONTRACTS.md#cooperator-delivery-and-trace-destination-record)
+   for exact destinations and separate authorship, persistence, and Git owners.
+2. For a relayed report or committed-report-ready notice, retrieve the expected
+   source and verify its canonical commit and exact prompt/report identity.
+   Reconcile the actual companion, not the latest filename or a remembered verdict.
+3. Classify source failure using [Intent and Evidence Reconciliation](#intent-and-evidence-reconciliation).
+   For missing report rendering or file delivery, select the existing
+   [completion case](PROMPT_CONTRACTS.md#planner-artifact-report-completion-repair).
+   Use already authorized capability where sufficient; otherwise issue the
+   complete bounded renewal. The [Worker finishing sequence](AP_WORKER.md#reporting)
+   covers preparation before notice; receipt is separate from acceptance and Git archival.
 
 Restore a fresh Orchestrator from governing immutable AP, current repository
 and external evidence, and accepted durable decisions before optional trace
@@ -240,11 +258,10 @@ separate complete implementation prompt with explicit implementation authority,
 Plan UI approval, an automatic mode transition, a role label, or retained
 context never completes this gate.
 
-A frozen planner artifact without that separate report is an incomplete
-exchange. Use only the owner repair in
-[Planning Budget and Expiry](AP.md#planning-budget-and-expiry);
-`Native planning mode: not-used` routes the client and never supplies
-implementation authority.
+For a frozen plan missing its report, or a complete report missing file delivery,
+use the [report-delivery entrypoint](#worker-exchange-coordinates-and-optional-trace)
+and its completion cases. `Native planning mode: not-used` routes the client and
+never supplies implementation authority.
 
 ## Model And Surface Routing
 
@@ -329,59 +346,72 @@ order, and stale/overlap stop rules. Coordinated work is not independent.
 
 ## Prompt Construction
 
-Build prompts from the compact core and only activated annexes in
-[PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md#activated-surface-annexes). Include
-only material Common Worker Task Fields. Inactive records stay `not-used` or
-are omitted. Reference stable AP and declared project tooling or envelopes
-instead of recopying them. Every Worker task remains self-contained for its
-task-specific authority:
+Apply the [issuance readiness owner](AP.md#7-orchestrator-responsibilities)
+through this focused sequence:
 
-- persistent WORKER identity, session target/profile, phase, and native mode;
-- continuity anchor and complete renewal for current-session routing;
-- exact repository/topology/baseline and required reading;
-- one goal, accepted decisions, and positive/negative scope;
-- path, command, dependency, network, browser, secret, filesystem, side-effect,
-  and Git authority as applicable;
-- evidence tier, selected validation ladder with a why, implementation and
-  independent-acceptance envelopes, recovery, validation, stopping conditions,
-  terminal report, and authority expiry;
-- activated development-envelope, loop-stop, and delivery/trace-destination
-  records when used;
-- Cooperator decision/visibility points and one smallest next step.
+1. Establish exact sources, retained Cooperator decisions, and one useful
+   outcome. Select reading for those claims using the Worker spine.
+2. Resolve known prerequisites and the applicable execution route under
+   [RF-16](AP.md#rf-16-baseline-bound-project-execution). Bind a usable declared
+   route in the grant; reading its file alone is insufficient. Use the owner's
+   bounded-deviation contract when necessary, never an implicit ambient alternative.
+3. Compose the [common task contract](PROMPT_CONTRACTS.md#common-worker-task-fields)
+   and only activated detail. Select topology and validation breadth with a why;
+   include complete renewal for a healthy current session. Stable meaning stays
+   linked while task-specific authority remains self-contained.
+4. Compare required actions, effects, quantities, failure paths and output
+   preparation against that same grant. Place expected values with their
+   object/source/readback under [Validation](AP.md#12-validation-and-public-verification),
+   and use the [stop owner](AP.md#18-stopping-conditions) for residual work.
+5. Deliver through the preserved route with a viable finishing path and the
+   [communication capsule](AP.md#communication-routing). Use the
+   [complete delivery example](PROMPT_CONTRACTS.md#source-read-only-review-example)
+   where applicable; a destination or persister label is not its write grant.
 
-Select working-copy topology and test-breadth with a why. Canonical checkout,
-isolated worktree, and contained clone are alternatives; none is universally
-mandatory. Prefer current-session reuse inside a healthy whole. One accountable
-Worker is the default.
+This sequence produces the prompt, not another authority register or checklist
+artifact. Use the advisory [pattern library](PROMPT_ENGINEERING_PATTERNS.md)
+selectively. There is no fixed prompt length, context threshold, or requirement
+to concatenate every catalog row.
 
-Before issuing a consequential Worker prompt, resolve the execution route: the
-governing AP baseline, the consumer's governing project rules, any declared
-route applicable to the task — a baseline-declared `ap.project.conf` operation
-or a project-owned capability gate named in project rules — and whether that
-route is usable in the intended Worker boundary. When a usable applicable route
-exists, the prompt names or activates it as the canonical execution or
-capability path; listing project files as required reading alone is
-insufficient. Do not silently present a copied raw interpreter, shell, SSH, or
-ambient-session reconstruction as a parallel alternative. When the declared
-route is unavailable or unsuitable, an alternate route is lawful only as an
-explicit bounded deviation inside existing task-specific fields and prose,
-naming the declared route that could not be used, the exact alternate path,
-rationale, evidence class, bounded authority, and stopping condition. A
-deviation is task-specific and never becomes a second standing canonical route.
-When no applicable declared route exists, exact project-owned prompt guidance
-remains lawful; do not invent an AP toolchain. Semantics:
-[RF-16](AP.md#rf-16-baseline-bound-project-execution).
+### Outcome-Sized Routing Example
 
-Emit the capsule defined in [Communication Routing](AP.md#communication-routing)
-using the selected delivery record and any project presentation extension.
+For a candidate with production changes, a recovery mechanism, installation and
+physical evidence still open, select outcomes at their actual dependencies:
 
-Omitted permission is not implied permission; see
-[§5 Task Authority](AP.md#5-task-authority). Use the advisory
-[pattern library](PROMPT_ENGINEERING_PATTERNS.md) selectively; never concatenate
-patterns mechanically or treat them as hidden requirements. The intended Worker
-session must understand its complete authority without chat-only context, while
-stable AP rules may be linked rather than recopied. There is no minimum or
-maximum prompt length.
+| Useful outcome | Dependency and boundary |
+|---|---|
+| Production candidate | Implement the named behavior with its tests and directly affected documentation; no installation implied |
+| Device-free recovery mechanism | Produce and rehearse the bounded mechanism without claiming physical recovery |
+| Independent candidate review | Freeze the candidate identity and review claims; preserve prior acceptance history and justify additional evidence without resetting budgets |
+| Owner installation and identity | Resolve the known installation gap and read back the exact candidate; do not start a trial in an install-only grant |
+| One controlled physical trial | Require its actual prerequisites, preserve the accepted recovery constraint and stop at its named claim |
+
+These are outcome boundaries, not a five-Worker pipeline. Combine related code,
+tests and documentation when one outcome and healthy context support it. Reported
+compaction or provenance loss calls for the [rotation decision](AP.md#14-session-rotation-and-dynamic-prompts),
+not invented capacity telemetry or another full-archive reading assignment.
+If installation is known missing, useful source review may proceed under a grant
+without that host prerequisite; do not issue a live acceptance that assumes it
+complete. Reuse still-valid evidence on the unchanged candidate.
+
+For example, an accepted recovery-cutoff demonstration may remain possible with
+one input device while a separate watchdog failure-injection claim lacks its
+signal/recovery path. Preserve the cutoff trial's accepted scope and leave the
+watchdog claim open; neither claim supplies the other's evidence. Hardware and
+recovery commands belong to the consumer's operating/test owners.
+
+For an authorized owner operation, use the
+[Owner-Executed Command Contract](PROMPT_CONTRACTS.md#owner-executed-command-contract).
+If the project uses `sudo`, the owner authenticates in the same named terminal
+that executes the bounded privileged commands, captures post-state evidence,
+and releases the timestamp under the [privileged lifecycle](AP.md#privileged-session-lifecycle).
+Deliver one paste-safe block at a time with purpose, fail-closed preconditions,
+phase/completion markers, values, exit code and abort instructions; wait for its
+complete output. A failed Worker-terminal timestamp check can route to this
+owner path only when the grant authorizes it. Owner output remains owner evidence;
+cross-check readable effects without assuming another process inherited privilege.
+No password in chat, keep-alive, sudoers change or passwordless-sudo prerequisite
+is part of this example.
 
 ## Activated Surface Decisions
 
@@ -444,6 +474,21 @@ Compare each report with the prompt, exact candidate, changed paths, tests,
 public/operational evidence, and unresolved risk. Keep these separate:
 Implementation PASS, Acceptance PASS, Publication PASS, Deployment PASS,
 Production acceptance PASS, and ORCHESTRATOR closure.
+
+For example, a feature can be implemented in the candidate tree and reviewed
+with device-free evidence while its installed identity and physical acceptance
+remain unverified. Reconcile each claim with its own evidence; neither a test
+suite nor a report header proves the later states. Under
+[artifact promotion](AP.md#13-artifact-lifecycle-and-repository-hygiene), include
+stale specification, operations or roadmap summaries in the appropriate bounded
+documentation grant, or route their repair separately. A fresh reader should
+recover current state from those owners, not a new session-state file or META
+alone. A Worker cannot expand its allowlist to repair a summary.
+
+Keep the accepted commit fixed through separately authorized publication and
+direct public readback. A different artifact needs reconciliation; publication
+does not adopt consumer pins. Required fresh independence remains governed by
+[Acceptance, Correction, and Escalation](AP.md#acceptance-correction-and-escalation).
 
 Close only when all required preceding results, Cooperator-owned decisions,
 residual-risk disposition, ledger reconciliation, and no-active-mutation
