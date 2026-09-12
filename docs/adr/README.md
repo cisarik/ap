@@ -35,6 +35,7 @@ Programming.
 | [0021](0021-followable-spine-and-restatement-conversion.md) | Followable spine, rule detectability, and restatement-to-pointer conversion | Accepted | Historical rationale for the per-role minimum-reading spine, three detectability classes and detection-surface requirement, restatement-to-pointer conversion, and the AP-run `00_notes.md` convention; `AP.md` remains the sole semantic owner; partially superseded by ADR-0023 as scoped below |
 | [0022](0022-default-agent-dispatch-trace-integrity-and-pin-presentation.md) | Default agent dispatch, trace companion integrity, and pin presentation hook | Accepted | Historical rationale for Agent Orchestrator default dispatch, P14 model opt-out, companion integrity invariant, direct Orchestrator trace archival, and pin-time discoverability in UPDATING.md; AP.md remains the sole live semantic owner; partially superseded by ADR-0023 as scoped below |
 | [0023](0023-practical-workflow-consolidation.md) | Practical workflow consolidation | Accepted | Accepted design: access profiles, initial Planner and preserved delivery, exact persistence, compact reading, causal validation, specialist outputs, critique, and handout continuity; independent candidate acceptance/publication/closure remain separate |
+| [0024](0024-reliable-execution-and-cooperator-experience.md) | Reliable execution and Cooperator experience | Accepted | Refines issuance consistency, object-bound expectations and stop/finishing scope; groups existing task content and supplies complete delivery/report examples; no executable, structural spelling or consumer-pin change |
 
 ADR-0009 permits only an explicit bounded parallel exception. It does not
 supersede fresh sequential independent audit or the remaining decisions in
@@ -121,6 +122,13 @@ and ADR-0022's default dispatch, exclusive archival, and profile-qualified hando
 recommendation. The new ADR preserves the remaining authority, finite-budget,
 independence, historical-identity, and single-owner decisions. Older ADR bodies
 are unchanged. Accepted design status does not certify this local candidate.
+
+ADR-0024 refines ADR-0023's task composition and finishing guidance with three
+artifact-detectable clarifications in AP §7, §12 and §18 and their existing
+structural/operational projections. It preserves the accepted architecture,
+finite budgets, independent acceptance, historical bytes and consumer pins.
+Accepted design status does not certify the resulting candidate or practical
+client improvement; earlier ADR bodies remain unchanged.
 
 ## Lifecycle Rule
 
