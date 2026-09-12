@@ -67,20 +67,17 @@ session uses the next session ordinal and exchange `01`. A new ordinal alone
 never proves independence
 ([RF-05](AP.md#rf-05-freshcurrent-routing-and-independent-acceptance)).
 
-Echo the exact three prompt coordinates once in the terminal report. Treat a
-trace, archived prompt, prior report, filename, ordinal, continuity memory, or
-retained context as evidence only, never current authority. The Worker does not
-grant itself trace writes. Apply the exact persistence grant and
-[RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity) for
-prepared prompt reuse, report identity, physical-path/collision checks, bounded
-writes, and readback before terminal notification; Git authority remains separate.
-Use [completion recovery](AP.md#planning-budget-and-expiry) when client controls
-prevent delivery. An interruption is a separate authorized non-Worker artifact.
+For activated delivery, check feasibility before substantive work: the positive
+file grant, permitted client capability, physical repository and parent paths,
+symlink resolution, and each destination's existing state. Apply
+[RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity) to
+prepared-prompt reuse, any existing report including an empty file, and separate
+Git ownership. Surface a missing grant or blocked destination early; use the
+prompt's independently permitted output route. The finishing sequence is in
+[Reporting](#reporting).
 
-Stop after the terminal report because authority expires regardless of context
-or trace availability. See
-[RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity) and
-the [structural coordinate contract](PROMPT_CONTRACTS.md#worker-exchange-identity-and-external-trace-contract).
+Trace and retained context remain evidence, not current authority; see RF-19
+and the [structural coordinate contract](PROMPT_CONTRACTS.md#worker-exchange-identity-and-external-trace-contract).
 
 ## Capability, Permission, Containment, and Authority
 
@@ -271,15 +268,33 @@ Begin every standard report exactly:
 ### Report for ORCHESTRATOR_CHAT
 ```
 
-Use the compact core from [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md#worker-report-header):
-status; phase-qualified result; start/end commit or artifact; changed paths and
-purpose; validation; authorized Git or side-effect result; deviations, risks,
-and missing evidence; one smallest next step; one allowed report justification;
-and authority expiry. Include only activated surface annexes, without weakening
-their required evidence. Include the required MEASURED/LEAD critique using the
-standard header contract; when delegation is used, include only its activated
-consolidated-report details. A separately authorized handout supplements the
+Use the [compact core and blocked-report example](PROMPT_CONTRACTS.md#worker-report-header)
+with only activated annexes. A separately authorized handout supplements the
 standard report under [Session Rotation](AP.md#14-session-rotation-and-dynamic-prompts).
+
+Apply [RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity)
+through this finishing sequence:
+
+1. Finalize the complete report for the actual result, including `PARTIAL` or
+   `BLOCKED`; echo the prompt's coordinates once and use the exact status/result
+   spellings. Include the required critique and truthful issues or `none`.
+2. Recheck the granted destination and save only through the permitted file
+   route, before terminal notification. The
+   [delivery example](PROMPT_CONTRACTS.md#source-read-only-review-example)
+   shows a positive report-write exception to source-read-only work.
+3. Read back the complete saved content; verify its first line, coordinates,
+   exact content and path. Preserve a save/readback failure without claiming
+   successful delivery or replacing the first task failure.
+4. Send the short completion notice separately from the saved report, with
+   its status, exact location and any requested receipt/hash. Then stop.
+
+When no permitted file route exists, preserve complete available content through
+the allowed client output and disclose missing delivery. Use
+[completion recovery](PROMPT_CONTRACTS.md#planner-artifact-report-completion-repair)
+for frozen planning content; a native fragment is not a standard report.
+The [stop owner](AP.md#18-stopping-conditions) governs independently permitted
+reporting and cleanup after a task failure. Naming a file or reaching a failure
+never grants the write.
 
 Implementation PASS means a bounded candidate was produced and validated; it
 is non-independent. Acceptance, publication, deployment, production acceptance,
@@ -294,18 +309,12 @@ targeting `current-worker-session`.
 
 ## Stopping Conditions
 
-Stop on missing or contradictory authority/routing; failed identity, baseline,
-lock, operation, topology, or public-ref gate; unavailable required capability;
-unresolved evidence; secret exposure; unauthorized destructive/external effect;
-out-of-scope change; invalid independence; activated-profile conflict; a prompt
-that silently offers an equivalent-looking ambient parallel route against an
-applicable declared execution route without explicit bounded deviation
-authority; required non-allowlisted work; a second automatic
-revision/correction loop
-([Planning Budget and Expiry](AP.md#planning-budget-and-expiry);
-[Acceptance, Correction, and Escalation](AP.md#acceptance-correction-and-escalation));
-completed
-acceptance criteria and authorized verification; or terminal-report expiry.
+Apply [AP Stopping Conditions](AP.md#18-stopping-conditions) at a failed
+prerequisite or terminal task boundary, including its explicit residual-check,
+reporting, cleanup, and authorized-loop distinctions. Routing and topology gates
+above remain applicable; planning and correction budgets belong to
+[Planning Budget and Expiry](AP.md#planning-budget-and-expiry) and
+[Acceptance, Correction, and Escalation](AP.md#acceptance-correction-and-escalation).
 
 Report the exact blocker, preserved state, smallest safe next decision, and no
 invented authority. A Worker does not transition phases or close the whole.
