@@ -7,6 +7,17 @@ remains the sole live normative protocol.
 
 ## Unreleased
 
+- Implemented the approved documentation design in
+  [ADR-0024](docs/adr/0024-reliable-execution-and-cooperator-experience.md):
+  coherent action/prerequisite/output authority, exact expectations bound to
+  their objects and sources, and explicit stop/residual-check/finishing scope.
+  Reorganized the existing common task catalog and added complete source-review
+  delivery and blocked-report examples, with consolidated role/lifecycle
+  guidance for source gaps, owner sessions and separate evidence states.
+  Existing field spellings, executable, schema, runtime, managed block and
+  consumer pins are unchanged. Independent candidate acceptance, practical
+  finishing rehearsal and publication remain separate evidence.
+
 - Consolidated practical AP workflow under the accepted design in
   [ADR-0023](docs/adr/0023-practical-workflow-consolidation.md): Orchestrator /
   ChatOrchestrator access profiles; initial manual native Planner and preserved
