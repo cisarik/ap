@@ -72,8 +72,9 @@ after the report exists. For Git, both files have the same unique first-add
 commit and the archived bytes are the exact issued prompt and the exact actual
 report. Keep the externally delivered prompt outside mutation-gated worktrees
 until then unless a separately authorized workflow owns a safe staging
-location. Apply RF-19's named persistence and Git ownership: exact file
-preparation may be authorized in the current Worker grant, including for a Planner.
+location. For separately granted file preparation, use RF-19's authorship and
+persistence owner and the [Worker finishing sequence](AP_WORKER.md#reporting),
+including the Planner [completion route](PROMPT_CONTRACTS.md#planner-artifact-report-completion-repair).
 
 A downloadable prompt file shown to the Cooperator is transient delivery
 evidence. It does not prove issuance, success, independence, or archival. Local
