@@ -94,6 +94,12 @@ consumer behavior are unchanged by documentation projection compression. See
 [ADR-0012](docs/adr/0012-baseline-bound-project-execution.md) and
 [ap.project.conf](ap.project.conf).
 
+Standalone `ap bundle` exports a ChatOrchestrator offline Git transport ZIP from
+the AP checkout (`ap bundle framenest --initial`, then `ap bundle framenest`).
+It does not run from a consumer `.ap` submodule. See
+[ADR-0025](docs/adr/0025-chatorchestrator-offline-bundle-transport.md) and
+[AP evidence](AP.md#4-source-of-truth-and-evidence).
+
 Project-specific rules belong outside the managed block in the consuming
 project's root `AGENTS.md`. Do not edit `.ap/` during ordinary work; update the
 pin through a separate authorized task.

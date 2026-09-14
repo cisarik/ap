@@ -36,6 +36,7 @@ Programming.
 | [0022](0022-default-agent-dispatch-trace-integrity-and-pin-presentation.md) | Default agent dispatch, trace companion integrity, and pin presentation hook | Accepted | Historical rationale for Agent Orchestrator default dispatch, P14 model opt-out, companion integrity invariant, direct Orchestrator trace archival, and pin-time discoverability in UPDATING.md; AP.md remains the sole live semantic owner; partially superseded by ADR-0023 as scoped below |
 | [0023](0023-practical-workflow-consolidation.md) | Practical workflow consolidation | Accepted | Accepted design: access profiles, initial Planner and preserved delivery, exact persistence, compact reading, causal validation, specialist outputs, critique, and handout continuity; independent candidate acceptance/publication/closure remain separate |
 | [0024](0024-reliable-execution-and-cooperator-experience.md) | Reliable execution and Cooperator experience | Accepted | Refines issuance consistency, object-bound expectations and stop/finishing scope; groups existing task content and supplies complete delivery/report examples; no executable, structural spelling or consumer-pin change |
+| [0025](0025-chatorchestrator-offline-bundle-transport.md) | ChatOrchestrator offline bundle transport | Accepted | Adds ChatOrchestrator exact-committed bundle evidence and `ap bundle`; partially supersedes ADR-0023's first-manual Planner delivery rule only; other actors keep normal Git/GitHub |
 
 ADR-0009 permits only an explicit bounded parallel exception. It does not
 supersede fresh sequential independent audit or the remaining decisions in
@@ -129,6 +130,14 @@ structural/operational projections. It preserves the accepted architecture,
 finite budgets, independent acceptance, historical bytes and consumer pins.
 Accepted design status does not certify the resulting candidate or practical
 client improvement; earlier ADR bodies remain unchanged.
+
+ADR-0025 records ChatOrchestrator offline Git-bundle transport and the split
+between exact committed bundle evidence and independently observed current
+public branch evidence. It partially supersedes ADR-0023's first-manual
+Planner *delivery* rule for full Orchestrators with authorized dispatch; native
+planning mode for the first Planner is unchanged. Historical ADR bodies remain
+unchanged. Accepted design status does not certify the local candidate,
+publication, consumer adoption, or closure.
 
 ## Lifecycle Rule
 

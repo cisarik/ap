@@ -68,7 +68,9 @@ dispatcher remains the Orchestrator.
 Use [AP delivery selection](AP.md#3-instances-sessions-and-worker-session-profiles)
 for the preserved subsequent manual/subagent route and
 [initial Planner routing](AP.md#orchestration-planning-and-implementation-planning)
-for the first exchange. Parallel mutation still needs its own bounded exception.
+for native mode versus delivery. A full Orchestrator with authorized dispatch
+delivers the complete first Planner prompt; ChatOrchestrator uses manual ferry.
+Parallel mutation still needs its own bounded exception.
 
 ## 5. Fresh Independent Audit Checklist
 

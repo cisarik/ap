@@ -45,6 +45,17 @@ selection for a new objective or further evidence. No resume seed, memory,
 handout, old prompt,
 planner artifact, or ledger grants mutation authority.
 
+## How does a ChatOrchestrator continue if GitHub is unreachable?
+
+GitHub remains the normal publication layer. A ChatOrchestrator may reconstruct
+exact committed project, `.ap`, and configured companion-trace state from an
+`ap bundle` ZIP generated on the Cooperator machine. That package is exact
+committed bundle evidence, not independently observed current public branch
+evidence. Record `public branch state not directly observed`. Do not fetch
+GitHub to recover a lost inspection checkout; request a new `--initial`
+package. See [AP §4](AP.md#4-source-of-truth-and-evidence) and
+[ADR-0025](docs/adr/0025-chatorchestrator-offline-bundle-transport.md).
+
 ## Why may `.ap` use detached HEAD?
 
 The containing repository pins one AP commit through its `.ap` gitlink.
@@ -97,7 +108,10 @@ and [RF-02](AP.md#rf-02-orchestrator-decision-reconciliation-and-closure-authori
 ## When is planning used, and how does execution start?
 
 [Orchestration Planning and Implementation Planning](AP.md#orchestration-planning-and-implementation-planning)
-owns the first Planner and additional technical-planning triggers.
+owns the first Planner, required native planning mode, and delivery-route axes.
+ChatOrchestrator uses manual Cooperator ferry; a full Orchestrator with
+authorized dispatch delivers the complete first Planner prompt itself unless
+opt-out or an independence constraint requires manual delivery.
 [Planning Budget and Expiry](AP.md#planning-budget-and-expiry) owns the
 one-cycle default; the single targeted revision (new evidence, a new material
 risk, or one rejected assumption); and changed-objective supersession.

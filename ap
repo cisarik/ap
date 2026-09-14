@@ -25,6 +25,9 @@ Usage:
   ap exec --root <physical-root> --baseline <commit> --operation <id> -- <argv>
   ap update --check
   ap update --apply
+  ap bundle <project> --initial [options]
+  ap bundle <project> [options]
+  ap bundle --help
   ap help
 
 Commands:
@@ -35,9 +38,11 @@ Commands:
   exec                Run one baseline-declared operation in a sanitized direct-exec envelope.
   update --check      Check whether canonical AP main is a forward update.
   update --apply      Fetch canonical AP main and move only the .ap checkout to that commit.
+  bundle              Export a ChatOrchestrator offline Git transport ZIP from a standalone AP checkout.
 
 Integration commands run from an initialized .ap Git submodule, normally as
 ./.ap/ap. Project-check and exec commands accept an explicit physical root.
+bundle runs from the standalone AP checkout, not from a consumer .ap submodule.
 The tool never commits, pushes, modifies Git configuration, or copies AP
 protocol files into the consuming project.
 EOF
@@ -169,7 +174,7 @@ normalize_ap_url() {
     esac
 }
 
-require_context() {
+require_tool_repository() {
     require_git
 
     tool_dir=$(script_dir)
@@ -177,6 +182,12 @@ require_context() {
     [ -n "$ap_root" ] || fail "the ap tool must live inside a Git worktree"
     ap_root=$(physical_path "$ap_root") || fail "cannot resolve AP root"
     [ "$tool_dir" = "$ap_root" ] || fail "the ap executable must be at the AP repository root"
+
+    export ap_root
+}
+
+require_context() {
+    require_tool_repository
 
     super_root=$(git -C "$ap_root" rev-parse --show-superproject-working-tree 2>/dev/null || true)
     [ -n "$super_root" ] || fail "this command must run from an initialized .ap submodule"
@@ -1061,6 +1072,1170 @@ EOF
     fi
 }
 
+bundle_usage() {
+    cat <<'EOF'
+Usage:
+  ap bundle <project> --initial
+      [--root <physical-git-root>]
+      [--projects-root <physical-directory>]
+      [--companion-trace <physical-git-root>]
+      [--include-submodule <project-relative-path>]...
+      [--allow-path <project-relative-path>]...
+      [--output-dir <absolute-directory>]
+      [--replace-chain]
+
+  ap bundle <project>
+      [--root <physical-git-root>]
+      [--include-submodule <project-relative-path>]...
+      [--allow-path <project-relative-path>]...
+      [--output-dir <absolute-directory>]
+
+  ap bundle --help
+
+Export a ChatOrchestrator offline Git transport ZIP from a standalone AP
+checkout. The simple form ap bundle <project> --initial then ap bundle <project>
+is the primary UX. --root is not required when $HOME/Projects/<project> exists
+or a prior --initial recorded the mapping.
+
+The ZIP contains Git bundle objects, not a working-tree archive. Ignored files
+do not enter the package. The package is exact committed bundle evidence; it
+does not prove current public branch state.
+
+State is stored under ${XDG_STATE_HOME:-$HOME/.local/state}/ap/bundle/.
+Optional user config: ${XDG_CONFIG_HOME:-$HOME/.config}/ap/bundle.conf
+(bundle.projectsRoot, bundle.outputDir).
+EOF
+}
+
+bundle_tmp_list=
+bundle_cleanup() {
+    trap - EXIT HUP INT TERM
+    if [ -n "${bundle_tmp_list:-}" ]; then
+        while IFS= read -r bundle_tmp_one; do
+            [ -n "$bundle_tmp_one" ] || continue
+            case "$bundle_tmp_one" in
+                *'/ap-bundle.'*)
+                    rm -rf -- "$bundle_tmp_one" || true
+                    ;;
+            esac
+        done <<EOF
+$bundle_tmp_list
+EOF
+        bundle_tmp_list=
+    fi
+}
+
+# Register in this shell. Do not call from $(...): subshell state is discarded.
+bundle_alloc_tmp() {
+    bundle_tmp=$(mktemp -d "${TMPDIR:-/tmp}/ap-bundle.XXXXXX") || fail "cannot create temporary directory"
+    case "$bundle_tmp" in
+        *'/ap-bundle.'*)
+            ;;
+        *)
+            rm -rf -- "$bundle_tmp" || true
+            fail "unexpected temporary directory: $bundle_tmp"
+            ;;
+    esac
+    if [ -z "${bundle_tmp_list:-}" ]; then
+        bundle_tmp_list=$bundle_tmp
+    else
+        bundle_tmp_list="$bundle_tmp_list
+$bundle_tmp"
+    fi
+}
+
+bundle_git_c() {
+    bundle_git_root=$1
+    shift
+    (
+        unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_OBJECT_DIRECTORY GIT_ALTERNATE_OBJECT_DIRECTORIES
+        git -C "$bundle_git_root" "$@"
+    )
+}
+
+bundle_valid_project_name() {
+    bundle_name=$1
+    case "$bundle_name" in
+        ''|*[!A-Za-z0-9._-]*|[!A-Za-z0-9]*)
+            fail "invalid project name: use a slash-free name matching [A-Za-z0-9][A-Za-z0-9._-]*"
+            ;;
+    esac
+}
+
+bundle_has_dotdot_component() {
+    bundle_rest=$1/
+    while [ -n "$bundle_rest" ]; do
+        bundle_comp=${bundle_rest%%/*}
+        bundle_rest=${bundle_rest#*/}
+        if [ "$bundle_comp" = .. ]; then
+            return 0
+        fi
+    done
+    return 1
+}
+
+bundle_require_relpath() {
+    bundle_rel=$1
+    bundle_rel_label=$2
+    [ -n "$bundle_rel" ] || fail "$bundle_rel_label requires a value"
+    case "$bundle_rel" in
+        /*)
+            fail "$bundle_rel_label must be a project-relative path"
+            ;;
+        '')
+            fail "$bundle_rel_label requires a value"
+            ;;
+    esac
+    case "$bundle_rel" in
+        *$'\n'*|*$'\r'*)
+            fail "$bundle_rel_label must not contain a newline"
+            ;;
+    esac
+    if bundle_has_dotdot_component "$bundle_rel"; then
+        fail "$bundle_rel_label must not contain .."
+    fi
+    case "$bundle_rel" in
+        .|./*|*//*)
+            fail "$bundle_rel_label is not a safe project-relative path"
+            ;;
+    esac
+}
+
+bundle_require_abs_existing() {
+    bundle_abs=$1
+    bundle_abs_label=$2
+    [ -n "$bundle_abs" ] || fail "$bundle_abs_label requires a value"
+    case "$bundle_abs" in
+        /*) ;;
+        *) fail "$bundle_abs_label must be an absolute physical path" ;;
+    esac
+    if bundle_has_dotdot_component "$bundle_abs"; then
+        fail "$bundle_abs_label must not contain .."
+    fi
+    [ -d "$bundle_abs" ] || fail "$bundle_abs_label is not a directory"
+    bundle_abs_phys=$(physical_path "$bundle_abs") || fail "cannot resolve $bundle_abs_label"
+    [ "$bundle_abs_phys" = "$bundle_abs" ] || fail "$bundle_abs_label must already be the physical path: $bundle_abs_phys"
+    printf '%s\n' "$bundle_abs_phys"
+}
+
+bundle_require_abs_git_root() {
+    bundle_abs=$1
+    bundle_abs_label=$2
+    bundle_abs_phys=$(bundle_require_abs_existing "$bundle_abs" "$bundle_abs_label")
+    bundle_abs_git=$(bundle_git_c "$bundle_abs_phys" rev-parse --show-toplevel 2>/dev/null || true)
+    [ -n "$bundle_abs_git" ] || fail "$bundle_abs_label is not a Git worktree"
+    bundle_abs_git=$(physical_path "$bundle_abs_git") || fail "cannot resolve Git root for $bundle_abs_label"
+    [ "$bundle_abs_git" = "$bundle_abs_phys" ] || fail "$bundle_abs_label must name the Git worktree top level"
+    printf '%s\n' "$bundle_abs_phys"
+}
+
+bundle_sha256() {
+    bundle_hash_file=$1
+    [ -f "$bundle_hash_file" ] || fail "cannot checksum missing file: $bundle_hash_file"
+    if command -v sha256sum >/dev/null 2>&1; then
+        sha256sum "$bundle_hash_file" | awk '{print $1}'
+    elif command -v shasum >/dev/null 2>&1; then
+        shasum -a 256 "$bundle_hash_file" | awk '{print $1}'
+    elif command -v openssl >/dev/null 2>&1; then
+        openssl dgst -sha256 "$bundle_hash_file" | awk '{print $NF}'
+    else
+        fail "sha256sum, shasum, or openssl is required to checksum transport payloads"
+    fi
+}
+
+bundle_origin_identity() {
+    bundle_url=$1
+    [ -n "$bundle_url" ] || return 1
+    bundle_id=$bundle_url
+    case "$bundle_id" in
+        git@*)
+            bundle_id=${bundle_id#git@}
+            bundle_id=$(printf '%s\n' "$bundle_id" | sed 's/:/\//')
+            ;;
+        ssh://git@*)
+            bundle_id=${bundle_id#ssh://git@}
+            ;;
+        ssh://*)
+            bundle_id=${bundle_id#ssh://}
+            ;;
+        https://*)
+            bundle_id=${bundle_id#https://}
+            ;;
+        http://*)
+            bundle_id=${bundle_id#http://}
+            ;;
+    esac
+    bundle_id=${bundle_id%/}
+    case "$bundle_id" in
+        *.git)
+            bundle_id=${bundle_id%.git}
+            ;;
+    esac
+    printf '%s\n' "$bundle_id"
+}
+
+bundle_user_home() {
+    [ -n "${HOME:-}" ] || fail "HOME is required for bundle state and project resolution"
+    [ -d "$HOME" ] || fail "HOME is not a directory"
+}
+
+bundle_state_root() {
+    bundle_user_home
+    printf '%s\n' "${XDG_STATE_HOME:-$HOME/.local/state}/ap/bundle"
+}
+
+bundle_config_file() {
+    bundle_user_home
+    printf '%s\n' "${XDG_CONFIG_HOME:-$HOME/.config}/ap/bundle.conf"
+}
+
+bundle_chain_file() {
+    printf '%s/%s/chain.conf\n' "$(bundle_state_root)" "$1"
+}
+
+bundle_config_get() {
+    bundle_cfg=$(bundle_config_file)
+    [ -f "$bundle_cfg" ] || return 0
+    git config --file "$bundle_cfg" --get "$1" 2>/dev/null || true
+}
+
+bundle_append_line() {
+    if [ -z "$1" ]; then
+        printf '%s\n' "$2"
+    else
+        printf '%s\n%s\n' "$1" "$2"
+    fi
+}
+
+bundle_line_in() {
+    bundle_hay=$1
+    bundle_needle=$2
+    [ -n "$bundle_hay" ] || return 1
+    while IFS= read -r bundle_line; do
+        [ "$bundle_line" = "$bundle_needle" ] && return 0
+    done <<EOF
+$bundle_hay
+EOF
+    return 1
+}
+
+bundle_sorted_lines() {
+    if [ -z "$1" ]; then
+        printf ''
+        return 0
+    fi
+    printf '%s\n' "$1" | sort
+}
+
+bundle_require_exportable_repo() {
+    bundle_er=$1
+    bundle_el=$2
+    bundle_git_c "$bundle_er" rev-parse --is-inside-work-tree >/dev/null 2>&1 || fail "$bundle_el is not a Git worktree"
+    bundle_head=$(bundle_git_c "$bundle_er" rev-parse --verify HEAD^{commit} 2>/dev/null || true)
+    [ -n "$bundle_head" ] || fail "$bundle_el HEAD does not resolve to a commit"
+    bundle_shallow=$(bundle_git_c "$bundle_er" rev-parse --is-shallow-repository)
+    [ "$bundle_shallow" = false ] || fail "$bundle_el is a shallow repository; refuse export"
+    bundle_replace=$(bundle_git_c "$bundle_er" for-each-ref --format='%(refname)' refs/replace)
+    [ -z "$bundle_replace" ] || fail "$bundle_el has refs/replace; refuse export"
+    bundle_status=$(bundle_git_c "$bundle_er" status --porcelain=v1 --untracked-files=all)
+    [ -z "$bundle_status" ] || fail "$bundle_el worktree or index is not clean"
+    bundle_origin=$(bundle_git_c "$bundle_er" config --local --get remote.origin.url 2>/dev/null || true)
+    [ -n "$bundle_origin" ] || fail "$bundle_el is missing remote.origin.url"
+    bundle_refuse_lfs "$bundle_er" "$bundle_el"
+    printf '%s\n' "$bundle_head"
+}
+
+bundle_refuse_lfs() {
+    bundle_er=$1
+    bundle_el=$2
+    bundle_lfs_smudge=$(bundle_git_c "$bundle_er" config --local --get filter.lfs.smudge 2>/dev/null || true)
+    bundle_lfs_process=$(bundle_git_c "$bundle_er" config --local --get filter.lfs.process 2>/dev/null || true)
+    [ -z "$bundle_lfs_smudge" ] && [ -z "$bundle_lfs_process" ] || fail "$bundle_el has Git LFS configured; offline bundle transport does not include LFS objects"
+    if bundle_git_c "$bundle_er" cat-file -e HEAD:.gitattributes 2>/dev/null; then
+        bundle_ga=$(bundle_git_c "$bundle_er" show HEAD:.gitattributes)
+        if printf '%s\n' "$bundle_ga" | grep 'filter=lfs' >/dev/null 2>&1; then
+            fail "$bundle_el tracks Git LFS filters; refuse export"
+        fi
+    fi
+}
+
+bundle_path_is_risky() {
+    bundle_pn=$1
+    bundle_base=${bundle_pn##*/}
+    case "$bundle_base" in
+        .env.example)
+            return 1
+            ;;
+        .env|.env.*)
+            return 0
+            ;;
+        id_rsa|id_dsa|id_ecdsa|id_ed25519)
+            return 0
+            ;;
+        *.pem|*.p12|*.pfx|*.key|*.keystore|*.jks)
+            return 0
+            ;;
+        credentials.json|secrets.json|secrets.yaml)
+            return 0
+            ;;
+        .netrc|.pypirc)
+            return 0
+            ;;
+    esac
+    return 1
+}
+
+bundle_scan_secrets() {
+    bundle_sr=$1
+    bundle_sl=$2
+    bundle_srange=$3
+    bundle_allow=$4
+    bundle_hits=
+    bundle_alloc_tmp
+    bundle_raw=$bundle_tmp/objects
+    if [ "$bundle_srange" = HEAD ]; then
+        bundle_git_c "$bundle_sr" rev-list --objects HEAD > "$bundle_raw"
+    else
+        bundle_git_c "$bundle_sr" rev-list --objects "$bundle_srange" > "$bundle_raw"
+    fi
+    bundle_paths=$(awk 'NF >= 2 { $1=""; sub(/^ /, ""); print }' "$bundle_raw" | sed '/^$/d' | sort -u)
+    if [ -n "$bundle_paths" ]; then
+        while IFS= read -r bundle_pn; do
+            [ -n "$bundle_pn" ] || continue
+            if bundle_path_is_risky "$bundle_pn"; then
+                if bundle_line_in "$bundle_allow" "$bundle_pn"; then
+                    continue
+                fi
+                bundle_hits=$(bundle_append_line "$bundle_hits" "$bundle_pn")
+            fi
+        done <<EOF
+$bundle_paths
+EOF
+    fi
+    if [ -n "$bundle_hits" ]; then
+        printf 'ap: ERROR: %s contains suspicious tracked or historical path(s); refuse export (filename scanning does not prove absence of secrets):\n' "$bundle_sl" >&2
+        printf '%s\n' "$bundle_hits" >&2
+        exit 1
+    fi
+}
+
+bundle_list_gitlinks() {
+    bundle_lr=$1
+    bundle_out=
+    bundle_tab=$(printf '\t')
+    bundle_tree=$(bundle_git_c "$bundle_lr" ls-tree -r HEAD)
+    if [ -n "$bundle_tree" ]; then
+        while IFS= read -r bundle_line; do
+            case "$bundle_line" in
+                "160000 commit "*)
+                    bundle_rest=${bundle_line#160000 commit }
+                    bundle_gpath=${bundle_rest#*"$bundle_tab"}
+                    bundle_gsha=${bundle_rest%%"$bundle_tab"*}
+                    case "$bundle_gpath" in
+                        *$'\n'*|*' '*)
+                            fail "gitlink path must not contain whitespace: $bundle_gpath"
+                            ;;
+                    esac
+                    bundle_out=$(bundle_append_line "$bundle_out" "$bundle_gsha $bundle_gpath")
+                    ;;
+            esac
+        done <<EOF
+$bundle_tree
+EOF
+    fi
+    printf '%s\n' "$bundle_out"
+}
+
+bundle_branch_name() {
+    bundle_br=$(bundle_git_c "$1" symbolic-ref -q --short HEAD 2>/dev/null || true)
+    printf '%s\n' "$bundle_br"
+}
+
+bundle_create_named_bundle() {
+    bundle_cr=$1
+    bundle_cout=$2
+    bundle_cmode=$3
+    bundle_cbase=$4
+    if [ "$bundle_cmode" = initial ]; then
+        bundle_cbranch=$(bundle_branch_name "$bundle_cr")
+        if [ -n "$bundle_cbranch" ]; then
+            bundle_git_c "$bundle_cr" bundle create "$bundle_cout" HEAD "refs/heads/$bundle_cbranch" || fail "cannot create Git bundle from HEAD"
+        else
+            bundle_git_c "$bundle_cr" bundle create "$bundle_cout" HEAD || fail "cannot create Git bundle from HEAD"
+        fi
+    else
+        bundle_git_c "$bundle_cr" merge-base --is-ancestor "$bundle_cbase" HEAD || fail "recorded initial commit is no longer an ancestor of HEAD; start a new chain with --initial --replace-chain"
+        bundle_ctip=$(bundle_git_c "$bundle_cr" rev-parse HEAD)
+        if [ "$bundle_ctip" = "$bundle_cbase" ]; then
+            return 1
+        fi
+        bundle_git_c "$bundle_cr" bundle create "$bundle_cout" "$bundle_cbase..HEAD" || fail "cannot create incremental Git bundle"
+    fi
+    return 0
+}
+
+bundle_require_exporter() {
+    require_tool_repository
+    bundle_exporter_status=$(bundle_git_c "$ap_root" status --porcelain=v1 --untracked-files=all)
+    [ -z "$bundle_exporter_status" ] || fail "exporter AP checkout is dirty"
+    bundle_exporter_head=$(bundle_git_c "$ap_root" rev-parse --verify HEAD^{commit})
+    bundle_exporter_blob=$(bundle_git_c "$ap_root" rev-parse HEAD:ap 2>/dev/null || true)
+    [ -n "$bundle_exporter_blob" ] || fail "exporter AP HEAD does not contain ap"
+    bundle_running_blob=$(bundle_git_c "$ap_root" hash-object -- "$ap_root/ap")
+    [ "$bundle_running_blob" = "$bundle_exporter_blob" ] || fail "running ap does not match exporter HEAD:ap"
+    bundle_git_c "$ap_root" cat-file -e "$bundle_exporter_head^{commit}" >/dev/null
+    printf '%s\n' "$bundle_exporter_head"
+}
+
+bundle_is_canonical_ap_origin() {
+    normalize_ap_url "$1" >/dev/null 2>&1
+}
+
+bundle_resolve_projects_root() {
+    if [ -n "$bundle_opt_projects_root" ]; then
+        bundle_require_abs_existing "$bundle_opt_projects_root" "--projects-root"
+        return 0
+    fi
+    if [ -n "${AP_PROJECTS_ROOT:-}" ]; then
+        bundle_require_abs_existing "$AP_PROJECTS_ROOT" "AP_PROJECTS_ROOT"
+        return 0
+    fi
+    bundle_cfg_root=$(bundle_config_get bundle.projectsRoot)
+    if [ -n "$bundle_cfg_root" ]; then
+        bundle_require_abs_existing "$bundle_cfg_root" "bundle.projectsRoot"
+        return 0
+    fi
+    bundle_user_home
+    if [ -d "$HOME/Projects" ]; then
+        physical_path "$HOME/Projects"
+        return 0
+    fi
+    return 1
+}
+
+bundle_resolve_root() {
+    if [ -n "$bundle_opt_root" ]; then
+        bundle_require_abs_git_root "$bundle_opt_root" "--root"
+        return 0
+    fi
+    if [ "$bundle_mode" != initial ] && [ -f "$bundle_chain_path" ]; then
+        bundle_mapped=$(git config --file "$bundle_chain_path" --get chain.projectRoot 2>/dev/null || true)
+        [ -n "$bundle_mapped" ] || fail "chain state is missing project root; provide --root or recreate with --initial --replace-chain"
+        bundle_require_abs_git_root "$bundle_mapped" "stored chain project root"
+        return 0
+    fi
+    if bundle_pr=$(bundle_resolve_projects_root); then
+        bundle_candidate=$bundle_pr/$bundle_project
+        if [ -d "$bundle_candidate" ]; then
+            bundle_require_abs_git_root "$bundle_candidate" "resolved project root"
+            return 0
+        fi
+    fi
+    fail "cannot resolve project '$bundle_project'; provide --root <physical-git-root>"
+}
+
+bundle_resolve_output_dir() {
+    if [ -n "$bundle_opt_output_dir" ]; then
+        bundle_require_abs_existing "$bundle_opt_output_dir" "--output-dir"
+        return 0
+    fi
+    bundle_cfg_out=$(bundle_config_get bundle.outputDir)
+    if [ -n "$bundle_cfg_out" ]; then
+        bundle_require_abs_existing "$bundle_cfg_out" "bundle.outputDir"
+        return 0
+    fi
+    if [ -n "${XDG_DOWNLOAD_DIR:-}" ] && [ -d "$XDG_DOWNLOAD_DIR" ]; then
+        bundle_require_abs_existing "$XDG_DOWNLOAD_DIR" "XDG_DOWNLOAD_DIR"
+        return 0
+    fi
+    bundle_user_home
+    if [ -d "$HOME/Downloads" ]; then
+        physical_path "$HOME/Downloads"
+        return 0
+    fi
+    bundle_pkg=$(bundle_state_root)/packages
+    mkdir -p "$bundle_pkg" || fail "cannot create package directory $bundle_pkg"
+    physical_path "$bundle_pkg"
+}
+
+bundle_load_chain() {
+    [ -f "$bundle_chain_path" ] || fail "no bundle chain for '$bundle_project'; run ap bundle $bundle_project --initial first"
+    bundle_chain_name=$(git config --file "$bundle_chain_path" --get chain.projectName 2>/dev/null || true)
+    [ "$bundle_chain_name" = "$bundle_project" ] || fail "chain project name mismatch"
+    bundle_chain_origin=$(git config --file "$bundle_chain_path" --get chain.originIdentity 2>/dev/null || true)
+    bundle_chain_initial=$(git config --file "$bundle_chain_path" --get chain.initialCommit 2>/dev/null || true)
+    bundle_chain_initial_ap=$(git config --file "$bundle_chain_path" --get chain.initialApCommit 2>/dev/null || true)
+    bundle_chain_canonical=$(git config --file "$bundle_chain_path" --get chain.canonicalAp 2>/dev/null || true)
+    bundle_chain_companion_root=$(git config --file "$bundle_chain_path" --get chain.companionRoot 2>/dev/null || true)
+    bundle_chain_companion_initial=$(git config --file "$bundle_chain_path" --get chain.companionInitialCommit 2>/dev/null || true)
+    bundle_chain_companion_identity=$(git config --file "$bundle_chain_path" --get chain.companionIdentity 2>/dev/null || true)
+    bundle_chain_includes=
+    bundle_inc_vals=$(git config --file "$bundle_chain_path" --get-all chain.includeSubmodule 2>/dev/null || true)
+    bundle_chain_includes=$bundle_inc_vals
+    [ -n "$bundle_chain_origin" ] || fail "chain state is missing origin identity"
+    [ -n "$bundle_chain_initial" ] || fail "chain state is missing initial commit"
+}
+
+bundle_save_chain() {
+    bundle_chain_dir=${bundle_chain_path%/*}
+    mkdir -p "$bundle_chain_dir" || fail "cannot create chain state directory"
+    bundle_chain_tmp=$bundle_chain_dir/chain.conf.tmp
+    : > "$bundle_chain_tmp"
+    git config --file "$bundle_chain_tmp" chain.schemaVersion 1
+    git config --file "$bundle_chain_tmp" chain.projectName "$bundle_project"
+    git config --file "$bundle_chain_tmp" chain.projectRoot "$bundle_root"
+    git config --file "$bundle_chain_tmp" chain.originUrl "$bundle_origin_url"
+    git config --file "$bundle_chain_tmp" chain.originIdentity "$bundle_origin_id"
+    git config --file "$bundle_chain_tmp" chain.initialCommit "$bundle_head"
+    git config --file "$bundle_chain_tmp" chain.canonicalAp "$bundle_canonical_ap"
+    git config --file "$bundle_chain_tmp" chain.initialApCommit "$bundle_ap_head"
+    git config --file "$bundle_chain_tmp" chain.createdAt "$bundle_created"
+    git config --file "$bundle_chain_tmp" chain.exporterApCommit "$bundle_exporter_head"
+    if [ -n "$bundle_companion_root" ]; then
+        git config --file "$bundle_chain_tmp" chain.companionRoot "$bundle_companion_root"
+        git config --file "$bundle_chain_tmp" chain.companionOriginUrl "$bundle_companion_origin"
+        git config --file "$bundle_chain_tmp" chain.companionIdentity "$bundle_companion_id"
+        git config --file "$bundle_chain_tmp" chain.companionInitialCommit "$bundle_companion_head"
+    fi
+    if [ -n "$bundle_includes" ]; then
+        while IFS= read -r bundle_inc; do
+            [ -n "$bundle_inc" ] || continue
+            git config --file "$bundle_chain_tmp" --add chain.includeSubmodule "$bundle_inc"
+        done <<EOF
+$bundle_includes
+EOF
+    fi
+    if [ -n "${bundle_sub_initials:-}" ]; then
+        while IFS= read -r bundle_si; do
+            [ -n "$bundle_si" ] || continue
+            bundle_si_safe=${bundle_si%% *}
+            bundle_si_rest=${bundle_si#* }
+            bundle_si_path=${bundle_si_rest% *}
+            bundle_si_sha=${bundle_si_rest##* }
+            git config --file "$bundle_chain_tmp" "chain.submodule.$bundle_si_safe.path" "$bundle_si_path"
+            git config --file "$bundle_chain_tmp" "chain.submodule.$bundle_si_safe.initialCommit" "$bundle_si_sha"
+        done <<EOF
+$bundle_sub_initials
+EOF
+    fi
+    mv "$bundle_chain_tmp" "$bundle_chain_path"
+}
+
+bundle_verify_consumer_ap() {
+    bundle_ap_path=$bundle_root/$SUBMODULE_PATH
+    [ -d "$bundle_ap_path" ] || fail "project is missing .ap; initialize AP before export"
+    bundle_ap_path=$(physical_path "$bundle_ap_path") || fail "cannot resolve .ap path"
+    bundle_ap_git=$(bundle_git_c "$bundle_ap_path" rev-parse --show-toplevel 2>/dev/null || true)
+    [ -n "$bundle_ap_git" ] || fail ".ap is not a Git worktree"
+    bundle_ap_git=$(physical_path "$bundle_ap_git") || fail "cannot resolve .ap Git root"
+    [ "$bundle_ap_git" = "$bundle_ap_path" ] || fail ".ap must be the Git worktree top level"
+    bundle_ap_entry=$(bundle_git_c "$bundle_root" ls-files -s -- "$SUBMODULE_PATH" 2>/dev/null || true)
+    [ -n "$bundle_ap_entry" ] || fail ".ap is not recorded in the project index"
+    bundle_ap_mode=$(printf '%s\n' "$bundle_ap_entry" | awk '{print $1}')
+    bundle_ap_gitlink=$(printf '%s\n' "$bundle_ap_entry" | awk '{print $2}')
+    [ "$bundle_ap_mode" = 160000 ] || fail ".ap is not recorded as a submodule gitlink"
+    bundle_ap_head=$(bundle_require_exportable_repo "$bundle_ap_path" ".ap")
+    [ "$bundle_ap_head" = "$bundle_ap_gitlink" ] || fail ".ap HEAD $bundle_ap_head does not match superproject gitlink $bundle_ap_gitlink"
+    bundle_ap_origin=$(bundle_git_c "$bundle_ap_path" config --local --get remote.origin.url 2>/dev/null || true)
+    bundle_is_canonical_ap_origin "$bundle_ap_origin" || fail ".ap origin remote is not canonical AP"
+    [ -f "$bundle_root/.gitmodules" ] || fail ".gitmodules is missing"
+    bundle_gm_matches=$(bundle_git_c "$bundle_root" config -f .gitmodules --get-regexp '^submodule\..*\.path$' 2>/dev/null | awk '$2 == ".ap" { print $1 }' || true)
+    bundle_gm_count=$(printf '%s\n' "$bundle_gm_matches" | sed '/^$/d' | wc -l | tr -d ' ')
+    [ "$bundle_gm_count" = 1 ] || fail ".gitmodules must contain exactly one submodule path .ap"
+    bundle_gm_key=$(printf '%s\n' "$bundle_gm_matches" | sed -n '1p')
+    bundle_gm_section=${bundle_gm_key#submodule.}
+    bundle_gm_section=${bundle_gm_section%.path}
+    bundle_gm_url=$(bundle_git_c "$bundle_root" config -f .gitmodules --get "submodule.$bundle_gm_section.url" 2>/dev/null || true)
+    bundle_is_canonical_ap_origin "$bundle_gm_url" || fail ".gitmodules URL for .ap is not canonical AP"
+}
+
+bundle_handle_other_submodules() {
+    bundle_gl=$(bundle_list_gitlinks "$bundle_root")
+    bundle_unexpected=
+    bundle_needed=$bundle_includes
+    if [ -n "$bundle_gl" ]; then
+        while IFS= read -r bundle_gline; do
+            [ -n "$bundle_gline" ] || continue
+            bundle_gsha=${bundle_gline%% *}
+            bundle_gpath=${bundle_gline#* }
+            if [ "$bundle_gpath" = "$SUBMODULE_PATH" ] && [ "$bundle_canonical_ap" = no ]; then
+                continue
+            fi
+            if bundle_line_in "$bundle_needed" "$bundle_gpath"; then
+                continue
+            fi
+            bundle_unexpected=$(bundle_append_line "$bundle_unexpected" "$bundle_gpath")
+        done <<EOF
+$bundle_gl
+EOF
+    fi
+    if [ -n "$bundle_unexpected" ]; then
+        printf 'ap: ERROR: project contains submodule gitlink(s) not included in this export:\n' >&2
+        printf '%s\n' "$bundle_unexpected" >&2
+        printf 'ap: ERROR: include each required path with --include-submodule or omit unsupported gitlinks\n' >&2
+        exit 1
+    fi
+    if [ -n "$bundle_includes" ]; then
+        while IFS= read -r bundle_inc; do
+            [ -n "$bundle_inc" ] || continue
+            bundle_found=no
+            while IFS= read -r bundle_gline; do
+                [ -n "$bundle_gline" ] || continue
+                bundle_gpath=${bundle_gline#* }
+                if [ "$bundle_gpath" = "$bundle_inc" ]; then
+                    bundle_found=yes
+                    break
+                fi
+            done <<EOF
+$bundle_gl
+EOF
+            [ "$bundle_found" = yes ] || fail "--include-submodule $bundle_inc is not a HEAD gitlink"
+        done <<EOF
+$bundle_includes
+EOF
+    fi
+}
+
+bundle_export_included_submodules() {
+    bundle_sub_changed=no
+    bundle_sub_files=
+    bundle_sub_heads=
+    bundle_sub_initials=
+    [ -n "$bundle_includes" ] || return 0
+    bundle_gl=$(bundle_list_gitlinks "$bundle_root")
+    while IFS= read -r bundle_inc; do
+        [ -n "$bundle_inc" ] || continue
+        bundle_gsha=
+        while IFS= read -r bundle_gline; do
+            [ -n "$bundle_gline" ] || continue
+            bundle_gpath=${bundle_gline#* }
+            if [ "$bundle_gpath" = "$bundle_inc" ]; then
+                bundle_gsha=${bundle_gline%% *}
+                break
+            fi
+        done <<EOF
+$bundle_gl
+EOF
+        [ -n "$bundle_gsha" ] || fail "internal error: missing gitlink for $bundle_inc"
+        bundle_sub_root=$bundle_root/$bundle_inc
+        [ -d "$bundle_sub_root" ] || fail "included submodule $bundle_inc is not checked out locally"
+        bundle_sub_root=$(physical_path "$bundle_sub_root") || fail "cannot resolve included submodule $bundle_inc"
+        bundle_sub_head=$(bundle_require_exportable_repo "$bundle_sub_root" "submodule $bundle_inc")
+        [ "$bundle_sub_head" = "$bundle_gsha" ] || fail "submodule $bundle_inc HEAD $bundle_sub_head does not match gitlink $bundle_gsha"
+        bundle_scan_secrets "$bundle_sub_root" "submodule $bundle_inc" HEAD "$bundle_allows"
+        bundle_safe=$(printf '%s\n' "$bundle_inc" | sed 's/\//--/g')
+        bundle_sub_file=submodule-$bundle_safe.bundle
+        if bundle_line_in "$bundle_sub_files" "$bundle_sub_file"; then
+            fail "included submodule filename collision for $bundle_inc"
+        fi
+        bundle_sub_base=
+        if [ "$bundle_mode" = incremental ]; then
+            bundle_sub_base=$(git config --file "$bundle_chain_path" --get "chain.submodule.$bundle_safe.initialCommit" 2>/dev/null || true)
+            [ -n "$bundle_sub_base" ] || fail "chain state is missing initial commit for submodule $bundle_inc; recreate with --initial --replace-chain"
+            if [ "$bundle_sub_head" = "$bundle_sub_base" ]; then
+                git config --file "$bundle_manifest" "submodule.$bundle_safe.status" omitted-unchanged-from-initial
+                git config --file "$bundle_manifest" "submodule.$bundle_safe.path" "$bundle_inc"
+                git config --file "$bundle_manifest" "submodule.$bundle_safe.head" "$bundle_sub_head"
+                continue
+            fi
+            bundle_scan_secrets "$bundle_sub_root" "submodule $bundle_inc" "$bundle_sub_base..HEAD" "$bundle_allows"
+            bundle_create_named_bundle "$bundle_sub_root" "$bundle_payload/$bundle_sub_file" incremental "$bundle_sub_base" || fail "submodule $bundle_inc incremental bundle is empty despite HEAD change"
+        else
+            bundle_create_named_bundle "$bundle_sub_root" "$bundle_payload/$bundle_sub_file" initial ""
+        fi
+        bundle_sub_changed=yes
+        bundle_sub_files=$(bundle_append_line "$bundle_sub_files" "$bundle_sub_file")
+        bundle_sub_heads=$(bundle_append_line "$bundle_sub_heads" "$bundle_inc $bundle_sub_head $bundle_sub_file")
+        if [ "$bundle_mode" = initial ]; then
+            bundle_sub_initials=$(bundle_append_line "$bundle_sub_initials" "$bundle_safe $bundle_inc $bundle_sub_head")
+        fi
+        git config --file "$bundle_manifest" "submodule.$bundle_safe.path" "$bundle_inc"
+        git config --file "$bundle_manifest" "submodule.$bundle_safe.head" "$bundle_sub_head"
+        git config --file "$bundle_manifest" "submodule.$bundle_safe.bundle" "$bundle_sub_file"
+        git config --file "$bundle_manifest" "submodule.$bundle_safe.status" included
+    done <<EOF
+$bundle_includes
+EOF
+}
+
+bundle_write_import_md() {
+    bundle_imp=$1
+    bundle_kind_word=$2
+    cat > "$bundle_imp" <<EOF
+# ChatOrchestrator offline Git transport — reconstruction
+
+This ZIP is an attachment container around Git-native bundles. It is **exact
+committed bundle evidence**. It is not independently observed current public
+branch evidence.
+
+Mandatory limitation:
+
+    public branch state not directly observed
+
+Never promote this package into a public-ref, publication-equality, push, or
+remote-synchronization claim. A later Worker or full Orchestrator with GitHub
+access still runs the normal public gate before any mutation or push that
+requires it.
+
+Do **not** recover a missing inspection checkout through GitHub, a mirror, a
+proxy, DNS pinning, a guessed cache, or conversational memory. Ask the
+Cooperator for a new:
+
+    ap bundle $bundle_project --initial
+
+Filename scanning during export does not prove absence of secrets. Do not
+treat this package as secret-free.
+
+## Extract
+
+    python3 -c "import zipfile,sys; zipfile.ZipFile(sys.argv[1]).extractall(sys.argv[2])" PACKAGE.zip DEST
+
+Verify \`checksums\` after extraction. Each line is:
+
+    sha256  <hex>  <filename>
+
+Filenames in this package do not contain spaces. Reconstruct only after hashes
+match.
+
+## Bundle verification
+
+Incremental packages must be verified inside the already reconstructed repository
+so Git can check prerequisite objects:
+
+    git -C PROJECT bundle verify ABS/project.bundle
+
+Some Git versions can also verify an initial bundle outside a repository.
+A throwaway verification repository always works:
+
+    git init --bare VERIFY
+    git -C VERIFY bundle verify ABS/project.bundle
+    git clone ABS/project.bundle PROJECT
+
+Do not treat a successful object-hash check as public branch evidence.
+
+### Initial package
+
+Then reconstruct \`.ap\` from \`ap.bundle\` when present (never \`git submodule update\`
+from the network):
+
+    git clone ABS/ap.bundle PROJECT/.ap
+
+Confirm \`git -C PROJECT rev-parse HEAD:.ap\` equals \`git -C PROJECT/.ap rev-parse HEAD\`.
+Clone any included submodule bundles into their project-relative paths the same
+way. Set \`remote.origin.url\` to the identity URLs recorded in \`manifest.conf\`
+**without fetching**.
+
+### Incremental package
+
+The inspection checkout from the same chain initial must still exist. Verify
+prerequisites in that repository, then fetch from the local bundle file:
+
+    git -C PROJECT bundle verify ABS/project.bundle
+    git -C PROJECT fetch --no-recurse-submodules ABS/project.bundle
+    git -C PROJECT checkout --detach <bundle.head from manifest.conf>
+
+Repeat for \`.ap\`, companion, and included submodules when those payloads are
+present. If verify reports missing prerequisites or the checkout is gone,
+request a new \`--initial\` package. Do not contact GitHub.
+
+## This package
+
+- project: $bundle_project
+- packageKind: $bundle_kind_word
+- project HEAD: $bundle_head
+- AP gitlink/HEAD: $bundle_ap_head
+- exporter AP commit: $bundle_exporter_head
+- createdAt: $bundle_created
+- evidenceClass: exact-committed-bundle-evidence
+- publicVerification: not-performed
+- publicBranchState: not-directly-observed
+
+Inspection checkouts are ephemeral cache, not durable project storage.
+EOF
+}
+
+cmd_bundle() {
+    trap 'bundle_cleanup' EXIT
+    trap 'bundle_cleanup; exit 129' HUP
+    trap 'bundle_cleanup; exit 130' INT
+    trap 'bundle_cleanup; exit 143' TERM
+    if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ] || [ "${1:-}" = "help" ]; then
+        [ "$#" -eq 1 ] || fail "bundle --help takes no extra arguments"
+        bundle_usage
+        return 0
+    fi
+
+    [ "$#" -ge 1 ] || fail "bundle requires a project name; see ap bundle --help"
+    bundle_project=$1
+    shift
+    bundle_valid_project_name "$bundle_project"
+
+    bundle_mode=incremental
+    bundle_opt_root=
+    bundle_opt_projects_root=
+    bundle_opt_companion=
+    bundle_opt_output_dir=
+    bundle_opt_replace=no
+    bundle_includes=
+    bundle_allows=
+
+    while [ "$#" -gt 0 ]; do
+        case "$1" in
+            --initial)
+                bundle_mode=initial
+                shift
+                ;;
+            --replace-chain)
+                bundle_opt_replace=yes
+                shift
+                ;;
+            --root)
+                [ "$#" -ge 2 ] || fail "--root requires a value"
+                bundle_opt_root=$2
+                shift 2
+                ;;
+            --projects-root)
+                [ "$#" -ge 2 ] || fail "--projects-root requires a value"
+                bundle_opt_projects_root=$2
+                shift 2
+                ;;
+            --companion-trace)
+                [ "$#" -ge 2 ] || fail "--companion-trace requires a value"
+                bundle_opt_companion=$2
+                shift 2
+                ;;
+            --include-submodule)
+                [ "$#" -ge 2 ] || fail "--include-submodule requires a value"
+                bundle_require_relpath "$2" "--include-submodule"
+                if bundle_line_in "$bundle_includes" "$2"; then
+                    fail "duplicate --include-submodule $2"
+                fi
+                bundle_includes=$(bundle_append_line "$bundle_includes" "$2")
+                shift 2
+                ;;
+            --allow-path)
+                [ "$#" -ge 2 ] || fail "--allow-path requires a value"
+                bundle_require_relpath "$2" "--allow-path"
+                if bundle_line_in "$bundle_allows" "$2"; then
+                    fail "duplicate --allow-path $2"
+                fi
+                bundle_allows=$(bundle_append_line "$bundle_allows" "$2")
+                shift 2
+                ;;
+            --output-dir)
+                [ "$#" -ge 2 ] || fail "--output-dir requires a value"
+                bundle_opt_output_dir=$2
+                shift 2
+                ;;
+            --help|-h)
+                fail "place --help immediately after bundle"
+                ;;
+            *)
+                fail "unknown bundle option: $1"
+                ;;
+        esac
+    done
+
+    if [ "$bundle_mode" != initial ]; then
+        [ -z "$bundle_opt_projects_root" ] || fail "--projects-root is only valid with --initial"
+        [ -z "$bundle_opt_companion" ] || fail "--companion-trace is only valid with --initial; recreate the chain to change it"
+        [ "$bundle_opt_replace" = no ] || fail "--replace-chain requires --initial"
+    fi
+
+    bundle_exporter_head=$(bundle_require_exporter)
+    bundle_chain_path=$(bundle_chain_file "$bundle_project")
+
+    if [ "$bundle_mode" = initial ]; then
+        if [ -f "$bundle_chain_path" ] && [ "$bundle_opt_replace" != yes ]; then
+            fail "bundle chain already exists for '$bundle_project'; pass --replace-chain to start a new initial package"
+        fi
+    else
+        bundle_load_chain
+        if [ -n "$bundle_includes" ]; then
+            [ "$(bundle_sorted_lines "$bundle_includes")" = "$(bundle_sorted_lines "$bundle_chain_includes")" ] || fail "--include-submodule must match the stored chain; recreate with --initial --replace-chain to change it"
+        else
+            bundle_includes=$bundle_chain_includes
+        fi
+        if [ -n "$bundle_chain_companion_root" ]; then
+            bundle_opt_companion=$bundle_chain_companion_root
+        fi
+    fi
+
+    bundle_root=$(bundle_resolve_root)
+    bundle_head=$(bundle_require_exportable_repo "$bundle_root" "project")
+    bundle_origin_url=$(bundle_git_c "$bundle_root" config --local --get remote.origin.url)
+    bundle_origin_id=$(bundle_origin_identity "$bundle_origin_url")
+    [ -n "$bundle_origin_id" ] || fail "cannot derive origin identity from $bundle_origin_url"
+
+    if bundle_is_canonical_ap_origin "$bundle_origin_url"; then
+        bundle_canonical_ap=yes
+        bundle_ap_head=not-applicable
+        bundle_ap_path=
+        [ -z "$bundle_includes" ] || fail "canonical AP self-bundle does not take --include-submodule"
+    else
+        bundle_canonical_ap=no
+        bundle_verify_consumer_ap
+    fi
+
+    if [ "$bundle_mode" = incremental ]; then
+        [ "$bundle_origin_id" = "$bundle_chain_origin" ] || fail "project origin identity changed; recorded $bundle_chain_origin observed $bundle_origin_id"
+        [ "$bundle_canonical_ap" = "$bundle_chain_canonical" ] || fail "project canonical-AP classification does not match the stored chain"
+        bundle_mapped_root=$(git config --file "$bundle_chain_path" --get chain.projectRoot)
+        [ "$bundle_root" = "$bundle_mapped_root" ] || fail "project root $bundle_root does not match stored chain root $bundle_mapped_root"
+        bundle_git_c "$bundle_root" merge-base --is-ancestor "$bundle_chain_initial" HEAD || fail "recorded initial commit is no longer an ancestor of project HEAD; start a new chain with --initial --replace-chain"
+        if [ "$bundle_canonical_ap" = no ]; then
+            bundle_git_c "$bundle_ap_path" merge-base --is-ancestor "$bundle_chain_initial_ap" HEAD || fail "recorded initial .ap commit is no longer an ancestor of .ap HEAD; start a new chain with --initial --replace-chain"
+        fi
+    fi
+
+    bundle_scan_range=HEAD
+    if [ "$bundle_mode" = incremental ]; then
+        bundle_scan_range=$bundle_chain_initial..HEAD
+    fi
+    bundle_scan_secrets "$bundle_root" project "$bundle_scan_range" "$bundle_allows"
+    if [ "$bundle_canonical_ap" = no ]; then
+        bundle_ap_scan=HEAD
+        if [ "$bundle_mode" = incremental ] && [ "$bundle_ap_head" != "$bundle_chain_initial_ap" ]; then
+            bundle_ap_scan=$bundle_chain_initial_ap..HEAD
+        fi
+        bundle_scan_secrets "$bundle_ap_path" ".ap" "$bundle_ap_scan" "$bundle_allows"
+    fi
+
+    bundle_handle_other_submodules
+
+    bundle_companion_root=
+    bundle_companion_head=
+    bundle_companion_origin=
+    bundle_companion_id=
+    if [ -n "$bundle_opt_companion" ]; then
+        bundle_companion_root=$(bundle_require_abs_git_root "$bundle_opt_companion" "--companion-trace")
+        bundle_companion_head=$(bundle_require_exportable_repo "$bundle_companion_root" "companion trace")
+        bundle_companion_origin=$(bundle_git_c "$bundle_companion_root" config --local --get remote.origin.url)
+        bundle_companion_id=$(bundle_origin_identity "$bundle_companion_origin")
+        [ -n "$bundle_companion_id" ] || fail "cannot derive companion origin identity"
+        bundle_cscan=HEAD
+        if [ "$bundle_mode" = incremental ]; then
+            [ "$bundle_companion_id" = "$bundle_chain_companion_identity" ] || fail "companion identity changed; recreate the chain"
+            bundle_git_c "$bundle_companion_root" merge-base --is-ancestor "$bundle_chain_companion_initial" HEAD || fail "recorded companion initial commit is no longer an ancestor of companion HEAD; start a new chain with --initial --replace-chain"
+            bundle_cscan=$bundle_chain_companion_initial..HEAD
+        fi
+        bundle_scan_secrets "$bundle_companion_root" "companion trace" "$bundle_cscan" "$bundle_allows"
+    fi
+
+    bundle_alloc_tmp
+    bundle_payload=$bundle_tmp/payload
+    mkdir -p "$bundle_payload"
+    bundle_manifest=$bundle_payload/manifest.conf
+    : > "$bundle_manifest"
+    bundle_sub_changed=no
+    bundle_sub_files=
+    bundle_sub_heads=
+    bundle_sub_initials=
+    bundle_created=$(date -u +%Y%m%dT%H%M%SZ)
+    bundle_changed=no
+    bundle_project_file=
+    bundle_ap_file=
+    bundle_companion_file=
+
+    if [ "$bundle_mode" = initial ]; then
+        bundle_chain_write=$(dirname "$bundle_chain_path")/chain.conf.tmp
+        mkdir -p "$(dirname "$bundle_chain_path")"
+        : > "$bundle_chain_write"
+        bundle_create_named_bundle "$bundle_root" "$bundle_payload/project.bundle" initial ""
+        bundle_project_file=project.bundle
+        bundle_changed=yes
+        if [ "$bundle_canonical_ap" = no ]; then
+            bundle_create_named_bundle "$bundle_ap_path" "$bundle_payload/ap.bundle" initial ""
+            bundle_ap_file=ap.bundle
+        fi
+        if [ -n "$bundle_companion_root" ]; then
+            bundle_create_named_bundle "$bundle_companion_root" "$bundle_payload/companion-trace.bundle" initial ""
+            bundle_companion_file=companion-trace.bundle
+        fi
+        bundle_export_included_submodules
+    else
+        bundle_chain_write=$bundle_chain_path
+        if bundle_create_named_bundle "$bundle_root" "$bundle_payload/project.bundle" incremental "$bundle_chain_initial"; then
+            bundle_project_file=project.bundle
+            bundle_changed=yes
+        fi
+        if [ "$bundle_canonical_ap" = no ] && [ "$bundle_ap_head" != "$bundle_chain_initial_ap" ]; then
+            bundle_create_named_bundle "$bundle_ap_path" "$bundle_payload/ap.bundle" incremental "$bundle_chain_initial_ap" || fail ".ap incremental bundle is empty despite gitlink change"
+            bundle_ap_file=ap.bundle
+            bundle_changed=yes
+        fi
+        if [ -n "$bundle_companion_root" ] && [ "$bundle_companion_head" != "$bundle_chain_companion_initial" ]; then
+            bundle_create_named_bundle "$bundle_companion_root" "$bundle_payload/companion-trace.bundle" incremental "$bundle_chain_companion_initial" || fail "companion incremental bundle is empty despite HEAD change"
+            bundle_companion_file=companion-trace.bundle
+            bundle_changed=yes
+        fi
+        bundle_export_included_submodules
+        if [ "$bundle_sub_changed" = yes ]; then
+            bundle_changed=yes
+        fi
+        [ "$bundle_changed" = yes ] || fail "nothing new to export since the initial package"
+    fi
+
+    bundle_branch=$(bundle_branch_name "$bundle_root")
+    if [ -n "$bundle_branch" ]; then
+        bundle_branch_record=$bundle_branch
+        bundle_detached=no
+    else
+        bundle_branch_record=detached
+        bundle_detached=yes
+    fi
+
+    bundle_kind=update
+    bundle_kind_word=incremental
+    if [ "$bundle_mode" = initial ]; then
+        bundle_kind=initial
+        bundle_kind_word=initial
+    fi
+
+    git config --file "$bundle_manifest" bundle.schemaVersion 1
+    git config --file "$bundle_manifest" bundle.transportKind chat-orchestrator-offline-git
+    git config --file "$bundle_manifest" bundle.packageKind "$bundle_kind_word"
+    git config --file "$bundle_manifest" bundle.projectName "$bundle_project"
+    git config --file "$bundle_manifest" bundle.originUrl "$bundle_origin_url"
+    git config --file "$bundle_manifest" bundle.originIdentity "$bundle_origin_id"
+    git config --file "$bundle_manifest" bundle.head "$bundle_head"
+    if [ "$bundle_mode" = initial ]; then
+        git config --file "$bundle_manifest" bundle.initialCommit "$bundle_head"
+    else
+        git config --file "$bundle_manifest" bundle.initialCommit "$bundle_chain_initial"
+    fi
+    git config --file "$bundle_manifest" bundle.branch "$bundle_branch_record"
+    git config --file "$bundle_manifest" bundle.detached "$bundle_detached"
+    git config --file "$bundle_manifest" bundle.apGitlink "$bundle_ap_head"
+    git config --file "$bundle_manifest" bundle.exporterApCommit "$bundle_exporter_head"
+    git config --file "$bundle_manifest" bundle.createdAt "$bundle_created"
+    git config --file "$bundle_manifest" bundle.publicVerification not-performed
+    git config --file "$bundle_manifest" bundle.evidenceClass exact-committed-bundle-evidence
+    git config --file "$bundle_manifest" bundle.publicBranchState not-directly-observed
+    git config --file "$bundle_manifest" bundle.hashAlgorithm sha256
+    if [ -n "$bundle_project_file" ]; then
+        git config --file "$bundle_manifest" bundle.projectBundle "$bundle_project_file"
+    else
+        git config --file "$bundle_manifest" bundle.projectBundle omitted-unchanged-from-initial
+    fi
+    if [ "$bundle_canonical_ap" = yes ]; then
+        git config --file "$bundle_manifest" bundle.apBundle not-applicable
+    elif [ -n "$bundle_ap_file" ]; then
+        git config --file "$bundle_manifest" bundle.apBundle "$bundle_ap_file"
+    else
+        git config --file "$bundle_manifest" bundle.apBundle omitted-unchanged-from-initial
+    fi
+    if [ -n "$bundle_companion_file" ]; then
+        git config --file "$bundle_manifest" bundle.companionBundle "$bundle_companion_file"
+        git config --file "$bundle_manifest" bundle.companionIdentity "$bundle_companion_id"
+        git config --file "$bundle_manifest" bundle.companionHead "$bundle_companion_head"
+        git config --file "$bundle_manifest" bundle.companionOriginUrl "$bundle_companion_origin"
+    elif [ -n "$bundle_companion_root" ]; then
+        git config --file "$bundle_manifest" bundle.companionBundle omitted-unchanged-from-initial
+        git config --file "$bundle_manifest" bundle.companionIdentity "$bundle_companion_id"
+        git config --file "$bundle_manifest" bundle.companionHead "$bundle_companion_head"
+    else
+        git config --file "$bundle_manifest" bundle.companionBundle not-configured
+    fi
+    if [ -n "$bundle_allows" ]; then
+        while IFS= read -r bundle_allow_one; do
+            [ -n "$bundle_allow_one" ] || continue
+            git config --file "$bundle_manifest" --add bundle.allowPath "$bundle_allow_one"
+        done <<EOF
+$bundle_allows
+EOF
+    fi
+
+    bundle_write_import_md "$bundle_payload/IMPORT.md" "$bundle_kind_word"
+
+    bundle_checksums=$bundle_payload/checksums
+    : > "$bundle_checksums"
+    printf '# algorithm=sha256 format=sha256<two-spaces><hex><two-spaces><filename>\n' > "$bundle_checksums"
+    bundle_payload_names=
+    for bundle_fn in project.bundle ap.bundle companion-trace.bundle IMPORT.md; do
+        if [ -f "$bundle_payload/$bundle_fn" ]; then
+            bundle_payload_names=$(bundle_append_line "$bundle_payload_names" "$bundle_fn")
+        fi
+    done
+    if [ -n "${bundle_sub_files:-}" ]; then
+        while IFS= read -r bundle_sf; do
+            [ -n "$bundle_sf" ] || continue
+            bundle_payload_names=$(bundle_append_line "$bundle_payload_names" "$bundle_sf")
+        done <<EOF
+$bundle_sub_files
+EOF
+    fi
+    if [ -n "$bundle_payload_names" ]; then
+        while IFS= read -r bundle_fn; do
+            [ -n "$bundle_fn" ] || continue
+            bundle_hx=$(bundle_sha256 "$bundle_payload/$bundle_fn")
+            bundle_hash_key=$(printf '%s\n' "$bundle_fn" | sed 's/[^A-Za-z0-9]/-/g')
+            git config --file "$bundle_manifest" "bundle.hash-$bundle_hash_key" "$bundle_hx"
+        done <<EOF
+$bundle_payload_names
+EOF
+    fi
+    bundle_payload_names=$(bundle_append_line "$bundle_payload_names" manifest.conf)
+    while IFS= read -r bundle_fn; do
+        [ -n "$bundle_fn" ] || continue
+        bundle_hx=$(bundle_sha256 "$bundle_payload/$bundle_fn")
+        printf 'sha256  %s  %s\n' "$bundle_hx" "$bundle_fn" >> "$bundle_checksums"
+    done <<EOF
+$bundle_payload_names
+EOF
+
+    bundle_out_dir=$(bundle_resolve_output_dir)
+    bundle_head12=$(printf '%s\n' "$bundle_head" | cut -c1-12)
+    bundle_zip_name=$bundle_project-ap-transport-$bundle_kind-$bundle_created-$bundle_head12.zip
+    bundle_zip_path=$bundle_out_dir/$bundle_zip_name
+    [ ! -e "$bundle_zip_path" ] || fail "refusing to overwrite existing package: $bundle_zip_path"
+
+    bundle_alloc_tmp
+    bundle_zip_repo=$bundle_tmp/zipgit
+    mkdir -p "$bundle_zip_repo"
+    (
+        unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_OBJECT_DIRECTORY GIT_ALTERNATE_OBJECT_DIRECTORIES
+        git -c init.defaultBranch=ap-transport init -q "$bundle_zip_repo"
+    )
+    bundle_copy_names=$bundle_payload_names
+    bundle_copy_names=$(bundle_append_line "$bundle_copy_names" checksums)
+    while IFS= read -r bundle_fn; do
+        [ -n "$bundle_fn" ] || continue
+        cp -f "$bundle_payload/$bundle_fn" "$bundle_zip_repo/$bundle_fn"
+    done <<EOF
+$bundle_copy_names
+EOF
+    printf '* binary\n' > "$bundle_zip_repo/.gitattributes"
+    (
+        unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_OBJECT_DIRECTORY GIT_ALTERNATE_OBJECT_DIRECTORIES
+        git -C "$bundle_zip_repo" -c core.hooksPath=/dev/null -c core.autocrlf=false add -A
+        git -C "$bundle_zip_repo" -c core.hooksPath=/dev/null \
+            -c user.name=ap -c user.email=ap@offline-bundle \
+            commit -q -m "ap-transport"
+        set --
+        while IFS= read -r bundle_fn; do
+            [ -n "$bundle_fn" ] || continue
+            set -- "$@" "$bundle_fn"
+        done <<EOF
+$bundle_copy_names
+EOF
+        git -C "$bundle_zip_repo" archive --format=zip -o "$bundle_zip_path" HEAD -- "$@"
+    ) || fail "cannot create transport ZIP with git archive"
+
+    if [ "$bundle_mode" = initial ]; then
+        bundle_save_chain
+        rm -f "$bundle_chain_write"
+    fi
+
+    say "OK transport kind: chat-orchestrator-offline-git"
+    say "OK package kind: $bundle_kind_word"
+    say "OK project: $bundle_project"
+    say "OK project HEAD: $bundle_head"
+    say "OK evidence class: exact-committed-bundle-evidence"
+    say "OK public branch state not directly observed"
+    say "READY: $bundle_zip_path"
+}
+
 project_stage_argument=no
 if [ "${1:-}" = --ap-internal-sanitized-stage ]; then
     project_stage_argument=yes
@@ -1098,6 +2273,10 @@ case "${1:-help}" in
             --apply) cmd_update_apply ;;
             *) fail "unknown update option: $2" ;;
         esac
+        ;;
+    bundle)
+        shift
+        cmd_bundle "$@"
         ;;
     help|--help|-h)
         usage

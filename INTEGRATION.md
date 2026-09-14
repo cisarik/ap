@@ -115,7 +115,7 @@ separation (e.g., Slovak for Cooperator chat, English for prompts and code):
 
 ```text
 # Project-local layout extending the AP capsule; not Worker authority.
-🟡 Ready for delivery
+🟡 ready
 Recipient: Fresh Implementation Worker · fresh-worker-session · manual
 Recommendation: Medium · approximately 250k tokens
 Client: Native Plan Mode OFF
@@ -125,10 +125,16 @@ Archival: wait-for-report
 ```
 
 This example follows a completed initial Planner in session 01 and a preserved
-manual delivery choice. A project may localize language or marks while retaining
+manual delivery choice. Textual capsule states such as `ready` are routing
+presentation; they are not Implementation or Acceptance PASS. A project may localize language or marks while retaining
 the AP information minimum. Those marks remain
 presentation. The copyable, structurally English Worker prompt and the compact
 AP records stay the authority grant.
+
+ChatOrchestrator inspection clones may be reconstructed from an `ap bundle`
+offline transport as described in [AP §3](AP.md#3-instances-sessions-and-worker-session-profiles)
+and [ADR-0025](docs/adr/0025-chatorchestrator-offline-bundle-transport.md). The
+clone is committed-state cache, not the Cooperator worktree.
 
 ## Clone Workflow
 

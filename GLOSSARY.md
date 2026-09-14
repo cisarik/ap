@@ -33,7 +33,7 @@ Follow the linked AP rule family and structural contracts for exact behavior.
 | Cooperator Routing Sovereignty | Orchestrator recommends; Cooperator selects; a Worker does not reopen the selected route. |
 | Selected Route | Cooperator-chosen session/capability/reasoning/native-mode route, distinct from recommendation and observation and granting no authority. |
 | Orchestrator access profile | ORCHESTRATOR with direct access to the designated working checkout; dispatch is a separate capability/selection; see [AP §3](AP.md#3-instances-sessions-and-worker-session-profiles). |
-| ChatOrchestrator | Mediated ORCHESTRATOR access profile; an inspection clone does not expose the Cooperator's uncommitted state; see [AP §3](AP.md#3-instances-sessions-and-worker-session-profiles). |
+| ChatOrchestrator | Mediated ORCHESTRATOR access profile; an inspection clone is ephemeral reconstructed committed state from authorized bundle and/or public evidence, not the Cooperator's uncommitted worktree; see [AP §3](AP.md#3-instances-sessions-and-worker-session-profiles). |
 | Subagent dispatch | Selected delivery of a complete prompt to a concrete Worker session; access, freshness and independence remain separate under [AP §3](AP.md#3-instances-sessions-and-worker-session-profiles) and [RF-05](AP.md#rf-05-freshcurrent-routing-and-independent-acceptance). |
 | Material Phase Gate | Routing reconsideration caused by a material objective, authority, independence, security, capability, external, acceptance, or recovery change—not an ordinary substep. |
 
@@ -60,7 +60,10 @@ Follow the linked AP rule family and structural contracts for exact behavior.
 | Combined Implementation Envelope | Ordered implementation stages, gates, recovery, and one terminal point; evidence remains non-independent. |
 | Independent Acceptance Envelope | Separate fresh acceptance of a fixed candidate by a Worker that did not materially implement it. |
 | Acceptance Plan / Criteria | Planned evidence / concrete conditions for task completion. |
-| Evidence | Observable files, diffs, tests, output, public refs, screenshots, or owner observations supporting a claim. |
+| Evidence | Observable files, diffs, tests, output, public refs, screenshots, owner observations, or exact committed bundle objects supporting a claim. |
+| Exact committed bundle evidence | Git-native objects from an authorized ChatOrchestrator offline transport proving exact committed identity, not current public branch state; see [AP §4](AP.md#4-source-of-truth-and-evidence). |
+| Independently observed current public branch evidence | Direct Git, official ref API, or equivalent public observation of the current branch head; never inferred from bundle hashes alone. |
+| ChatOrchestrator offline bundle transport | `ap bundle` ZIP of Git bundles for ChatOrchestrator continuity when GitHub is unreachable; see [ADR-0025](docs/adr/0025-chatorchestrator-offline-bundle-transport.md). |
 | Assumption | Unverified premise that remains explicit and is resolved before relevant high-risk action. |
 | Source of Truth | Current verifiable repository, test, Git, public, decision, and specification evidence rather than memory. |
 | Public-Verification Evidence Ladder | Direct Git, official ref/commit API, immutable exact-SHA content, then supplementary branch evidence. |

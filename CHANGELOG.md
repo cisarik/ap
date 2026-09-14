@@ -7,6 +7,17 @@ remains the sole live normative protocol.
 
 ## Unreleased
 
+- Added ChatOrchestrator offline Git-bundle transport under
+  [ADR-0025](docs/adr/0025-chatorchestrator-offline-bundle-transport.md):
+  executable `ap bundle` from a standalone AP checkout; exact committed bundle
+  evidence distinct from independently observed current public branch evidence;
+  cumulative incremental packages; explicit companion-trace opt-in; and a
+  first-Planner delivery correction for full Orchestrators with authorized
+  dispatch. Native planning mode for the first Planner is unchanged. Historical
+  ADR bodies, schema v1, managed block, and existing `init`/`doctor`/`project`/`exec`/`update`
+  contracts are unchanged. Independent candidate acceptance, publication,
+  consumer adoption and logical-whole closure remain separate evidence.
+
 - Implemented the approved documentation design in
   [ADR-0024](docs/adr/0024-reliable-execution-and-cooperator-experience.md):
   coherent action/prerequisite/output authority, exact expectations bound to

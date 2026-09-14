@@ -1040,10 +1040,12 @@ delivery or action.
 | `current-worker-session` | `required` | Stay in the exact same Worker session, enable native planning mode, then paste. If this cannot be done without changing sessions, return for correction. |
 | `current-worker-session` | `not-used` | Stay in the exact same Worker session, ensure native planning mode is disabled or absent, then paste. |
 
-The actual initial manual Planner and native-mode behavior is owned solely by
+The actual initial Planner native-mode behavior is owned solely by
 [Orchestration Planning and Implementation Planning](AP.md#orchestration-planning-and-implementation-planning).
-Its prompt declares Planner, session/exchange 01, manual delivery, and required
-native mode. Only additional bounded planning or Discovery may use an explicitly
+Its prompt declares Planner, session/exchange 01, required native mode, and the
+selected delivery route. Manual Cooperator delivery is the ChatOrchestrator
+normal route and a valid example; it is not the only lawful first-Planner route
+for a full Orchestrator with authorized dispatch. Only additional bounded planning or Discovery may use an explicitly
 read-only not-used fallback. Implementation declares not-used. Routing metadata
 must agree with the actual client and intended session.
 
@@ -2503,7 +2505,10 @@ are not separate independent auditors.
 - **Authority**: synthesis only; restoration text grants no repository, host,
   implementation, deployment, production, account, filesystem, external-service,
   browser, credential, or Git mutation authority.
-- **Evidence**: verified public commit, current AP pin when present, completed
+- **Evidence**: classified repository evidence (independently observed current
+  public branch evidence when that claim applies, or exact committed bundle
+  evidence for a ChatOrchestrator when public branch state is not the claim
+  under decision), current AP pin when present, completed
   boundaries, accepted decisions, evidence classification, active Worker state,
   current mutation state, unresolved questions, risks, and materially relevant
   Cooperator intent separated from brainstorming.
@@ -2525,9 +2530,12 @@ are not separate independent auditors.
   Orchestrator to continue after verification. PARTIAL means useful continuity
   exists but material uncertainty remains. BLOCKED means the state cannot be
   restored responsibly.
-- **Transition owner**: fresh Orchestrator verifies truth before acting.
-- **Stopping rule**: stop if public state or active mutation cannot be
-  classified honestly.
+- **Transition owner**: fresh Orchestrator classifies repository and, when
+  required, public evidence before acting.
+- **Stopping rule**: stop if required public-ref state or active mutation cannot be
+  classified honestly. A ChatOrchestrator may continue from authorized bundle
+  evidence when public branch state is not the claim under decision, recording
+  `public branch state not directly observed`.
 
 ### Optional Discovery Record Creation
 

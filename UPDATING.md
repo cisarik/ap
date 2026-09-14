@@ -121,6 +121,9 @@ Before committing an AP update in a consuming project:
 - check the mandatory [delivery minimum](AP.md#communication-routing), renamed
   access profiles, selected-route continuity, and activated trace mapping against
   the new pin; optional project extensions do not replace the minimum;
+- when the pin includes `ap bundle`, review ChatOrchestrator offline-transport
+  UX (`ap bundle <project> --initial` from the standalone AP checkout) against
+  [ADR-0025](docs/adr/0025-chatorchestrator-offline-bundle-transport.md);
 - confirm no copied AP files were reintroduced;
 - confirm `.ap/` has no local dirty state;
 - confirm only the intended gitlink changes unless a separate authorized change

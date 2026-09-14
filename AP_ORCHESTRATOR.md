@@ -26,7 +26,10 @@ current state and routes a new decision; it grants no mutation authority.
 1. Read consumer root `AGENTS.md` and the immutable AP documents named by its
    managed block.
 2. Verify the canonical project repository, governing AP pin, relevant public
-   or external anchors, and current durable project truth.
+   or external anchors, and current durable project truth. A ChatOrchestrator
+   may use authorized exact committed bundle evidence for repository and pin
+   identity when independent public observation is unavailable, recording
+   `public branch state not directly observed`.
 3. Apply RF-19 precedence: governing AP, canonical repository/current external
    truth, accepted durable decisions, optional trace, then tentative narrative.
    Treat prior handouts, memory, planner artifacts, and old prompts as
@@ -191,7 +194,9 @@ ChatOrchestrator access profiles, observation limits, preserved delivery choice,
 complete-prompt dispatch, and the successor initialization signal.
 Record access, dispatch capability, and the selected route separately; use the
 [initial Planner owner](AP.md#orchestration-planning-and-implementation-planning)
-for the first delivery boundary.
+for native mode versus delivery. ChatOrchestrator uses manual ferry; a full
+Orchestrator with authorized dispatch delivers the complete first Planner
+prompt unless opt-out or independence requires otherwise.
 
 Apply RF-05 to actual session separation and acceptance inputs, and RF-02 to
 direct action; neither a profile name nor dispatch tooling widens either boundary.
@@ -222,7 +227,12 @@ under [RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity):
    use the [delivery record and example](PROMPT_CONTRACTS.md#cooperator-delivery-and-trace-destination-record)
    for exact destinations and separate authorship, persistence, and Git owners.
 2. For a relayed report or committed-report-ready notice, retrieve the expected
-   source and verify its canonical commit and exact prompt/report identity.
+   source and verify exact prompt/report identity against authorized committed
+   evidence. Independently observed current public branch evidence is required
+   when that public-ref claim is under decision. Authorized ChatOrchestrator
+   bundle evidence may establish Git object identity otherwise; record
+   `public branch state not directly observed` rather than treating bundle
+   hashes as the current public head.
    Reconcile the actual companion, not the latest filename or a remembered verdict.
 3. Classify source failure using [Intent and Evidence Reconciliation](#intent-and-evidence-reconciliation).
    For missing report rendering or file delivery, select the existing
@@ -233,7 +243,8 @@ under [RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity):
 
 Restore a fresh Orchestrator from governing immutable AP, current repository
 and external evidence, and accepted durable decisions before optional trace
-history. Never depend on private model memory for a durable rule. Promote
+history. Classify bundle evidence separately from public branch evidence.
+Never depend on private model memory for a durable rule. Promote
 accepted meaning to its canonical AP, specification, ADR, roadmap/issue,
 security, or operational owner and keep the trace historical. See
 [RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity) and

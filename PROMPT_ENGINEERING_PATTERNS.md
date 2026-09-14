@@ -522,7 +522,9 @@ Use for intentional transfer due to capability fit, availability, cost,
 context integrity, tool limits, policy limits, independent-evidence needs, or
 a material changed axis makes revisiting the selected route useful. The
 [initial Planner owner](AP.md#orchestration-planning-and-implementation-planning)
-applies independently of the subsequent delivery choice.
+applies independently of the subsequent delivery choice. Native planning mode
+remains required for the first Planner; manual ferry is not required merely
+because the task is the first Planner.
 
 #### Do not use when
 
