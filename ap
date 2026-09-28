@@ -706,8 +706,7 @@ project_config() {
 }
 
 project_count_key() {
-    project_count=$(project_config --null --get-all "$1" 2>/dev/null |
-        awk 'BEGIN { RS="\0" } { count++ } END { print count + 0 }')
+    project_count=$(project_config --null --get-all "$1" 2>/dev/null | tr -cd '\000' | wc -c | tr -dc '0-9')
     printf '%s\n' "$project_count"
 }
 
