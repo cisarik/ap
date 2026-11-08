@@ -82,7 +82,9 @@ claim that all possible observations are resolved. A malformed declaration or
 file remains non-authorizing evidence: continuation can inspect other sources
 read-only, but the Orchestrator routes repair or reconciliation before issuing
 mutation authority that relies on that ledger. No executable `ap` or schema-v1
-behavior is added by optional adoption.
+behavior is added by optional adoption. Once declared, the ledger receives
+measured friction under
+[Standing Ledger Maintenance](AP.md#standing-ledger-maintenance).
 
 ## Optional Presentation Profile, Development Envelope, and Trace Grammar
 
@@ -94,7 +96,9 @@ block:
 - a named, versioned development envelope covering tooling, interpreter,
   working-copy topology preference, reversible class, and irreversible
   exclusions; and
-- an optional pointer to the activated trace's local filename grammar.
+- an optional pointer to the activated trace's local filename grammar, which
+  may also name run-map and handout files; its delivery declarations default
+  to [direct-write report persistence](AP.md#direct-write-report-persistence).
 
 Do not edit, refresh, or migrate the managed block for these declarations, and
 do not rerun `init` merely to advertise them. Absence of a declaration

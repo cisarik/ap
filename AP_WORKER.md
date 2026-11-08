@@ -69,7 +69,10 @@ never proves independence
 
 For activated delivery, check feasibility before substantive work: the positive
 file grant, permitted client capability, physical repository and parent paths,
-symlink resolution, and each destination's existing state. Apply
+symlink resolution, each destination's existing state, and agreement of the
+three [mutation axes](AP.md#mutation-axes) with the persistence owners and
+positive authority; contradictory axes stop under
+[§18](AP.md#18-stopping-conditions). Apply
 [RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity) to
 prepared-prompt reuse, any existing report including an empty file, and separate
 Git ownership. Surface a missing grant or blocked destination early; use the
@@ -287,6 +290,14 @@ through this finishing sequence:
    successful delivery or replacing the first task failure.
 4. Send the short completion notice separately from the saved report, with
    its status, exact location and any requested receipt/hash. Then stop.
+
+Report content and report delivery are separate: `Report persistence owner`
+and `Trace persistence` decide delivery under the
+[direct-write default](AP.md#direct-write-report-persistence). When they name
+you, write exactly that report file (and an authorized Planner's exact
+prompt) through steps 2–4 and nothing else; when native planning controls
+block writes, keep the complete report in the plan output and write it once the
+client permits within the same grant, never bypassing the control.
 
 When no permitted file route exists, preserve complete available content through
 the allowed client output and disclose missing delivery. Use

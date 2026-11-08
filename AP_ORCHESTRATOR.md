@@ -44,13 +44,17 @@ current state and routes a new decision; it grants no mutation authority.
 6. Surface contradiction, missing evidence, malformed storage, and stale
    observations. Continue evidence gathering read-only when useful, but do not
    claim reconciliation complete while a material gap remains.
+7. For a received provisional handout, revalidate its material facts and record
+   the [Handout Revalidation Record](PROMPT_CONTRACTS.md#handout-revalidation-record)
+   before the first Planner prompt ([Run-Level Handouts](AP.md#run-level-handouts)).
 
 **Stage 2 — select exactly one bounded logical whole.** Present the restored
 state, active observations, material uncertainty, and one evidence-backed
 recommendation. Preserve an already selected/planned whole; obtain selection
 for a new objective or a decision to gather more evidence under AP Continuation
-Bootstrap. Then issue a complete current Worker prompt with its own exact
-authority record. A seed, handout,
+Bootstrap. A run map's order is a recommendation, never a selection. Then issue
+a complete current Worker prompt with its own exact authority record. A seed,
+handout,
 planner artifact, stale grant, ledger, trace, or prior prompt never supplies
 current authority.
 
@@ -94,6 +98,7 @@ for microapproval of deterministic steps inside an approved envelope. See
 | Correction | authorize one smallest coherent correction for a concrete finding | the same assumption survives correction and recheck |
 | Publication/deployment/production | activate only the applicable surface annex and verify exact artifact continuity | authority or direct evidence is absent |
 | Dispatch and direct action | apply [delivery selection](AP.md#3-instances-sessions-and-worker-session-profiles) and the RF-02 direct-action boundary | missing selected-route capability or independence evidence; invalid report identity |
+| Run-level handoff | hand a selected whole to its Orchestrator by provisional-handout locator plus restoration prompt under [Run-Level Handouts](AP.md#run-level-handouts) | the run map or handout is treated as selection, plan, or authority; the whole belongs to another Orchestrator instance |
 | Closure | reconcile required results, Cooperator decisions, risk, ledger, and active mutation | any required condition remains open |
 
 Phase names never grant authority. Use only the phases that the selected risk
@@ -211,7 +216,10 @@ the exact healthy current session preserves the whole/session coordinates and
 advances the exchange ordinal. Communicate all three coordinates in every
 complete prompt and require the terminal report to echo them. Reject gaps,
 regression, reuse, or conflict with fresh/current routing. A phase, profile,
-filename, or ordinal never grants authority or proves independence.
+filename, or ordinal never grants authority or proves independence. Issued
+coordinates stay consumed whatever the outcome; after a blocked exchange use
+the next ordinary transition, never a renamed whole
+([consumed coordinates](AP.md#consumed-coordinates)).
 
 Prefer current-session renewal after an imperfect report when the same session
 is healthy, assumptions are unchanged, and independence is unnecessary. Use
@@ -374,7 +382,11 @@ through this focused sequence:
    preparation against that same grant. Place expected values with their
    object/source/readback under [Validation](AP.md#12-validation-and-public-verification),
    and use the [stop owner](AP.md#18-stopping-conditions) for residual work.
-5. Deliver through the preserved route with a viable finishing path and the
+   Then apply the [prompt satisfiability check](AP.md#prompt-satisfiability-check)
+   to the complete prompt.
+5. Declare the three [mutation axes](AP.md#mutation-axes) in agreement with the
+   persistence owners, then deliver through the preserved route with a viable
+   finishing path and the
    [communication capsule](AP.md#communication-routing). Use the
    [complete delivery example](PROMPT_CONTRACTS.md#source-read-only-review-example)
    where applicable; a destination or persister label is not its write grant.
@@ -468,16 +480,20 @@ project-owned root `AGENTS.md` text outside the managed block, then follow the
 [structural ledger contract](PROMPT_CONTRACTS.md#upgrade-observation-ledger-contract).
 Do not guess a filename or scan the tree. Treat missing/malformed declared
 storage and stale entries exactly as the contract specifies; no declaration
-preserves existing behavior.
+preserves existing behavior. Capture friction and snapshot active entries under
+[Standing Ledger Maintenance](AP.md#standing-ledger-maintenance).
 
 ## Per-Whole Orchestrator Notes (`00_notes.md`)
 
 The semantic owner is [Artifact Lifecycle](AP.md#13-artifact-lifecycle-and-repository-hygiene);
-activated Meta storage requirements belong to Meta README, including creation
-of `00_notes.md` at opening even without an opening handout. Apply that local
-contract and the current grant; notes remain Orchestrator-authored and a named
-persister may store exact supplied entries. Reconcile report critique with the
-outcome under [Compact Communication](AP.md#17-compact-communication).
+activated storage requirements belong to the activated trace's own
+documentation, including any creation of `00_notes.md` at opening even without
+an opening handout. Apply that local contract and the current grant; notes
+remain Orchestrator-authored and a named persister may store exact supplied
+entries. Record the handout revalidation record there when a provisional
+handout was received ([Run-Level Handouts](AP.md#run-level-handouts)).
+Reconcile report critique with the outcome under
+[Compact Communication](AP.md#17-compact-communication).
 
 ## Validation, Results, and Closure
 
@@ -524,6 +540,36 @@ profile from [AP §3](AP.md#3-instances-sessions-and-worker-session-profiles),
 the visible capsule, and activated local filenames; no filename grants authority.
 Restore an ongoing planned whole through [Continuation Bootstrap](AP.md#continuation-bootstrap)
 without resetting its identity or planning.
+
+## Run-Scoped Orchestration
+
+Semantics: [session scope](AP.md#orchestrator-session-scope) and
+[Run-Level Handouts](AP.md#run-level-handouts); exact records:
+[Run Map Record](PROMPT_CONTRACTS.md#run-map-record),
+[Provisional Handout Marker](PROMPT_CONTRACTS.md#provisional-handout-marker),
+and [Handout Revalidation Record](PROMPT_CONTRACTS.md#handout-revalidation-record).
+For a session with `development-run` scope:
+
+1. Obtain the Cooperator's run objective and exclusions; declare the scope and
+   development run identity in the initialization signal.
+2. Keep one run map; refresh it when it contradicts current evidence.
+3. Write provisional handouts only on the advisory rolling horizon; carry
+   questions, evidence, risks, and constraints, never the first Planner's
+   answers.
+4. After Cooperator selection, hand off by the handout's exact locator plus a
+   Fresh Orchestrator Restoration prompt that cites it.
+5. Prefer a fresh per-whole Orchestrator; if this session opens the whole
+   itself, record the departure and its reason.
+6. After each closure, update the entry's status from that whole's own evidence
+   and refresh, supersede, or drop the remaining unopened handouts.
+7. Capture friction under [Standing Ledger Maintenance](AP.md#standing-ledger-maintenance);
+   keep notes only as the activated trace provides them under
+   [Artifact Lifecycle](AP.md#13-artifact-lifecycle-and-repository-hygiene).
+8. Close the run by freezing the run map with a one-line closure statement.
+
+Stop when a prompt would target a whole coordinated by another Orchestrator
+instance, when acceptance or closure is attempted for such a whole, or when a
+stale run map would inform a recommendation.
 
 ## Stop and Escalation
 

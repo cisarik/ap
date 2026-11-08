@@ -7,6 +7,19 @@ remains the sole live normative protocol.
 
 ## Unreleased
 
+- Added run-scoped orchestration and direct-write report persistence under
+  [ADR-0026](docs/adr/0026-run-scoped-orchestration-mutation-axes-and-direct-write-reports.md):
+  an Orchestrator session scope (`logical-whole | development-run`,
+  explanatorily the Master Orchestrator) that adds no role or authority; run
+  maps, provisional handouts and per-whole handout revalidation; three mutation
+  axes with read-only scoped per axis; a direct-write default for a capable
+  Worker's own trace report; a four-comparison prompt satisfiability check;
+  consumed coordinates after a blocked exchange; and a consumer-neutral
+  standing upgrade-ledger maintenance duty. The executable, managed block,
+  schema v1 and historical ADR bodies are unchanged. Independent candidate
+  acceptance, publication, consumer adoption and closure remain separate
+  evidence.
+
 - Added ChatOrchestrator offline Git-bundle transport under
   [ADR-0025](docs/adr/0025-chatorchestrator-offline-bundle-transport.md):
   executable `ap bundle` from a standalone AP checkout; exact committed bundle

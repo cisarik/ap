@@ -35,6 +35,13 @@ Follow the linked AP rule family and structural contracts for exact behavior.
 | Orchestrator access profile | ORCHESTRATOR with direct access to the designated working checkout; dispatch is a separate capability/selection; see [AP §3](AP.md#3-instances-sessions-and-worker-session-profiles). |
 | ChatOrchestrator | Mediated ORCHESTRATOR access profile; an inspection clone is ephemeral reconstructed committed state from authorized bundle and/or public evidence, not the Cooperator's uncommitted worktree; see [AP §3](AP.md#3-instances-sessions-and-worker-session-profiles). |
 | Subagent dispatch | Selected delivery of a complete prompt to a concrete Worker session; access, freshness and independence remain separate under [AP §3](AP.md#3-instances-sessions-and-worker-session-profiles) and [RF-05](AP.md#rf-05-freshcurrent-routing-and-independent-acceptance). |
+| Orchestrator session scope | `logical-whole` or `development-run` routing label of one Orchestrator session, independent of its access profile; not a role or authority; see [AP §3](AP.md#orchestrator-session-scope). |
+| Development run | Cooperator-bounded ordered set of candidate logical wholes prepared by one run-scoped session; see [Run-Level Handouts](AP.md#run-level-handouts). |
+| Run-scoped Orchestrator ("Master Orchestrator") | Explanatory name for an Orchestrator session with `development-run` scope; the scope alone never selects, plans, accepts, or closes a whole; see [AP §3](AP.md#orchestrator-session-scope). |
+| Mutation axes | Repository mutation, host/remote mutation, and trace persistence, each `none` or one exact scope; *read-only* qualifies an axis, not a grant; see [AP §5](AP.md#mutation-axes). |
+| Trace persistence | Mutation axis for exact file writes into an activated trace, such as a direct-written report; see [AP §5](AP.md#mutation-axes). |
+| Prompt satisfiability check | Four pre-delivery comparisons of a complete prompt: validation–authority, routing, persistence, and spelling; see [AP §7](AP.md#prompt-satisfiability-check). |
+| Consumed coordinates | Coordinates of an issued exchange, kept whatever its outcome and never reused or reset by renaming the whole; see [RF-19](AP.md#consumed-coordinates). |
 | Material Phase Gate | Routing reconsideration caused by a material objective, authority, independence, security, capability, external, acceptance, or recovery change—not an ordinary substep. |
 
 ## Planning, Execution, and Evidence
@@ -101,6 +108,10 @@ Follow the linked AP rule family and structural contracts for exact behavior.
 | Restoration Prompt / Readiness | Self-contained context transfer without mutation authority / PASS-PARTIAL-BLOCKED completeness review. |
 | Orchestrator Initialization Signal | Explicit successor access profile (Orchestrator or ChatOrchestrator) and actual capability/delivery requirements in the handout; filename grammar is trace-local; see [AP §3](AP.md#3-instances-sessions-and-worker-session-profiles). |
 | Repository Handoff | Exceptional lifecycle-bound context for state not reconstructable from durable evidence and the next task. |
+| Run map | Discovery-only record of a development run's objective, ordered candidate wholes, statuses, and handout locators; see [Run-Level Handouts](AP.md#run-level-handouts). |
+| Provisional handout | Restoration handout marked `Handout status: provisional`, written before its whole opens and frozen afterward; see [Run-Level Handouts](AP.md#run-level-handouts). |
+| Handout revalidation record | Per-whole record of usable, stale, and unrevalidated handout facts made before the first Planner; see [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md#handout-revalidation-record). |
+| Direct-write report persistence | Default in which the capable assigned Worker writes and reads back its own exact trace report; see [RF-19](AP.md#direct-write-report-persistence). |
 | Pattern Library | First-class universal advisory [PROMPT_ENGINEERING_PATTERNS.md](PROMPT_ENGINEERING_PATTERNS.md) projection; not a second protocol or generator. |
 | Artifact Relationship | Structural, operational, advisory, explanatory, historical, executable, or consumer relationship to AP. |
 

@@ -22,8 +22,8 @@ this file is never part of that spine.
 ## 2. Roles and Capability Profiles in One Page
 
 AP has exactly three persistent roles — COOPERATOR, ORCHESTRATOR, WORKER
-([AP §2](AP.md#2-roles)). Capability profiles, session profiles, phases, and
-dispatch arrangements never add a fourth role
+([AP §2](AP.md#2-roles)). Capability profiles, session profiles, session
+scopes, phases, and dispatch arrangements never add a fourth role
 ([RF-06](AP.md#rf-06-capability-reasoning-permission-containment-and-authority)).
 
 [AP §3](AP.md#3-instances-sessions-and-worker-session-profiles) distinguishes

@@ -183,6 +183,19 @@ This shape does not reset the budget for the same unresolved question; see
 [Planning Budget and Expiry](AP.md#planning-budget-and-expiry).
 The first shape above is for the first plan of a new logical whole.
 
+When that first planning exchange stopped on a prompt defect before any plan
+existed, the corrected initial prompt names the blocked report and keeps the
+initial cycle; see the [Blocked First Exchange Example](#blocked-first-exchange-example):
+
+```text
+Planning cycle: initial
+Prior planning report: <blocked report identity>
+Targeted revision basis: none
+Changed decision boundary: none
+Preserved unaffected decisions: none
+Automatic targeted revisions used: 0
+```
+
 The sole authorized targeted revision uses:
 
 ```text
@@ -421,6 +434,25 @@ protocol and declared project routes can be linked without copying them.
 | Untrusted-content boundary | Governing instruction sources, data-under-analysis classes, and conflict behavior |
 | Side-effect authority | Authorized read-only, reversible local, destructive local, remote, communication, deployment, credential, or billing effects |
 | Browser authority | Allowed origins, interactions, storage, screenshots, and cleanup |
+| Repository mutation | Mandatory mutation axis for the task's source repositories; see [Mutation Axes Record](#mutation-axes-record) |
+| Host/remote mutation | Mandatory mutation axis for machines, services, accounts, and external systems |
+| Trace persistence | Mandatory mutation axis for file writes into an activated trace, including a direct-written report |
+
+#### Mutation Axes Record
+
+[AP §5](AP.md#mutation-axes) owns the meaning. Every newly issued Worker grant
+contains each line exactly once:
+
+```text
+Repository mutation: none | <exact repository paths>
+Host/remote mutation: none | <exact targets and operations>
+Trace persistence: none | direct-write <exact trace paths>
+```
+
+An issued record holds one value per line. *Read-only* describes an axis whose
+value is `none`; `Repository mutation: none` never forbids a granted
+`Trace persistence` write. The axes agree with positive authority and the
+[delivery record](#cooperator-delivery-and-trace-destination-record).
 
 ### Evidence
 
@@ -664,6 +696,43 @@ Worker exchange ordinal: 01
 Worker session target: fresh-worker-session
 ```
 
+### Blocked First Exchange Example
+
+A whole's first Planner exchange stops `BLOCKED` on a prompt defect before any
+plan exists, and the Orchestrator selects a fresh session for the corrected
+prompt:
+
+```text
+Logical whole identity: catalog-delivery
+Worker session ordinal: 01
+Worker exchange ordinal: 01
+Worker session target: fresh-worker-session
+Worker session profile: Planner
+Native planning mode: required
+Phase: planning
+Trace files: 01_planning.md + 01_report.md
+
+Logical whole identity: catalog-delivery
+Worker session ordinal: 02
+Worker exchange ordinal: 01
+Worker session target: fresh-worker-session
+Worker session profile: Planner
+Native planning mode: required
+Planning cycle: initial
+Prior planning report: 01_report.md
+Phase: planning
+Trace files: 02_planning.md + 02_report.md
+```
+
+The blocked exchange keeps its coordinates and prompt/report pair under
+[consumed coordinates](AP.md#consumed-coordinates); the corrected prompt uses
+the corrected initial [Planning Record](#planning-record), and its delivery
+capsule tells the Cooperator why the session ordinal is `02`. Renaming the
+whole to regain `01/01` is invalid. Under the
+[trace-local mapping example](#trace-local-filename-mapping-example) the same
+exchanges are `01_planning_00.md` + `01_report_00.md`, then
+`02_planning_00.md` + `02_report_00.md`.
+
 ### External Trace Activation Record
 
 Inactive trace configuration is exactly:
@@ -825,14 +894,30 @@ An issued record selects one archival value. Configured fields are absent when
 not-used. Paths and owner names do not replace the positive write/Git grant.
 Apply [RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity)
 for authorship, integrity, collision checks, readback, and after-outcome Git pairing.
+The default report persistence owner is `assigned WORKER` under the
+[direct-write default](AP.md#direct-write-report-persistence). The record, the
+[mutation axes](#mutation-axes-record), and positive authority are consistent
+when:
+
+```text
+P1  Report persistence owner: assigned WORKER -> Trace persistence names exactly the report destination, plus the received prompt path for an authorized Planner, and positive authority grants that write
+P2  any other Report persistence owner -> Trace persistence: none; the prompt states the relay basis (Cooperator selection or missing capability); the report returns in the session
+P3  Trace persistence other than none -> Cooperator delivery / trace destination: configured
+P4  Native planning mode: required with a direct write -> the client completion route is named
+P5  Repository mutation: none -> never forbids granted trace persistence
+```
+
+A failed rule is a Persistence defect under the
+[prompt satisfiability check](AP.md#prompt-satisfiability-check).
 
 The visible capsule required by [Communication Routing](AP.md#communication-routing)
 is presentation alongside the prompt or handout, not a second authority record.
 Its minimum includes emoji plus textual state, recipient/profile, actual fresh or
 current session, selected delivery, reasoning and approximate context recommendation,
 explicit Native Plan Mode ON/OFF, and activated exact destinations and archival
-state. Specialist capability/mode is added when relevant. Example using Meta-local
-storage (the governing initial Planner behavior is linked in the mode contract):
+state. Specialist capability/mode is added when relevant. Example using an
+activated trace's local storage grammar (the governing initial Planner behavior
+is linked in the mode contract):
 
 ```text
 🟡 Ready for delivery
@@ -924,6 +1009,9 @@ Prompt persistence owner: COOPERATOR
 Report persistence owner: assigned WORKER
 Git publication owner: COOPERATOR
 Archival: wait-for-report
+Repository mutation: none
+Host/remote mutation: none
+Trace persistence: direct-write <report-path>
 
 Positive authority: bounded reads of the named source, AP and trace evidence,
 applicable instructions, and repository/path metadata. In addition, create the
@@ -1013,7 +1101,11 @@ Markdown/Git Exchange Projection is unchanged.
 meta_exchange_index = Worker exchange ordinal - 1
 AP Worker session 01 / exchange 01 -> 01_<phase>_00.md + 01_report_00.md
 AP Worker session 01 / exchange 02 -> 01_<phase>_01.md + 01_report_01.md
+AP Worker session 02 / exchange 01 -> 02_<phase>_00.md + 02_report_00.md
 ```
+
+A corrected initial Planner after a blocked first exchange is therefore
+`02_planning_00.md` + `02_report_00.md`.
 
 Local grammar is the archival destination the Orchestrator must project when
 that trace is activated. It is never universal AP meaning.
@@ -2515,6 +2607,7 @@ are not separate independent auditors.
 - **Output**: evidence-dense synthesis with PASS, PARTIAL, or BLOCKED
   restoration readiness classification; target Orchestrator access profile
   and initialization signal (`Capability profile: Orchestrator | ChatOrchestrator`);
+  Orchestrator session scope and development run identity (record below);
   exact handout destination under activated local grammar; actual author and persister;
   predecessors, retained decisions, explicit supersession/reasons, selected delivery;
   operational continuity; strategic continuity; development narrative; forward horizon;
@@ -2536,6 +2629,64 @@ are not separate independent auditors.
   classified honestly. A ChatOrchestrator may continue from authorized bundle
   evidence when public branch state is not the claim under decision, recording
   `public branch state not directly observed`.
+
+The restoration output and initialization signal record the
+[session scope](AP.md#orchestrator-session-scope):
+
+```text
+Orchestrator session scope: logical-whole | development-run
+Development run identity: <stable project-local identifier> | not-applicable
+```
+
+An issued record holds one value per line; `development-run` requires a
+concrete run identity. A missing scope field in a historical handout means
+`logical-whole`.
+
+#### Run Map Record
+
+[Run-Level Handouts](AP.md#run-level-handouts) owns the meaning. A run map
+contains:
+
+```text
+Run map: <development run identity>
+Run objective: <Cooperator-selected objective and exclusions>
+Run map authority: discovery-only
+Run entry: <order> | <logical-whole identity> | <run entry status> | depends on: <identities | none> | handout: <locator | not-written> | evidence: <one sentence>
+Run entry status: provisional | handed-off | active | closed | superseded | dropped
+```
+
+`Run entry` repeats once per candidate whole; inside it, ` | ` separates its
+six components and each component holds one value. `Run entry status` lists
+the allowed values of the third component.
+
+#### Provisional Handout Marker
+
+A [provisional handout](AP.md#run-level-handouts) carries exactly once in its
+metadata:
+
+```text
+Handout status: provisional
+```
+
+The field is absent from ordinary handouts. The marked handout is frozen once
+its whole opens; a material rewrite is a successor handout.
+
+#### Handout Revalidation Record
+
+The receiving whole's Orchestrator records, before the first Planner prompt:
+
+```text
+Handout revalidation: <handout locator>
+Received handout status: provisional
+Revalidated against: <repository commit; AP pin; other durable anchors>
+Usable facts: <list> | none
+Stale facts and corrections: <fact: handout value -> measured value> | none
+Not revalidated: <fact and reason> | none
+Handout disposition: adopted | adopted-with-corrections | superseded-by <successor locator>
+```
+
+An issued record holds one value per line. `Not revalidated` names every
+material fact the current authority could not observe.
 
 ### Optional Discovery Record Creation
 
@@ -2586,7 +2737,16 @@ For adopting AP in a consuming project, the task should require:
 - one reviewable project commit when authorized.
 
 For updating AP, use [UPDATING.md](UPDATING.md) and require an explicit update
-task.
+task. An AP Update Task that changes AP or adopts it in a consumer also names:
+
+- an activation snapshot of every active entry in the declared ledgers
+  available to it, each with a disposition before closure, under
+  [Standing Ledger Maintenance](AP.md#standing-ledger-maintenance);
+- fresh independent acceptance of the exact AP candidate;
+- publication as a separate step;
+- one separate pin grant per consumer; and
+- any consumer file that pins the AP commit, updated atomically with the `.ap`
+  gitlink in that pin change.
 
 ## Related Documents
 

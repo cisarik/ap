@@ -19,6 +19,7 @@ Canonical repository: `https://github.com/cisarik/ap`
 | exact prompt/report fields, exchange coordinates, and standard trace grammar | [PROMPT_CONTRACTS.md](PROMPT_CONTRACTS.md) | structural projection |
 | role decisions | [AP_ORCHESTRATOR.md](AP_ORCHESTRATOR.md), [AP_WORKER.md](AP_WORKER.md) | operational projections |
 | continuation after a pause | [Continuation Bootstrap](AP_ORCHESTRATOR.md#continuation-bootstrap) | operational entry point to the two-stage AP rule |
+| run-level preparation across several logical wholes | [Run-Level Handouts](AP.md#run-level-handouts), [Run-Scoped Orchestration](AP_ORCHESTRATOR.md#run-scoped-orchestration) | AP-owned rule and its operational checklist |
 | optional durable upgrade observations | [Upgrade Observation Ledger Contract](PROMPT_CONTRACTS.md#upgrade-observation-ledger-contract) | structural declaration and Markdown storage projection |
 | presentation extensions, development envelope, and local-trace grammar | [INTEGRATION.md](INTEGRATION.md#optional-presentation-profile-development-envelope-and-trace-grammar) | optional consumer declaration; AP delivery minimum still applies |
 | optional prompt craft | [PROMPT_ENGINEERING_PATTERNS.md](PROMPT_ENGINEERING_PATTERNS.md) | first-class universal advisory projection |

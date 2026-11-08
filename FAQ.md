@@ -267,11 +267,28 @@ scanning for a filename.
 
 ## Can a Planner or Worker save its own report?
 
-Use the explicit named persistence grant under
+Yes: when its client can write the named destination, that is the
+[direct-write default](AP.md#direct-write-report-persistence), and read-only
+scope applies per [mutation axis](AP.md#mutation-axes), so it never forbids a
+granted report write. File preparation, authorship, reconciliation, and Git
+operations stay distinct under
 [RF-19](AP.md#rf-19-external-analytic-trace-and-worker-exchange-identity);
-file preparation, authorship, reconciliation, and Git operations are distinct.
-[Completion recovery](AP.md#planning-budget-and-expiry) handles client-restricted
+[completion recovery](AP.md#planning-budget-and-expiry) handles client-restricted
 writes or missing report rendering without reopening a frozen plan.
+
+## What is a run-scoped (Master) Orchestrator?
+
+An Orchestrator session with [session scope](AP.md#orchestrator-session-scope)
+`development-run` that keeps a run map and provisional handouts under
+[Run-Level Handouts](AP.md#run-level-handouts); it is not a fourth role, and its
+scope grants no selection, planning, acceptance, or closure authority.
+
+## What happens to coordinates after a blocked exchange?
+
+They stay [consumed](AP.md#consumed-coordinates): a blocked first Planner
+followed by a fresh session continues at `02/01` with `Planning cycle: initial`,
+never by renaming the whole, as in the
+[Blocked First Exchange Example](PROMPT_CONTRACTS.md#blocked-first-exchange-example).
 
 ## Must every task add a test?
 
@@ -284,6 +301,9 @@ documentation may use focused semantic/link checks and no new automated test.
 [Session Rotation](AP.md#14-session-rotation-and-dynamic-prompts) owns handout
 authorship and predecessor continuity; an assigned Worker handout is separate
 from its standard report, and notes authorship remains governed by AP §13.
+A handout written before its whole opens is a
+[provisional handout](AP.md#run-level-handouts) that the whole's Orchestrator
+revalidates before the first Planner.
 
 ## Related Reading
 

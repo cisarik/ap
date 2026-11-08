@@ -37,6 +37,7 @@ Programming.
 | [0023](0023-practical-workflow-consolidation.md) | Practical workflow consolidation | Accepted | Accepted design: access profiles, initial Planner and preserved delivery, exact persistence, compact reading, causal validation, specialist outputs, critique, and handout continuity; independent candidate acceptance/publication/closure remain separate |
 | [0024](0024-reliable-execution-and-cooperator-experience.md) | Reliable execution and Cooperator experience | Accepted | Refines issuance consistency, object-bound expectations and stop/finishing scope; groups existing task content and supplies complete delivery/report examples; no executable, structural spelling or consumer-pin change |
 | [0025](0025-chatorchestrator-offline-bundle-transport.md) | ChatOrchestrator offline bundle transport | Accepted | Adds ChatOrchestrator exact-committed bundle evidence and `ap bundle`; partially supersedes ADR-0023's first-manual Planner delivery rule only; other actors keep normal Git/GitHub |
+| [0026](0026-run-scoped-orchestration-mutation-axes-and-direct-write-reports.md) | Run-scoped orchestration, mutation axes, and direct-write report persistence | Accepted | Adds an Orchestrator session scope, run maps and provisional handouts, mutation axes, a direct-write report default, the prompt satisfiability check, consumed coordinates, and standing ledger maintenance; partially supersedes ADR-0023's default-free persistence and the earlier activation-snapshot scope only |
 
 ADR-0009 permits only an explicit bounded parallel exception. It does not
 supersede fresh sequential independent audit or the remaining decisions in
@@ -138,6 +139,18 @@ Planner *delivery* rule for full Orchestrators with authorized dispatch; native
 planning mode for the first Planner is unchanged. Historical ADR bodies remain
 unchanged. Accepted design status does not certify the local candidate,
 publication, consumer adoption, or closure.
+
+ADR-0026 records run-scoped orchestration as an Orchestrator session scope, not
+a fourth role, with run maps, provisional handouts and per-whole handout
+revalidation. It adds three mutation axes, a direct-write default for a capable
+Worker's own trace report, a four-comparison prompt satisfiability check,
+consumed coordinates after a blocked exchange, and a consumer-neutral standing
+upgrade-ledger maintenance duty. It partially supersedes ADR-0023's
+persistence wording that named no default, and the earlier RF-09
+activation-snapshot scope in `AP.md` §13. Historical ADR bodies, the
+executable, managed block and schema v1 remain unchanged. Accepted design
+status does not certify the local candidate, publication, consumer adoption,
+or closure.
 
 ## Lifecycle Rule
 

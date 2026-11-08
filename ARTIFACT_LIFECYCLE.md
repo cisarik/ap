@@ -159,11 +159,28 @@ observations outside durable storage.
 
 [AP artifact lifecycle](AP.md#13-artifact-lifecycle-and-repository-hygiene) owns
 notes authorship, exact mechanical persistence, append-once handling and freeze.
-Meta README owns the activated local opening/storage convention. The consumer is
+The activated trace's own documentation owns the local opening/storage
+convention. The consumer is
 the Orchestrator, auditable by the Cooperator; retention is the whole's trace
 lifetime, then frozen historical evidence; cleanup requires exact Cooperator
 authority. Notes are evidence, never a task-authority source. Handout authorship
 and continuity are owned by [Session Rotation](AP.md#14-session-rotation-and-dynamic-prompts).
+
+## Run Maps and Provisional Handouts
+
+[Run-Level Handouts](AP.md#run-level-handouts) owns their meaning and the
+[structural records](PROMPT_CONTRACTS.md#run-map-record) own their spellings.
+Both are operational lifecycle artifacts in an activated trace and never task
+authority.
+
+| Artifact | Author | Consumer and discovery | Retention, cleanup, and supersession |
+|---|---|---|---|
+| run map | run-scoped Orchestrator | the Cooperator as a menu and per-whole Orchestrators for discovery; the activated trace location named in the run-scoped handout | live through the run, then frozen evidence with a one-line closure statement; cleanup trigger is the Cooperator ending the run; superseded by the next run's map |
+| provisional handout | run-scoped Orchestrator | the whole's Orchestrator, by exact locator plus restoration prompt | refreshable until the whole opens, then frozen evidence; superseded only by an explicit successor handout |
+| handout revalidation record | the whole's Orchestrator during Stage 1 | the Cooperator and later Orchestrators of that whole | stored in per-whole notes when the trace provides them, otherwise in the first Cooperator-facing restoration message; frozen with the notes |
+
+Cleanup of a run map or provisional handout requires exact Cooperator
+authority; a lifecycle trigger never grants deletion.
 
 ## AP Distribution Relationships
 
@@ -180,7 +197,9 @@ and continuity are owned by [Session Rotation](AP.md#14-session-rotation-and-dyn
 | `ap` and tests | executable enforcement |
 | managed `AGENTS.md` block and project rules | consumer projection |
 | optional declared consumer upgrade-ledger file | consumer-owned retained evidence; non-authorizing RF-09 storage projection |
-| `00_notes.md` (activated Meta convention) | operational lifecycle artifact; Orchestrator-authored, named exact persister; retained through the whole then frozen evidence; Meta README owns local storage; AP §13 owns lifecycle |
+| `00_notes.md` (activated trace convention) | operational lifecycle artifact; Orchestrator-authored, named exact persister; retained through the whole then frozen evidence; the activated trace's own documentation owns local storage; AP §13 owns lifecycle |
+| run map (activated trace) | operational lifecycle artifact; run-scoped Orchestrator-authored; discovery-only; frozen at run closure; AP §14 owns meaning |
+| provisional handout (activated trace) | operational lifecycle artifact; run-scoped Orchestrator-authored; frozen when its whole opens; superseded only by an explicit successor; AP §14 owns meaning |
 
 Earlier protocol generations remain in Git history. Static BOOT, NEXT,
 WORKERS, prompt archive, generated protocol variant, or restoration archive is

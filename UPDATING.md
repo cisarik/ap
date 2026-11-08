@@ -121,6 +121,12 @@ Before committing an AP update in a consuming project:
 - check the mandatory [delivery minimum](AP.md#communication-routing), renamed
   access profiles, selected-route continuity, and activated trace mapping against
   the new pin; optional project extensions do not replace the minimum;
+- review the [mutation axes](AP.md#mutation-axes), the
+  [direct-write default](AP.md#direct-write-report-persistence),
+  [provisional handouts](AP.md#run-level-handouts), and
+  [consumed coordinates](AP.md#consumed-coordinates) against the new pin, and
+  update consumer-owned conventions and any consumer file that pins the AP
+  commit in the same pin change;
 - when the pin includes `ap bundle`, review ChatOrchestrator offline-transport
   UX (`ap bundle <project> --initial` from the standalone AP checkout) against
   [ADR-0025](docs/adr/0025-chatorchestrator-offline-bundle-transport.md);
