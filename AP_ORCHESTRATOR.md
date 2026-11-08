@@ -509,8 +509,8 @@ suite nor a report header proves the later states. Under
 [artifact promotion](AP.md#13-artifact-lifecycle-and-repository-hygiene), include
 stale specification, operations or roadmap summaries in the appropriate bounded
 documentation grant, or route their repair separately. A fresh reader should
-recover current state from those owners, not a new session-state file or META
-alone. A Worker cannot expand its allowlist to repair a summary.
+recover current state from those owners, not a new session-state file or an
+activated trace alone. A Worker cannot expand its allowlist to repair a summary.
 
 Keep the accepted commit fixed through separately authorized publication and
 direct public readback. A different artifact needs reconciliation; publication
@@ -561,7 +561,8 @@ For a session with `development-run` scope:
 5. Prefer a fresh per-whole Orchestrator; if this session opens the whole
    itself, record the departure and its reason.
 6. After each closure, update the entry's status from that whole's own evidence
-   and refresh, supersede, or drop the remaining unopened handouts.
+   and refresh or supersede the remaining unopened handouts, and record any
+   Cooperator drop as `dropped`.
 7. Capture friction under [Standing Ledger Maintenance](AP.md#standing-ledger-maintenance);
    keep notes only as the activated trace provides them under
    [Artifact Lifecycle](AP.md#13-artifact-lifecycle-and-repository-hygiene).

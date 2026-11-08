@@ -36,7 +36,7 @@ RF-19's separation of authorship and persistence and the existing
 Probe's mutation domains; §7's requirement that every action fit the grant;
 never-reassigned ordinals; the RF-09 ledger with explicit discovery during
 Continuation Stage 1; and §14 handout authorship, predecessors and readiness.
-Five live passages still named one specific trace implementation.
+Six live passages still named one specific trace implementation.
 
 Accepted design does not certify this implementation candidate, publication,
 consumer adoption, or logical-whole closure.
@@ -90,8 +90,9 @@ consumer adoption, or logical-whole closure.
    newly measured friction during any whole, and a whole that changes the
    ledger's target snapshots every active entry of the declared ledgers
    available to it and disposes of each before closure. Storage stays in the
-   consuming repository. The five trace-specific passages now refer to the
-   activated trace's own documentation or local grammar.
+   consuming repository. The six trace-specific passages now use neutral
+   wording for the activated trace, its own documentation, or its local
+   grammar.
 
 ## Semantic Ownership and Projections
 

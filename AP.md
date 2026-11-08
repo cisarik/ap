@@ -499,12 +499,12 @@ Worker's client permits that exact write, the default persistence owner is that
 Worker (`Report persistence owner: assigned WORKER`) with matching
 `Trace persistence`. Another persister is used only by explicit Cooperator
 selection or a recorded missing Worker capability; the Worker then returns the
-complete report in the session and writes no trace file. When native planning
-controls block writes until plan approval, the Planner keeps the complete
-report in the client's plan output and writes it once the client permits,
-within the same unexpired grant and without implementing; otherwise the
-[completion route](#planning-budget-and-expiry) applies. Detection:
-**artifact-detectable**, on the delivery record, persistence owner,
+complete report in the session and does not write that report to the trace.
+When native planning controls block writes until plan approval, the Planner
+keeps the complete report in the client's plan output and writes it once the
+client permits, within the same unexpired grant and without implementing;
+otherwise the [completion route](#planning-budget-and-expiry) applies.
+Detection: **artifact-detectable**, on the delivery record, persistence owner,
 `Trace persistence`, relay basis, and saved report.
 
 First finish the content, then perform only the bounded writes and verify the

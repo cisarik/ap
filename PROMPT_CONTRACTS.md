@@ -900,8 +900,8 @@ The default report persistence owner is `assigned WORKER` under the
 when:
 
 ```text
-P1  Report persistence owner: assigned WORKER -> Trace persistence names exactly the report destination, plus the received prompt path for an authorized Planner, and positive authority grants that write
-P2  any other Report persistence owner -> Trace persistence: none; the prompt states the relay basis (Cooperator selection or missing capability); the report returns in the session
+P1  Report persistence owner: assigned WORKER -> Trace persistence includes the report destination (plus the received prompt path for an authorized Planner), and any other trace path is separately granted; positive authority grants each write
+P2  any other Report persistence owner -> Trace persistence names no report destination; the prompt states the relay basis (Cooperator selection or missing capability); the report returns in the session
 P3  Trace persistence other than none -> Cooperator delivery / trace destination: configured
 P4  Native planning mode: required with a direct write -> the client completion route is named
 P5  Repository mutation: none -> never forbids granted trace persistence

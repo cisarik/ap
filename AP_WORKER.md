@@ -295,9 +295,10 @@ Report content and report delivery are separate: `Report persistence owner`
 and `Trace persistence` decide delivery under the
 [direct-write default](AP.md#direct-write-report-persistence). When they name
 you, write exactly that report file (and an authorized Planner's exact
-prompt) through steps 2–4 and nothing else; when native planning controls
-block writes, keep the complete report in the plan output and write it once the
-client permits within the same grant, never bypassing the control.
+prompt) through steps 2–4 and no file outside the granted `Trace persistence`;
+when native planning controls block writes, keep the complete report in the
+plan output and write it once the client permits within the same grant, never
+bypassing the control.
 
 When no permitted file route exists, preserve complete available content through
 the allowed client output and disclose missing delivery. Use
